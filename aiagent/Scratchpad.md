@@ -12,8 +12,10 @@
 - [X] WXTプロジェクトの作成と動作確認
 - [X] Gitの初期化と初回コミット
 - [X] コード品質ツールの導入 (Biome)
-- [ ] UIコンポーネント基盤の導入 (Shadcn/ui)
+- [X] UIコンポーネント基盤の導入 (Shadcn/ui)
+- [ ] ドキュメント規約ツールの導入 (MarkdownLint)
 - [ ] テストフレームワークのセットアップ (Vitest)
+- [ ] UIコンポーネント開発環境の導入 (Storybook)
 - [ ] アプリケーションライブラリの導入 (Dexie, Jotai)
 
 ## メモと反省
@@ -22,3 +24,7 @@
 - `src` ディレクトリ構造を採用した。
 - Gitの初期化と初回コミットが完了した。
 - Biomeを導入し、コード品質管理の基盤を構築した。
+- Shadcn/uiのセットアップを公式サンプルを参考に実施し、動作確認済み。
+- アイコンライブラリを`Radix UI Icons`から`Lucide React`に変更した。
+- MarkdownLintとStorybookのセットアップを計画に含めた。
+- `docs/implementation_guide.md` の技術スタックにVitestとStorybookを追記した。
