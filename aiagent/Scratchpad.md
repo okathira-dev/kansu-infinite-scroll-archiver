@@ -13,7 +13,7 @@
 - [X] Gitの初期化と初回コミット
 - [X] コード品質ツールの導入 (Biome)
 - [X] UIコンポーネント基盤の導入 (Shadcn/ui)
-- [ ] ドキュメント規約ツールの導入 (MarkdownLint)
+- [X] ドキュメント規約ツールの導入 (MarkdownLint)
 - [ ] テストフレームワークのセットアップ (Vitest)
 - [ ] UIコンポーネント開発環境の導入 (Storybook)
 - [ ] アプリケーションライブラリの導入 (Dexie, Jotai)
@@ -28,3 +28,4 @@
 - アイコンライブラリを`Radix UI Icons`から`Lucide React`に変更した。
 - MarkdownLintとStorybookのセットアップを計画に含めた。
 - `docs/implementation_guide.md` の技術スタックにVitestとStorybookを追記した。
+- `markdownlint-cli2` を使用してMarkdownLintのセットアップを完了した。

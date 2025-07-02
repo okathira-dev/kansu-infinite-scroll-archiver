@@ -22,7 +22,7 @@
 | **データストレージ**             | [Dexie.js](https://dexie.org/)                                 | IndexedDBを容易に操作し、大量の構造化データを効率的に管理するため。                            |
 | **状態管理**                     | React Hooks / [Jotai](https://jotai.org/)                      | 基本はReact標準のHooksで対応し、アトミックな状態管理が必要な場合に限り、Jotaiを導入する。      |
 | **コード品質**                   | [Biome](https://biomejs.dev/)                                  | リンターとフォーマッターを統一されたツールで提供し、コードの一貫性を保つため。                 |
-| **テストフレームワーク**         | [Vitest](https://vitest.dev/)                                  | 高速なユニットテストとコンポーネントテストを可能にし、WXTとの統合が容易なため。              |
+| **テストフレームワーク**         | [Vitest](https://vitest.dev/)                                  | 高速なユニットテストとコンポーネントテストを可能にし、WXTとの統合が容易なため。                |
 | **UIコンポーネント開発環境**     | [Storybook](https://storybook.js.org/)                         | UIコンポーネントを独立して開発、テスト、ドキュメント化するための環境を提供するため。           |
 | **ドキュメント規約**             | [MarkdownLint](https://github.com/DavidAnson/markdownlint)     | Markdownファイルのスタイルを統一し、可読性を維持するため。                                     |
 
