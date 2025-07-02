@@ -14,7 +14,7 @@
 - [X] コード品質ツールの導入 (Biome)
 - [X] UIコンポーネント基盤の導入 (Shadcn/ui)
 - [X] ドキュメント規約ツールの導入 (MarkdownLint)
-- [ ] テストフレームワークのセットアップ (Vitest)
+- [X] テストフレームワークのセットアップ (Vitest)
 - [ ] UIコンポーネント開発環境の導入 (Storybook)
 - [ ] アプリケーションライブラリの導入 (Dexie, Jotai)
 
@@ -29,3 +29,4 @@
 - MarkdownLintとStorybookのセットアップを計画に含めた。
 - `docs/implementation_guide.md` の技術スタックにVitestとStorybookを追記した。
 - `markdownlint-cli2` を使用してMarkdownLintのセットアップを完了した。
+- Vitestのセットアップを完了した。
