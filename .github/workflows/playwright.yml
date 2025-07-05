@@ -1,0 +1,48 @@
+# DISABLED: E2E tests are now run in the CI workflow
+name: Playwright Tests (Manual Only)
+on:
+  workflow_dispatch: # 手動実行のみ
+jobs:
+  test:
+    # CI ワークフローが成功した場合のみ実行
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'pull_request' }}
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 9
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+        cache: 'pnpm'
+    - name: Install dependencies
+      run: pnpm install
+      
+    # CI ワークフローからビルド成果物をダウンロード（push時）
+    - name: Download build artifacts
+      if: github.event_name == 'workflow_run'
+      uses: actions/download-artifact@v4
+      with:
+        name: extension-build
+        path: .output/
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        repository: ${{ github.repository }}
+        run-id: ${{ github.event.workflow_run.id }}
+        
+    # PR時は自分でビルド
+    - name: Build extension (for PR)
+      if: github.event_name == 'pull_request'
+      run: pnpm build
+    - name: Install Playwright Browsers
+      run: pnpm exec playwright install --with-deps
+    - name: Run Playwright tests
+      run: pnpm exec playwright test
+    - uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30

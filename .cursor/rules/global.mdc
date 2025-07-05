@@ -61,4 +61,8 @@ alwaysApply: true
 
 ## ドキュメント
 
-プロジェクトに関するドキュメントは `docs/` ディレクトリで管理します。
+プロジェクトに関するドキュメントは `docs/` ディレクトリで管理します。このファイルを参照しつつ開発を進める一方で、適宜ドキュメント自体も更新していってください。
+
+- [implementation_plan.md](mdc:docs/implementation_plan.md) : このプロジェクトの実装計画。
+- [implementation_guide.md](mdc:docs/implementation_guide.md) : このプロジェクトの実装ガイド。
+- [requirements.md](mdc:docs/requirements.md) : このプロジェクトの要件定義書。
