@@ -40,3 +40,6 @@
 - GitHub Workflow（CI）を設定し、check、build、test、E2Eテストを自動実行するようにした。
 - Huskyを導入し、コミット時にlint-stagedを実行してコード品質を保つようにした。
 - CIエラーを修正：pnpmのセットアップ順序を修正し、PlaywrightをCI環境でheadlessモードで実行するように設定した。
+- VitestとPlaywrightの分離設定を完了：vitest.config.tsでE2Eディレクトリを除外し、ユニットテストとE2Eテストを適切に分離した。
+- CIワークフローとPlaywrightワークフローの連携設定を完了：CIでビルドした成果物をPlaywrightで再利用するように設定した。
+- 同一ワークフロー内でE2Eテストを実行するように変更：CIジョブの後にE2Eジョブを実行し、ビルド成果物を効率的に再利用できるようにした。
