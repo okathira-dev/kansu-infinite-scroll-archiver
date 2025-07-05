@@ -1,6 +1,7 @@
 // src: https://github.com/wxt-dev/examples/blob/main/examples/playwright-e2e-testing/e2e/fixtures.ts
+
+import path from "node:path";
 import { type BrowserContext, test as base, chromium } from "@playwright/test";
-import path from "path";
 
 const pathToExtension = path.resolve(".output/chrome-mv3");
 
@@ -36,7 +37,8 @@ export const test = base.extend<{
   // biome-ignore lint/correctness/noEmptyPattern: playwrightの制限によりdestructuringが必須のため `_` は使えない ref: https://github.com/microsoft/playwright/issues/8798
   context: async ({}, use) => {
     const context = await chromium.launchPersistentContext("", {
-      headless: false,
+      headless: true, // !!process.env.CI, // headlessはchromeとセットにする必要がある
+      channel: "chrome",
       args: [
         `--disable-extensions-except=${pathToExtension}`,
         `--load-extension=${pathToExtension}`,
