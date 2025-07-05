@@ -45,6 +45,7 @@ jobs:
       with:
         name: extension-build
         path: .output/
+        include-hidden-files: true
         retention-days: 1
 
   e2e:
