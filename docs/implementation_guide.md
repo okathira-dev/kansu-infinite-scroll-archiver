@@ -87,6 +87,229 @@ Kansuは、WXTフレームワークが提供するファイルベースのルー
 - **ブランチ戦略**: `main`ブランチを常にデプロイ可能な状態に保ち、機能追加や修正はフィーチャーブランチを作成して行う、シンプルなGitHub Flowを採用します。
 - **コミットメッセージ**: Conventional Commits ([https://www.conventionalcommits.org/](https://www.conventionalcommits.org/)) の規約に沿って記述し、変更内容の履歴を分かりやすく保ちます。
 
+### 2.5. 視覚的システム概要
+
+#### 2.5.1. システムアーキテクチャ図
+
+```mermaid
+graph TB
+    subgraph "Browser Extension (WXT)"
+        subgraph "Content Script"
+            UI["メインUI<br/>(React)<br/>・データ検索/表示<br/>・ソート/ページネーション"]
+            Extractor["データ抽出<br/>・MutationObserver<br/>・DOM監視"]
+        end
+        
+        subgraph "Background Service"
+            DataManager["データマネージャー<br/>・Dexie.js<br/>・IndexedDB操作"]
+            MessageHandler["メッセージハンドラー<br/>・chrome.runtime"]
+        end
+        
+        subgraph "Popup UI"
+            Toggle["表示切替<br/>・メインUI制御"]
+            OptionsLink["設定リンク"]
+        end
+        
+        subgraph "Options UI"
+            RuleManager["抽出ルール管理<br/>・設定編集"]
+            DataExporter["データ管理<br/>・インポート/エクスポート"]
+        end
+        
+        subgraph "共有モジュール"
+            Types["型定義<br/>・TypeScript"]
+            Components["共通コンポーネント<br/>・Toast, Modal"]
+        end
+    end
+    
+    subgraph "Web Page"
+        DOM["DOM<br/>・無限スクロール<br/>・動的コンテンツ"]
+    end
+    
+    subgraph "Browser Storage"
+        IndexedDB["IndexedDB<br/>・抽出データ<br/>・設定データ"]
+    end
+    
+    subgraph "File System"
+        Files["JSON Files<br/>・エクスポート/インポート"]
+    end
+
+    %% データフロー
+    Extractor --> DOM
+    Extractor --> MessageHandler
+    MessageHandler --> DataManager
+    DataManager --> IndexedDB
+    
+    UI --> MessageHandler
+    MessageHandler --> UI
+    
+    Toggle --> UI
+    OptionsLink --> RuleManager
+    
+    RuleManager --> MessageHandler
+    DataExporter --> MessageHandler
+    DataExporter --> Files
+    
+    %% 共有モジュール使用
+    UI -.-> Types
+    UI -.-> Components
+    RuleManager -.-> Types
+    DataExporter -.-> Types
+```
+
+#### 2.5.2. データフロー図
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant DOM as Web Page DOM
+    participant CS as Content Script
+    participant BG as Background Service
+    participant DB as IndexedDB
+    participant UI as Main UI
+    participant Options as Options UI
+    
+    note over User, Options: 抽出・保存フロー
+    DOM->>CS: DOM変更検知<br/>(MutationObserver)
+    CS->>CS: データ抽出<br/>(CSSセレクタ)
+    CS->>BG: データ送信<br/>(chrome.runtime.sendMessage)
+    BG->>BG: データ検証
+    BG->>DB: データ保存<br/>(Dexie.js)
+    
+    note over User, Options: 検索・表示フロー
+    User->>UI: メインUI起動
+    UI->>BG: データ取得要求
+    BG->>DB: データ読み込み
+    DB->>BG: 保存データ
+    BG->>UI: データ送信
+    UI->>User: データ表示<br/>(React)
+    
+    User->>UI: 検索キーワード入力
+    UI->>BG: 検索要求
+    BG->>DB: 検索実行<br/>(日本語正規化)
+    DB->>BG: 検索結果
+    BG->>UI: 結果送信
+    UI->>User: 結果表示
+    
+    note over User, Options: 設定フロー
+    User->>Options: 設定変更
+    Options->>BG: 設定保存要求
+    BG->>DB: 設定永続化
+    BG->>CS: 設定更新通知
+    CS->>CS: 抽出ルール更新
+```
+
+#### 2.5.3. 技術スタック構成図
+
+```mermaid
+graph TB
+    subgraph "開発環境"
+        direction TB
+        Node["Node.js"]
+        PNPM["pnpm<br/>(パッケージ管理)"]
+        Git["Git<br/>(バージョン管理)"]
+        TypeScript["TypeScript<br/>(言語)"]
+        
+        Node --> PNPM
+        Node --> TypeScript
+    end
+    
+    subgraph "フレームワーク"
+        direction TB
+        WXT["WXT<br/>(ブラウザ拡張)"]
+        React["React<br/>(UI)"]
+        
+        WXT --> React
+    end
+    
+    subgraph "UI・スタイリング"
+        direction TB
+        Shadcn["Shadcn/ui<br/>(コンポーネント)"]
+        Lucide["Lucide React<br/>(アイコン)"]
+        Tailwind["Tailwind CSS<br/>(CSS)"]
+        
+        Shadcn --> Lucide
+        Shadcn --> Tailwind
+    end
+    
+    subgraph "データ・状態管理"
+        direction TB
+        Dexie["Dexie.js<br/>(IndexedDB)"]
+        Zustand["Zustand<br/>(状態管理)"]
+        IndexedDB["IndexedDB<br/>(ストレージ)"]
+        
+        Dexie --> IndexedDB
+    end
+    
+    subgraph "開発品質"
+        direction TB
+        Biome["Biome<br/>(リンター/フォーマッター)"]
+        Vitest["Vitest<br/>(ユニットテスト)"]
+        Playwright["Playwright<br/>(E2Eテスト)"]
+        MarkdownLint["MarkdownLint<br/>(ドキュメント規約)"]
+    end
+    
+    %% 基本依存関係
+    WXT -.-> PNPM
+    React -.-> Shadcn
+    React -.-> Zustand
+    React -.-> Dexie
+    
+    %% 開発品質ツール
+    Vitest -.-> WXT
+    Playwright -.-> WXT
+```
+
+#### 2.5.4. データ構造図
+
+```mermaid
+erDiagram
+    SERVICE_CONFIG {
+        string serviceName "サービス名"
+        string[] activateUrlPatterns "対象URLパターン"
+        string updateAreaSelector "更新監視エリア"
+        string itemSelector "アイテム選択"
+        string uniqueKeyFieldName "ユニークキーフィールド名"
+        FIELD[] fields "フィールド定義"
+    }
+    
+    FIELD {
+        string name "フィールド名"
+        string selector "CSSセレクタ"
+        string type "タイプ (text/linkUrl/imageUrl/regex)"
+        string regex "正規表現(regexタイプ時)"
+    }
+    
+    EXTRACTED_DATA {
+        string id "ユニークID"
+        string extractedAt "抽出日時"
+        object data "抽出データ"
+    }
+    
+    DATA_RECORD {
+        string title "タイトル"
+        string link "リンクURL"
+        string thumbnail "サムネイル"
+        string itemId "アイテムID"
+    }
+    
+    INDEXEDDB {
+        string name "kansu_db"
+        string version "1"
+    }
+    
+    OBJECT_STORE {
+        string name "service_{serviceName}"
+        string keyPath "uniqueKeyFieldName"
+    }
+    
+    %% 関係
+    SERVICE_CONFIG ||--o{ FIELD : "contains"
+    SERVICE_CONFIG ||--o{ EXTRACTED_DATA : "generates"
+    EXTRACTED_DATA ||--|| DATA_RECORD : "contains"
+    INDEXEDDB ||--o{ OBJECT_STORE : "contains"
+    OBJECT_STORE ||--o{ EXTRACTED_DATA : "stores"
+    SERVICE_CONFIG ||--o{ OBJECT_STORE : "creates"
+```
+
 ## 3. 機能実装詳細
 
 ### 3.1. データ抽出モジュール (Content Script)
