@@ -20,7 +20,7 @@
 | **アイコンライブラリ**           | [Lucide React](https://lucide.dev/guide/packages/lucide-react) | Shadcn/uiがデフォルトで利用を想定している、シンプルで一貫性のあるアイコンセットのため。        |
 | **CSSフレームワーク**            | [Tailwind CSS](https://tailwindcss.com/)                       | Shadcn/uiがこの利用を前提としているため。                                                      |
 | **データストレージ**             | [Dexie.js](https://dexie.org/)                                 | IndexedDBを容易に操作し、大量の構造化データを効率的に管理するため。                            |
-| **状態管理**                     | React Hooks / [Jotai](https://jotai.org/)                      | 基本はReact標準のHooksで対応し、アトミックな状態管理が必要な場合に限り、Jotaiを導入する。      |
+| **状態管理**                     | [Zustand](https://github.com/pmndrs/zustand)                   | Reduxライクな単一ストアモデルを、よりシンプルかつ軽量に提供するため。複雑な状態の管理に適している。 |
 | **コード品質**                   | [Biome](https://biomejs.dev/)                                  | リンターとフォーマッターを統一されたツールで提供し、コードの一貫性を保つため。                 |
 | **テストフレームワーク**         | [Vitest](https://vitest.dev/)                                  | 高速なユニットテストとコンポーネントテストを可能にし、WXTとの統合が容易なため。                |
 | **E2Eテストフレームワーク**      | [Playwright](https://playwright.dev/)                          | 実際のブラウザ環境で拡張機能全体の動作をテストし、信頼性を確保するため。                 |
