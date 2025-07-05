@@ -15,7 +15,7 @@
 - [X] UIコンポーネント基盤の導入 (Shadcn/ui)
 - [X] ドキュメント規約ツールの導入 (MarkdownLint)
 - [X] テストフレームワークのセットアップ (Vitest)
-- [ ] UIコンポーネント開発環境の導入 (Storybook)
+- [X] E2Eテストフレームワークの導入 (Playwright)
 - [ ] アプリケーションライブラリの導入 (Dexie, Jotai)
 
 ## メモと反省
@@ -26,7 +26,7 @@
 - Biomeを導入し、コード品質管理の基盤を構築した。
 - Shadcn/uiのセットアップを公式サンプルを参考に実施し、動作確認済み。
 - アイコンライブラリを`Radix UI Icons`から`Lucide React`に変更した。
-- MarkdownLintとStorybookのセットアップを計画に含めた。
-- `docs/implementation_guide.md` の技術スタックにVitestとStorybookを追記した。
 - `markdownlint-cli2` を使用してMarkdownLintのセットアップを完了した。
 - Vitestのセットアップを完了した。
+- 開発方針を検討し、UIコンポーネントの分離開発（Storybook）よりも、拡張機能全体の動作を保証するE2Eテスト（Playwright）を優先することにした。
+- Playwrightのセットアップを完了した。

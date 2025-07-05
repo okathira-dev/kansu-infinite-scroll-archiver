@@ -22,7 +22,9 @@
     "check": "biome check",
     "check:fix": "biome check --write",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "e2e:watch": "playwright test --ui"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
@@ -37,6 +39,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.0.6",
+    "@playwright/test": "^1.53.2",
     "@types/node": "^24.0.7",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.3",

@@ -20,8 +20,8 @@ function App() {
       <h1 className="text-xl font-semibold text-center text-gray-800">WXT + React</h1>
 
       <div className="bg-gray-100 p-4 rounded-md shadow-inner flex flex-col items-center">
-        <Button type="button" onClick={() => setCount((count) => count + 1)}>
-          shadcn button: Count is {count}
+        <Button id="counter" type="button" onClick={() => setCount((count) => count + 1)}>
+          count is {count}
         </Button>
         <button type="button" onClick={() => setCount((count) => count + 1)}>
           native button: Count is {count}

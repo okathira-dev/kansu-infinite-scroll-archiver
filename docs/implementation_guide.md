@@ -23,7 +23,7 @@
 | **状態管理**                     | React Hooks / [Jotai](https://jotai.org/)                      | 基本はReact標準のHooksで対応し、アトミックな状態管理が必要な場合に限り、Jotaiを導入する。      |
 | **コード品質**                   | [Biome](https://biomejs.dev/)                                  | リンターとフォーマッターを統一されたツールで提供し、コードの一貫性を保つため。                 |
 | **テストフレームワーク**         | [Vitest](https://vitest.dev/)                                  | 高速なユニットテストとコンポーネントテストを可能にし、WXTとの統合が容易なため。                |
-| **UIコンポーネント開発環境**     | [Storybook](https://storybook.js.org/)                         | UIコンポーネントを独立して開発、テスト、ドキュメント化するための環境を提供するため。           |
+| **E2Eテストフレームワーク**      | [Playwright](https://playwright.dev/)                          | 実際のブラウザ環境で拡張機能全体の動作をテストし、信頼性を確保するため。                 |
 | **ドキュメント規約**             | [MarkdownLint](https://github.com/DavidAnson/markdownlint)     | Markdownファイルのスタイルを統一し、可読性を維持するため。                                     |
 
 ### 2.2. アーキテクチャ設計
