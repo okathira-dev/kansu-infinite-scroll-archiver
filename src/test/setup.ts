@@ -6,6 +6,9 @@
 // IndexedDBのモック設定（auto import により自動的にグローバルに設定される）
 import "fake-indexeddb/auto";
 
+// Testing Library jest-dom matchers
+import "@testing-library/jest-dom";
+
 // テスト環境であることを示すフラグ
 process.env.NODE_ENV = "test";
 

@@ -292,7 +292,7 @@ export async function searchExtractedData(params: SearchParams): Promise<SearchR
         const searchableFields = params.searchFields || Object.keys(item.fieldData);
         return searchableFields.some((fieldId) => {
           const value = item.fieldData[fieldId];
-          return value && value.toString().toLowerCase().includes(keyword);
+          return value?.toString().toLowerCase().includes(keyword);
         });
       });
     }
@@ -316,7 +316,7 @@ export async function searchExtractedData(params: SearchParams): Promise<SearchR
         // 数値の場合の特別処理
         const aNum = Number(aValue);
         const bNum = Number(bValue);
-        if (!isNaN(aNum) && !isNaN(bNum)) {
+        if (!Number.isNaN(aNum) && !Number.isNaN(bNum)) {
           return sortOrder === "asc" ? aNum - bNum : bNum - aNum;
         }
 
@@ -368,7 +368,7 @@ export async function searchExtractedData(params: SearchParams): Promise<SearchR
 /**
  * 日本語テキストの正規化（表記揺れ対応）
  */
-function normalizeJapaneseText(text: string): string {
+function _normalizeJapaneseText(text: string): string {
   return (
     text
       .toLowerCase()

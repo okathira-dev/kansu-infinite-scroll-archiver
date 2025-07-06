@@ -9,7 +9,8 @@ import { defineConfig, devices } from "@playwright/test";
 // dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 /**
- * See https://playwright.dev/docs/test-configuration.
+ * Playwright configuration for browser extension E2E testing
+ * ブラウザ拡張機能のE2Eテスト設定
  */
 export default defineConfig({
   testDir: "./e2e",
@@ -26,7 +27,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    // baseURL: 'http://localhost:3000',
+    // baseURL: 'http://localhost:3000',  // localhost でも 127.0.0.1 でも動作します
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
@@ -35,19 +36,30 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      name: "chromium-extension",
+      use: {
+        ...devices["Desktop Chrome"],
+        // Chrome extension specific settings
+        // 🔧 channel: "chrome" について：
+        // - 必須ではないが、ブラウザ拡張機能テストには強く推奨
+        // - "chrome": 安定版のGoogle Chrome（推奨）
+        // - 省略: Chromium（軽量だが、Chrome拡張機能のAPIが一部異なる可能性）
+        // - その他: "chrome-beta", "chrome-dev", "chrome-canary"
+        channel: "chrome", // 🔧 安定性のために推奨（必須ではない）
+        // Extension will be loaded in setup
+      },
     },
 
-    {
-      name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
-    },
-
-    {
-      name: "webkit",
-      use: { ...devices["Desktop Safari"] },
-    },
+    // 🚫 ブラウザ拡張機能は Chrome/Chromium ベースのみサポート
+    // Firefox, WebKit は Chrome Extension API をサポートしていないため無効化
+    // {
+    //   name: "firefox",
+    //   use: { ...devices["Desktop Firefox"] },
+    // },
+    // {
+    //   name: "webkit",
+    //   use: { ...devices["Desktop Safari"] },
+    // },
 
     /* Test against mobile viewports. */
     // {
@@ -72,8 +84,8 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://localhost:3000',
+  //   command: "pnpm build",
+  //   port: 3000,
   //   reuseExistingServer: !process.env.CI,
   // },
 });

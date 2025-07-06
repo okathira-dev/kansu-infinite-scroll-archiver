@@ -18,5 +18,6 @@ export default defineConfig({
     // IndexedDBのモック設定
     setupFiles: ["./src/test/setup.ts"],
     environment: "happy-dom",
+    globals: true, // expectをグローバルに定義
   },
 });

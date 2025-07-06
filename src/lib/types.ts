@@ -104,7 +104,7 @@ export interface ExtractedData {
   /** 抽出されたフィールドデータ（フィールドID => 値のマップ） */
   // TODO: 型安全性の改善 - fieldDataの型を改善する
   // 現在は Record<string, any> だが、フィールドタイプに応じた型を定義することを検討
-  fieldData: Record<string, any>;
+  fieldData: Record<string, unknown>;
   /** 抽出日時 */
   extractedAt: Date;
   /** データのハッシュ値（重複防止用） */
@@ -275,7 +275,7 @@ export interface GetUIStateMessage extends BaseMessage {
  */
 // TODO: 型安全性の改善 - ジェネリック型のデフォルトを改善する
 // 現在は T = any だが、より具体的なデフォルト型を定義することを検討
-export interface MessageResponse<T = any> {
+export interface MessageResponse<T = unknown> {
   /** リクエストメッセージID */
   messageId: string;
   /** 成功かどうか */

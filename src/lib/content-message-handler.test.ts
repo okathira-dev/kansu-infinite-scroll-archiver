@@ -8,7 +8,7 @@ import { ContentMessageHandler } from "./content-message-handler";
 import type { MessageResponse } from "./types";
 
 // WXTのfakeBrowserを使用
-const fakeBrowser = (global as any).browser || (global as any).chrome;
+const _fakeBrowser = (global as any).browser || (global as any).chrome;
 
 describe("ContentMessageHandler", () => {
   let handler: ContentMessageHandler;

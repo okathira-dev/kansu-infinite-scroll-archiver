@@ -220,8 +220,8 @@ describe("UIInjector", () => {
 
       // 空文字列、null、undefinedコンテンツ
       await injector.updateContent("");
-      await injector.updateContent(null as any);
-      await injector.updateContent(undefined as any);
+      await injector.updateContent(null as unknown as string);
+      await injector.updateContent(undefined as unknown as string);
 
       const container = document.querySelector("#kansu-ui-container");
       expect(container).toBeTruthy();
