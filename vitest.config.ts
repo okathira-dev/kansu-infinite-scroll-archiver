@@ -15,5 +15,8 @@ export default defineConfig({
       "**/playwright-report/**",
       "**/test-results/**",
     ],
+    // IndexedDBのモック設定
+    setupFiles: ["./src/test/setup.ts"],
+    environment: "happy-dom",
   },
 });
