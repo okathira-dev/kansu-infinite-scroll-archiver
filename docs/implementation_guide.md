@@ -171,7 +171,7 @@ sequenceDiagram
     DOM->>CS: DOM変更検知<br/>(MutationObserver)
     CS->>CS: データ抽出<br/>(CSSセレクタ)
     CS->>BG: データ送信<br/>(chrome.runtime.sendMessage)
-    BG->>BG: データ検証
+    BG->>BG: データ検証<br/>重複チェック(ユニークキー戦略)
     BG->>DB: データ保存<br/>(Dexie.js)
     
     note over User, Options: 検索・表示フロー
@@ -190,7 +190,7 @@ sequenceDiagram
     UI->>User: 結果表示
     
     note over User, Options: 設定フロー
-    User->>Options: 設定変更
+    User->>Options: 設定変更<br/>(ユニークキー戦略含む)
     Options->>BG: 設定保存要求
     BG->>DB: 設定永続化
     BG->>CS: 設定更新通知
@@ -267,8 +267,15 @@ erDiagram
         string[] activateUrlPatterns "対象URLパターン"
         string updateAreaSelector "更新監視エリア"
         string itemSelector "アイテム選択"
-        string uniqueKeyFieldName "ユニークキーフィールド名"
+        UNIQUE_STRATEGY uniqueStrategy "ユニークキー戦略"
         FIELD[] fields "フィールド定義"
+    }
+    
+    UNIQUE_STRATEGY {
+        string type "contentHash | businessKey | compositeKey"
+        string fieldName "businessKeyタイプ時のフィールド名"
+        string[] fields "compositeKeyタイプ時のフィールド配列"
+        string separator "compositeKeyタイプ時の区切り文字"
     }
     
     FIELD {
@@ -279,8 +286,10 @@ erDiagram
     }
     
     EXTRACTED_DATA {
-        string id "ユニークID"
+        string internalId "内部管理ID (UUID)"
+        string businessKey "ビジネスロジックキー"
         string extractedAt "抽出日時"
+        string updatedAt "更新日時"
         object data "抽出データ"
     }
     
@@ -288,7 +297,7 @@ erDiagram
         string title "タイトル"
         string link "リンクURL"
         string thumbnail "サムネイル"
-        string itemId "アイテムID"
+        string videoId "動画ID (例)"
     }
     
     INDEXEDDB {
@@ -298,10 +307,11 @@ erDiagram
     
     OBJECT_STORE {
         string name "service_{serviceName}"
-        string keyPath "uniqueKeyFieldName"
+        string keyPath "businessKey"
     }
     
     %% 関係
+    SERVICE_CONFIG ||--|| UNIQUE_STRATEGY : "contains"
     SERVICE_CONFIG ||--o{ FIELD : "contains"
     SERVICE_CONFIG ||--o{ EXTRACTED_DATA : "generates"
     EXTRACTED_DATA ||--|| DATA_RECORD : "contains"
@@ -330,7 +340,44 @@ erDiagram
 - **データベース操作**:
   - **Dexie.js** を用いて、IndexedDBへのアクセスを抽象化し、効率的なデータ操作を実現します。
   - サービスごとにオブジェクトストアを作成し、データを管理します。
-  - データの保存・更新は、`fields`のうち、ユーザーが設定で指定した **`uniqueKeyFieldName`** を主キーとして行い、データの重複を防ぎます。
+  - **ユニークキー戦略**: 設定で指定された戦略に基づき、重複検出と保存を行います。
+    - `contentHash`: 全フィールドの内容をハッシュ化して重複検出
+    - `businessKey`: 指定されたフィールドの値をキーとして使用
+    - `compositeKey`: 複数フィールドを組み合わせたキーを生成
+
+### 3.3. ユニークキー戦略の実装
+
+#### 3.3.1. Content Hash 戦略
+
+```typescript
+function generateContentHash(data: Record<string, any>): string {
+  const sortedEntries = Object.entries(data)
+    .sort(([a], [b]) => a.localeCompare(b));
+  const content = sortedEntries.map(([key, value]) => `${key}:${value}`).join('|');
+  return generateHash(content);
+}
+```
+
+#### 3.3.2. Business Key 戦略
+
+```typescript
+function generateBusinessKey(data: Record<string, any>, fieldName: string): string {
+  return data[fieldName] || generateContentHash(data); // フォールバック
+}
+```
+
+#### 3.3.3. Composite Key 戦略
+
+```typescript
+function generateCompositeKey(
+  data: Record<string, any>, 
+  fields: string[], 
+  separator: string = '|'
+): string {
+  const values = fields.map(field => data[field] || '');
+  return values.join(separator);
+}
+```
 
 ## 4. データ構造
 
@@ -338,35 +385,66 @@ erDiagram
 
 ```json
 {
-  "serviceName": "Example.com",
-  "activateUrlPatterns": ["https://example.com/items/*"],
-  "updateAreaSelector": "#item-list",
-  "itemSelector": ".item-card",
-  "uniqueKeyFieldName": "itemId",
+  "serviceName": "YouTube",
+  "activateUrlPatterns": ["https://www.youtube.com/*"],
+  "updateAreaSelector": "#contents",
+  "itemSelector": "ytd-video-renderer",
+  "uniqueStrategy": {
+    "type": "businessKey",
+    "fieldName": "videoId"
+  },
   "fields": [
-    { "name": "title", "selector": ".card-title", "type": "text" },
-    { "name": "link", "selector": "a.card-link", "type": "linkUrl" },
-    { "name": "thumbnail", "selector": "img.card-img", "type": "imageUrl" },
-    { "name": "itemId", "selector": "a.card-link", "type": "regex", "regex": "href=\"https://example.com/items/([0-9]+)\"" }
+    { "name": "title", "selector": "#video-title", "type": "text" },
+    { "name": "link", "selector": "#video-title", "type": "linkUrl" },
+    { "name": "thumbnail", "selector": "img.style-scope", "type": "imageUrl" },
+    { "name": "videoId", "selector": "#video-title", "type": "regex", "regex": "href=\"/watch\\?v=([^&\"]+)\"" }
   ]
+}
+```
+
+#### 設定例: 複数戦略
+
+**Content Hash戦略** (ニュース記事等)
+
+```json
+{
+  "serviceName": "NewsWebsite",
+  "uniqueStrategy": {
+    "type": "contentHash"
+  }
+}
+```
+
+**Composite Key戦略** (日別コンテンツ等)
+
+```json
+{
+  "serviceName": "DailyNews",
+  "uniqueStrategy": {
+    "type": "compositeKey",
+    "fields": ["channelId", "publishDate"],
+    "separator": "|"
+  }
 }
 ```
 
 ### 4.2. 抽出データ (IndexedDB)
 
 - **オブジェクトストア名**: `service_{serviceName}`
-- **キー**: ユーザーが設定の `uniqueKeyFieldName` で指定したフィールドの値。この例では `itemId` フィールドの値（例: `"123"`）がキーとなる。
+- **キー**: ユニークキー戦略に基づいて生成されたビジネスキー
 - **レコード**:
 
 ```json
 {
-  "id": "unique_id_12345",
+  "internalId": "550e8400-e29b-41d4-a716-446655440000",
+  "businessKey": "abc123",
   "extractedAt": "2024-06-29T10:00:00Z",
+  "updatedAt": "2024-06-29T10:30:00Z",
   "data": {
-    "title": "商品A",
-    "link": "https://example.com/items/123",
-    "thumbnail": "https://example.com/img/123.jpg",
-    "itemId": "123"
+    "title": "プログラミング講座 第1回",
+    "link": "https://youtube.com/watch?v=abc123",
+    "thumbnail": "https://img.youtube.com/vi/abc123/maxresdefault.jpg",
+    "videoId": "abc123"
   }
 }
 ```
