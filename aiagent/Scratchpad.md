@@ -44,3 +44,6 @@
 - CIワークフローとPlaywrightワークフローの連携設定を完了：CIでビルドした成果物をPlaywrightで再利用するように設定した。
 - 同一ワークフロー内でE2Eテストを実行するように変更：CIジョブの後にE2Eジョブを実行し、ビルド成果物を効率的に再利用できるようにした。
 - 隠しファイルの問題を解決：.outputディレクトリが隠しディレクトリ扱いのため、include-hidden-files: trueを追加してアーティファクトが正しく処理されるようにした。
+- Serena MCP: プロジェクト `kansu-infinite-scroll-archiver` をアクティブ化しオンボーディング完了。メモリ `project/overview`, `suggested_commands`, `code_style_and_conventions`, `task_completion` を作成。
+- 2026-03-29: Serena オンボーディング再実行。`package.json` / `biome.json` / `src/` 構成を再確認し、上記4メモリを最新版に書き換え（依存バージョン、`src/lib`・`components/ui`、Playwright 初回 `install` 注記など）。
+- MarkdownLint（markdownlint-cli2）の除外は `.markdownlint-cli2.jsonc` の `ignores` のみ。`.cursor/**` と `.serena/**` を対象外とし、`aiagent/` や `docs/` は `pnpm lint-md` / lint-staged のチェック対象。
