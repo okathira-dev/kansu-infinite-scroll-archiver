@@ -29,7 +29,8 @@ alwaysApply: false
 - `src/components/` と `src/components/ui/`: UI コンポーネント
 - `src/lib/`: 共有ロジック・ユーティリティ
 - `docs/`: 要件・実装計画・実装ガイド
-- `tests-examples/`, `e2e/`: テスト関連
+- `src/**/*.test.ts`: ユニットテスト（Vitest）
+- `e2e/`: E2Eテスト（Playwright）
 
 ## ルールとサポートファイル
 
@@ -43,6 +44,7 @@ alwaysApply: false
 
 ## 参照ドキュメント
 
+- [README.md](mdc:README.md)
 - [requirements.md](mdc:docs/requirements.md)
 - [implementation_plan.md](mdc:docs/implementation_plan.md)
 - [implementation_guide.md](mdc:docs/implementation_guide.md)

@@ -1,51 +1,35 @@
 ---
-description: 
+description: エージェント共通の運用ルール（常時適用）
 globs: 
 alwaysApply: true
 ---
-# 指示事項
+# グローバル運用ルール
 
-ユーザーとの対話中に、このプロジェクトで再利用可能なもの（ライブラリのバージョン、モデル名など）、特にあなたが犯した間違いや受けた修正について発見した場合は、同じ間違いを繰り返さないように Serena のメモリを利用してください。
+## 目的
 
-## Scratchpad使用ルール
+このファイルは、エージェントが常時参照する共通ワークフローを定義します。  
+再利用価値のある知見（ライブラリ運用、失敗パターン、修正方針）は Serena メモリに反映し、同じ誤りを繰り返さないことを優先します。
 
-プロジェクトのルートディレクトリに配置された [Scratchpad.md](mdc:Scratchpad.md) ファイルは、タスクの計画と進捗状況を追跡するために使用します。
+## Scratchpad 運用
 
-1. **ファイル位置**: Scratchpad.mdはリポジトリのルートディレクトリに配置します
-2. **基本構造**:
-   - タイトル（# Scratchpad）
-   - 説明文
-   - 現在のタスク（## 現在のタスク）
-   - 進捗状況（## 進捗状況）
-   - 分析結果や詳細（必要に応じて）
-   - メモと反省（## メモと反省）
+- 作業開始時に [Scratchpad.md](mdc:Scratchpad.md) を確認し、現在タスクを実態に合わせて更新する。
+- 進捗は ToDo 形式（`[ ]` / `[x]`）で管理し、完了と同時に更新する。
+- 大きな方針変更やマイルストーン到達時は、短い振り返りと次アクションを記録する。
 
-3. **使用方法**:
-   - 新規タスクを受け取ったら、まずScratchpadの内容を確認し、必要に応じて古いタスク情報をクリアする
-   - タスクの説明と計画をScratchpadに記録する
-   - ToDo形式（[X] 完了タスク、[ ] 未完了タスク）で進捗を管理する
-   - サブタスクを完了したら進捗を更新する
-   - マイルストーン達成時には振り返りと今後の計画を行う
-   - 次のステップを計画する際は常にScratchpadを参照する
+## Serena メモリ運用
 
-4. **他のルールファイルとの連携**:
-   - プロジェクト全体に関わるルールファイルとの関連性:
-     - [coding-rules.mdc](mdc:.cursor/rules/coding-rules.mdc): コード構造、コンポーネント設計、状態管理などの基本的なコーディングルールを提供します。Scratchpadでタスクを計画する際には、これらのルールに従ってください。
-     - [biome.mdc](mdc:.cursor/rules/biome.mdc): Biome（lint/format/check）運用に関するルールを提供します。コード品質を確保するために参照してください。
-     - [repository.mdc](mdc:.cursor/rules/repository.mdc): リポジトリ全体の構造とプロジェクト概要を提供します。Scratchpadでプロジェクト関連のタスクを記録する際には、この情報を参照してください。
-   - Scratchpadでの作業はこれらのルールに従って行われるべきです。
+- 主要メモリ: `project/overview`、`suggested_commands`、`code_style_and_conventions`、`task_completion`。
+- 長期的に有効な知識のみを記録し、一時的な作業メモは `Scratchpad.md` 側で扱う。
 
-プロジェクト作業時は、`Scratchpad.md`（短期ログ）と Serena メモリ（長期知識）を積極的に活用してください。
+## ルールファイルの役割分担
 
-## ドキュメント
+- [repository.mdc](mdc:.cursor/rules/repository.mdc): リポジトリ構造と参照ドキュメント。
+- [coding-rules.mdc](mdc:.cursor/rules/coding-rules.mdc): 実装時のコード規約。
+- [biome.mdc](mdc:.cursor/rules/biome.mdc): Lint/Format の実行方針。
 
-プロジェクトに関するドキュメントは `docs/` ディレクトリで管理します。このファイルを参照しつつ開発を進める一方で、適宜ドキュメント自体も更新していってください。
+## ドキュメント運用
 
-### 開発用ドキュメントの記述ルール
-
-- **日付でメモしない**（例: 「2026-03-29 に〜」のような記載は避ける）。前後関係や経緯が必要なときは、**番号付きリスト・箇条書きの順序・本文の因果**などで明示する。
-- 対象の例: `docs/`、`Scratchpad.md`、`.serena/memories/*.md`、README、`.cursor` 配下の説明テキスト。
-
-- [implementation_plan.md](mdc:docs/implementation_plan.md) : このプロジェクトの実装計画。
-- [implementation_guide.md](mdc:docs/implementation_guide.md) : このプロジェクトの実装ガイド。
-- [requirements.md](mdc:docs/requirements.md) : このプロジェクトの要件定義書。
+- 開発ドキュメントは `docs/` に集約し、仕様変更時は関連ドキュメントを同時に更新する。
+- **日付ベースのメモは残さない**。前後関係は手順順序・因果関係で表現する。
+- 対象: `docs/`、`Scratchpad.md`、`.serena/memories/*.md`、`README.md`、`.cursor` 配下の説明文。
+- 主要ドキュメント: [implementation_plan.md](mdc:docs/implementation_plan.md)、[implementation_guide.md](mdc:docs/implementation_guide.md)、[requirements.md](mdc:docs/requirements.md)。

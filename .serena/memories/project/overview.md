@@ -13,11 +13,16 @@
 - `src/entrypoints/` — WXT エントリ（`background.ts`, `content.ts`, `popup/` に React UI）
 - `src/lib/` — 共有ユーティリティ・ユニットテスト（例: `utils.ts`, `utils.test.ts`）
 - `src/components/ui/` — UI プリミティブ（Button 等）
+- `e2e/` — Playwright の E2E テスト
 - `src/assets/` — スタイル・アセット
 - `docs/` — 要件（`requirements.md`）、実装計画（`implementation_plan.md`）、実装ガイド（`implementation_guide.md`）
 - ルート `Scratchpad.md` — AI 用の短期作業ログ
 - `.serena/memories/` — AI 用の長期知識（教訓・規約・運用メモ）
 - ルート: `biome.json`, `wxt.config.ts`（WXT 標準レイアウト）
+- `README.md` — 開発者向けの入口（概要・主要コマンド・ドキュメント導線）
+
+## 補足
+- `package.json` の `name` はテンプレート名（`wxt-react-starter`）だが、プロジェクトとしては「Kansu」を扱う。
 
 ## 設計・ドキュメント
 詳細は `docs/requirements.md` と `docs/implementation_plan.md` を参照。TDD（Vitest）と E2E（Playwright）を計画に含む。
