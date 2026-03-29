@@ -5,13 +5,7 @@
 
 ## 現在のタスク
 
-`docs/implementation_plan.md` の Phase 1 に入る前に、依存関係を `docs/dependency_upgrade_table.md` の方針で最新化する。
-
-## TODO（実装前）
-
-- [ ] `docs/dependency_upgrade_table.md` の推奨バッチに従い依存を更新する（Vite 連動・メジャーアップは同文書の注意に従い、無理に一括にしない）
-- [ ] `pnpm install` 後、`pnpm check` / `pnpm compile` / `pnpm test` / `pnpm build` / `pnpm e2e` を通す
-- [ ] Playwright を上げた場合は `pnpm exec playwright install`、Biome を上げた場合は `biome.json` の `$schema` 等を追随させる
+`docs/implementation_plan.md` の Phase 1（ドメインモデルとメッセージ契約）に着手する。
 
 ## 進捗状況
 
@@ -67,5 +61,6 @@
 - MarkdownLint（markdownlint-cli2）の除外は `.markdownlint-cli2.jsonc` の `ignores` のみ。`.cursor/**` と `.serena/**` を対象外とし、`Scratchpad.md` や `docs/` は `pnpm lint-md` / lint-staged のチェック対象。
 - さらに、`GEMINI.md` を削除。Serena メモリ `ai_agent_operational_lessons` を廃止し、運用メモは `code_style_and_conventions.md` に統合（Cursor ルールと Serena の役割差も同ファイルに記載）。
 - `docs/requirements.md` / `docs/implementation_plan.md` / `docs/implementation_guide.md` を再編し、`FR/NFR` ベースのトレーサビリティ、MV3ライフサイクル前提、`MutationObserver` バッチ化、`bulkPut + transaction`、`NFKC + かな差吸収` を明文化した。
-- 次アクション: 実装前に依存関係を最新化（`docs/dependency_upgrade_table.md`）→ 続けて Phase 1（ドメインモデルとメッセージ契約）を最小実装し、テストと要件ID対応を先に固める。
+- 次アクション: Phase 1（ドメインモデルとメッセージ契約）を最小実装し、テストと要件ID対応を先に固める。
 - 旧 `implementation_guide` の 2.2/2.3/2.4 で重要だった記述の欠落を再点検し、現行版へ追記した（`src` 配置とWXTファイルベース構成、各エントリポイント責務の詳細、共有モジュール、データフロー、開発運用ポリシー）。
+- 依存関係を最新化済み。更新手順は [README.md](README.md) の「依存関係の更新」を参照。

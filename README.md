@@ -32,6 +32,17 @@ pnpm dev
 - `pnpm e2e`: Playwright の E2E テストを実行
 - `pnpm lint-md`: Markdown の lint を実行
 
+## 依存関係の更新
+
+バージョンの正は `package.json` と `pnpm-lock.yaml` とする。
+
+1. `pnpm outdated` で差分を確認する。
+2. メジャーアップは各パッケージの CHANGELOG / マイグレーションガイドを読んでから行う。
+3. 範囲内だけ更新する場合は `pnpm update`。`package.json` の版を上げる場合は `pnpm dlx npm-check-updates` 等でもよい。
+4. `@biomejs/biome` を上げたら `biome.json` の `$schema` を同じ版に合わせる。Tailwind v4 構文を使う CSS がある場合は `css.parser.tailwindDirectives` の要否を確認する。
+5. `@playwright/test` を上げたら `pnpm exec playwright install`（CI と同様に `--with-deps` が必要な環境もある）。
+6. 変更後は少なくとも `pnpm check` / `pnpm compile` / `pnpm test` / `pnpm build` / `pnpm e2e` / `pnpm lint-md` を通す。
+
 ## ディレクトリ構成（抜粋）
 
 - `src/entrypoints/`: WXT エントリーポイント

@@ -37,7 +37,7 @@
 | 状態管理 | Zustand | UI状態とフォーム状態 |
 | 永続化 | Dexie (IndexedDB) | 設定・抽出データ保存 |
 | 品質 | Biome + MarkdownLint | lint/format/doc規約 |
-| テスト | Vitest + Playwright | 単体/統合/E2E |
+| テスト | Vitest + Playwright（Phase 4 以降に React Testing Library を追加予定） | 単体/統合/コンポーネント（予定）/E2E |
 
 ## 4. アーキテクチャ
 
@@ -295,6 +295,10 @@ export type ResponseMessage<T = unknown> =
 - Popup→Options→Content Scriptの主要導線を自動化
 - CI上でも再現できるシナリオのみを必須ケースにする
 
+### 11.3. コンポーネント（予定）
+
+- `implementation_plan.md` の Phase 4 に合わせ、フォーム・一覧・通知などは **Vitest + React Testing Library** で補う想定。導入時は依存に `@testing-library/react` 等を追加する。
+
 ## 12. 運用・計測
 
 - 主要操作（検索、ソート、抽出バッチ）の処理時間を開発時に計測可能にする
@@ -328,4 +332,4 @@ export type ResponseMessage<T = unknown> =
 - [MDN: String.prototype.normalize](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize)
 - [MDN: Intl.Collator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Collator)
 - [Playwright: Chrome extensions](https://playwright.dev/docs/chrome-extensions)
-- [Dexie: Table.bulkPut()](https://old.dexie.org/docs/Table/Table.bulkPut())
+- [Dexie: Table.bulkPut()](https://dexie.org/docs/Table/Table.bulkPut())
