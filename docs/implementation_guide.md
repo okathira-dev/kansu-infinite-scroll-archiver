@@ -1,372 +1,331 @@
 # Kansu: infinite scroll archiver 実装ガイド
 
-## 1. 概要
+## 1. このドキュメントの目的
 
-本ドキュメントは、ブラウザ拡張機能「Kansu」の実装に関する技術的な仕様を定義します。
+本ドキュメントは、`docs/requirements.md` の要件（`FR-*`, `NFR-*`）を実装レベルに落とし込むための技術仕様です。  
+実装時に迷いやすい以下を明確化します。
 
-この仕様は変更される可能性があります。
+- Manifest V3前提の実行モデル
+- データモデルとIndexedDB設計
+- Content Script/Background間のメッセージ契約
+- 抽出、検索、ソート、インポート/エクスポートの実装方針
 
-## 2. 開発アーキテクチャ
+## 2. 設計原則
 
-### 2.1. 技術スタック
+### 2.1. MV3前提のイベント駆動
 
-| カテゴリ                         | 技術                                                           | 目的・理由                                                                                     |
-| :------------------------------- | :------------------------------------------------------------- | :--------------------------------------------------------------------------------------------- |
-| **パッケージ管理**               | pnpm                                                           | 高速でディスク容量を節約でき、依存関係管理とスクリプト実行を一元化しやすいため。               |
-| **言語**                         | [TypeScript](https://www.typescriptlang.org/)                  | 静的型付けにより、開発時のエラーを早期に検出し、コードの堅牢性を向上させるため。               |
-| **ブラウザ拡張フレームワーク**   | [WXT](https://wxt.dev/)                                        | Viteをベースとした高速な開発体験と、主要ブラウザへのクロスプラットフォーム対応を実現するため。 |
-| **フロントエンドフレームワーク** | [React](https://react.dev/)                                    | コンポーネントベースの開発により、UIの再利用性とメンテナンス性を高めるため。                   |
-| **UIコンポーネント**             | [Shadcn/ui](https://ui.shadcn.com/)                            | Radix UIをベースとし、高いカスタマイズ性と必要なコンポーネントのみを取り込めるため。           |
-| **アイコンライブラリ**           | [Lucide React](https://lucide.dev/guide/packages/lucide-react) | Shadcn/uiがデフォルトで利用を想定している、シンプルで一貫性のあるアイコンセットのため。        |
-| **CSSフレームワーク**            | [Tailwind CSS](https://tailwindcss.com/)                       | Shadcn/uiがこの利用を前提としているため。                                                      |
-| **データストレージ**             | [Dexie.js](https://dexie.org/)                                 | IndexedDBを容易に操作し、大量の構造化データを効率的に管理するため。                            |
-| **状態管理**                     | [Zustand](https://github.com/pmndrs/zustand)                   | Reduxライクな単一ストアモデルを、よりシンプルかつ軽量に提供するため。複雑な状態の管理に適している。 |
-| **コード品質**                   | [Biome](https://biomejs.dev/)                                  | リンターとフォーマッターを統一されたツールで提供し、コードの一貫性を保つため。                 |
-| **テストフレームワーク**         | [Vitest](https://vitest.dev/)                                  | 高速なユニットテストとコンポーネントテストを可能にし、WXTとの統合が容易なため。                |
-| **E2Eテストフレームワーク**      | [Playwright](https://playwright.dev/)                          | 実際のブラウザ環境で拡張機能全体の動作をテストし、信頼性を確保するため。                 |
-| **ドキュメント規約**             | [MarkdownLint](https://github.com/DavidAnson/markdownlint)     | Markdownファイルのスタイルを統一し、可読性を維持するため。                                     |
+- Service Workerは停止/再開されるため、グローバル変数を信頼しない（`NFR-10`）
+- 復元可能な状態はIndexedDB/`chrome.storage`へ保存する
+- 処理は再入可能・冪等（同一メッセージの再処理に耐える）にする
 
-### 2.2. アーキテクチャ設計
+### 2.2. 最小権限・ローカル完結
 
-プロジェクトのソースコードは、整理のために `src` ディレクトリ内に配置します。 ref: <https://wxt.dev/guide/essentials/project-structure.html#adding-a-src-directory>
-Kansuは、WXTフレームワークが提供するファイルベースのルーティングと役割分担に基づき、以下の主要なエントリーポイントで構成されます。
+- 権限は最小化し、不要な `host_permissions` を持たない（`NFR-21`）
+- 抽出データはローカル保存のみで、外部送信しない（`NFR-20`）
 
-- **Content Scripts**:
-  - ユーザーが閲覧しているページに挿入され、**データ操作の主役**となります。主な責務は以下の通りです。
-    1. **メインUIの注入と管理**: データの検索・ソート・一覧表示機能を持つリッチなUI（Reactコンポーネントで構築）をページ内に注入します。
-       - ユーザーは、検索キーワード入力、検索対象カラム選択、ソート方法（昇順/降順）、ページあたりの表示件数を設定できます。
-    2. **データ抽出**: `MutationObserver` を用いてDOMの変更を監視し、新しいデータを抽出します。
-    3. **バックグラウンド通信**: 抽出したデータの保存依頼や、表示に必要なデータの取得要求をバックグラウンドサービスに送信します。
-    - **データ表示**: バックグラウンドスクリプトから保存済みデータを取得し、UIに表示します。検索条件とソート条件はメインUIで受け付け、検索・ソート・日本語の正規化を含むデータ取得はBackground Service経由でIndexedDBに対して実行します。
+### 2.3. 高頻度DOM変更への耐性
 
-- **Background Service**:
-  - 拡張機能のバックグラウンドで動作し、中心的なデータ処理を担います。
-  - Content Scriptsから受信したデータを、Dexie.jsを用いてIndexedDBに保存します。
-  - オプションページやポップアップからのデータ要求に応じて、IndexedDBからデータを取得し、応答します。
+- `MutationObserver` コールバックでは重い処理を直接実行しない（`NFR-03`）
+- 変更通知をキュー化して、抽出処理はバッチで実行する（`FR-13`）
 
-- **Popup UI**:
-  - 拡張機能のツールバーアイコンをクリックした際に表示されるUIです。
-  - ポップアップには、現在のタブでKansuのメインUIの表示/非表示を切り替えるためのトグルスイッチと、オプションページへ遷移するためのリンクを配置します。
+## 3. 技術スタック
 
-- **Options UI**:
-  - **拡張機能全体の設定**を管理するページです。主な責務は以下の通りです。
-    1. **抽出ルールの管理**: データ抽出のルール（対象URL、CSSセレクタ等）をサービスごとに設定・管理します。
-    2. **グローバル設定**: アプリケーション全体の動作に関わる設定項目を提供します。
-    3. **データ管理**: 全サービスにわたるデータの一括インポート/エクスポート機能を提供します。
-       - **インポート/エクスポート**: IndexedDBから指定されたサービスのデータと設定を取得しJSON形式でファイルに保存、またはユーザーが選択したJSONファイルを読み込み内容を検証した上でIndexedDBに書き込みます。
+| 領域 | 採用技術 | 用途 |
+| --- | --- | --- |
+| 拡張基盤 | WXT + Manifest V3 | エントリーポイント管理、ビルド |
+| UI | React + Tailwind CSS + Shadcn/ui | Popup/Options/メインUI |
+| 状態管理 | Zustand | UI状態とフォーム状態 |
+| 永続化 | Dexie (IndexedDB) | 設定・抽出データ保存 |
+| 品質 | Biome + MarkdownLint | lint/format/doc規約 |
+| テスト | Vitest + Playwright | 単体/統合/E2E |
 
-- **共有モジュール**:
-  - データ構造の型定義（TypeScriptの`interface`や`type`）など、複数のコンポーネントで共有されるコードを配置します。
-  - **共通UIコンポーネント**: `Toast` (トースト通知), `Modal` (モーダルダイアログ) など、汎用的に利用されるUIコンポーネント。
+## 4. アーキテクチャ
 
-### 2.3. データフロー
+```mermaid
+flowchart LR
+    WebPage[Web Page DOM]
+    CS[Content Script]
+    BG[Background Service Worker]
+    DB[(IndexedDB via Dexie)]
+    Popup[Popup UI]
+    Options[Options UI]
+
+    WebPage -->|DOM変更| CS
+    CS -->|抽出データ送信| BG
+    BG -->|upsert/query| DB
+    Popup -->|UI表示切替| CS
+    Options -->|設定更新| BG
+    CS -->|検索要求| BG
+    BG -->|検索結果| CS
+```
+
+### 4.1. 配置とルーティング前提
+
+- プロジェクトのソースコードは `src` 配下に集約する
+- WXTのファイルベース構成に従い、エントリーポイントを責務単位で分離する
+  - `src/entrypoints/content*`: ページ注入と抽出ロジック
+  - `src/entrypoints/background*`: メッセージ受信と永続化
+  - `src/entrypoints/popup/*`: ブラウザアクションUI
+  - `src/entrypoints/options/*`: 設定管理UI
+- 参照: <https://wxt.dev/guide/essentials/project-structure.html#adding-a-src-directory>
+
+### 4.2. 各エントリーポイントの責務
+
+- **Content Script**
+  - ページ内でのデータ操作の主担当
+  - URL一致判定
+  - メインUIの注入と管理（検索、検索対象項目選択、ソート、ページネーション、表示件数変更）
+  - 抽出処理（監視・パース・送信）
+  - 保存済みデータの表示（検索/ソート条件を受け取り、Background経由で取得）
+  - メインUI表示（検索、ソート、ページング）
+- **Background Service Worker**
+  - メッセージルーティング
+  - IndexedDBへの保存/検索
+  - Popup/Optionsからのデータ要求への応答
+  - インポート/エクスポート制御
+- **Popup**
+  - ブラウザツールバーアイコンのクリック時に表示されるUI
+  - 現在タブでのメインUI表示トグル
+  - Optionsへの導線
+- **Options**
+  - サービス設定CRUD
+  - アプリ全体のグローバル設定管理
+  - データ管理（サービス単位のインポート/エクスポートを基本とし、全体操作への拡張余地を確保）
+
+### 4.3. 共有モジュール
+
+- 型定義（`ServiceConfig`, `ExtractedRecord`, メッセージ型など）を集約し、Content/Background/Popup/Options間で共有する
+- ユーティリティ（正規化、比較関数、バリデーション）を共通化する
+- 共通UIコンポーネント（例: `Toast`, `Modal`）を再利用可能な形で管理する
+
+### 4.4. データフロー
 
 #### 抽出・保存フロー
 
-1. **抽出**: Content Scriptがページ上のDOM変更を検知し、データを抽出します。
-2. **保存依頼**: 抽出したデータをBackground Serviceへ送信します。
-3. **永続化**: Background Serviceは受信したデータを検証し、Dexie.jsを介してIndexedDBに保存します。
+1. Content ScriptがDOM変更を検知し、対象要素を抽出する
+2. 抽出データをBackgroundへ送信する
+3. Backgroundがデータ検証後、Dexie経由でIndexedDBへupsertする
 
 #### 検索・表示フロー
 
-1. **表示要求**: メインUI (Content Script) が起動時、またはユーザー操作時に、表示に必要なデータをBackground Serviceに要求します。
-2. **データ取得**: Background ServiceはIndexedDBからデータを取得し、メインUIへ送信します。
-3. **レンダリング**: メインUIは受信したデータをReactコンポーネントで画面に表示します。
-4. **検索実行**: ユーザーが検索キーワードを入力すると、メインUIはそれをBackground Serviceに送信します。
-5. **結果取得**: Background ServiceはキーワードでIndexedDBを検索し、結果をメインUIに返します。
-6. **結果表示**: メインUIが検索結果で再レンダリングされます。
+1. メインUIが表示要求または検索要求をBackgroundへ送信する
+2. BackgroundがIndexedDBから条件に応じて取得する（正規化検索、ソート、ページング）
+3. メインUIが受信データで再レンダリングする
 
 #### 設定フロー
 
-1. **設定変更**: ユーザーがOptions UIで抽出ルールなどの設定を変更・保存します。
-2. **設定保存**: Options UIは変更内容をBackground Serviceへ送信し、Background ServiceがそれをIndexedDBに永続化します。
+1. Options UIでサービス設定やグローバル設定を更新する
+2. Options UIがBackgroundへ保存要求を送る
+3. BackgroundがIndexedDBへ永続化し、必要に応じてContent Scriptへ反映通知する
 
-### 2.4. 開発環境
+## 5. データモデル
 
-- **バージョン管理**: Gitを使用し、リポジトリはGitHubで管理します。
-- **ブランチ戦略**: `main`ブランチを常にデプロイ可能な状態に保ち、機能追加や修正はフィーチャーブランチを作成して行う、シンプルなGitHub Flowを採用します。
-- **コミットメッセージ**: Conventional Commits ([https://www.conventionalcommits.org/](https://www.conventionalcommits.org/)) の規約に沿って記述し、変更内容の履歴を分かりやすく保ちます。
+### 5.1. 型定義（例）
 
-### 2.5. 視覚的システム概要
+```ts
+export type FieldType = "text" | "linkUrl" | "imageUrl" | "regex";
 
-#### 2.5.1. システムアーキテクチャ図
+export interface FieldRule {
+  name: string;
+  selector: string;
+  type: FieldType;
+  regex?: string;
+}
 
-```mermaid
-graph TB
-    subgraph "Browser Extension (WXT)"
-        subgraph "Content Script"
-            UI["メインUI<br/>(React)<br/>・データ検索/表示<br/>・ソート/ページネーション"]
-            Extractor["データ抽出<br/>・MutationObserver<br/>・DOM監視"]
-        end
-        
-        subgraph "Background Service"
-            DataManager["データマネージャー<br/>・Dexie.js<br/>・IndexedDB操作"]
-            MessageHandler["メッセージハンドラー<br/>・chrome.runtime"]
-        end
-        
-        subgraph "Popup UI"
-            Toggle["表示切替<br/>・メインUI制御"]
-            OptionsLink["設定リンク"]
-        end
-        
-        subgraph "Options UI"
-            RuleManager["抽出ルール管理<br/>・設定編集"]
-            DataExporter["データ管理<br/>・インポート/エクスポート"]
-        end
-        
-        subgraph "共有モジュール"
-            Types["型定義<br/>・TypeScript"]
-            Components["共通コンポーネント<br/>・Toast, Modal"]
-        end
-    end
-    
-    subgraph "Web Page"
-        DOM["DOM<br/>・無限スクロール<br/>・動的コンテンツ"]
-    end
-    
-    subgraph "Browser Storage"
-        IndexedDB["IndexedDB<br/>・抽出データ<br/>・設定データ"]
-    end
-    
-    subgraph "File System"
-        Files["JSON Files<br/>・エクスポート/インポート"]
-    end
+export interface ServiceConfig {
+  id: string;
+  name: string;
+  urlPatterns: string[];
+  observeRootSelector: string;
+  itemSelector: string;
+  uniqueKeyField: string;
+  fields: FieldRule[];
+  enabled: boolean;
+  updatedAt: string;
+}
 
-    %% データフロー
-    Extractor --> DOM
-    Extractor --> MessageHandler
-    MessageHandler --> DataManager
-    DataManager --> IndexedDB
-    
-    UI --> MessageHandler
-    MessageHandler --> UI
-    
-    Toggle --> UI
-    OptionsLink --> RuleManager
-    
-    RuleManager --> MessageHandler
-    DataExporter --> MessageHandler
-    DataExporter --> Files
-    
-    %% 共有モジュール使用
-    UI -.-> Types
-    UI -.-> Components
-    RuleManager -.-> Types
-    DataExporter -.-> Types
+export interface ExtractedRecord {
+  serviceId: string;
+  uniqueKey: string;
+  extractedAt: string;
+  data: Record<string, string>;
+  normalizedSearchText: string;
+}
 ```
 
-#### 2.5.2. データフロー図
+### 5.2. IndexedDBスキーマ方針
 
-```mermaid
-sequenceDiagram
-    participant User as ユーザー
-    participant DOM as Web Page DOM
-    participant CS as Content Script
-    participant BG as Background Service
-    participant DB as IndexedDB
-    participant UI as Main UI
-    participant Options as Options UI
-    
-    note over User, Options: 抽出・保存フロー
-    DOM->>CS: DOM変更検知<br/>(MutationObserver)
-    CS->>CS: データ抽出<br/>(CSSセレクタ)
-    CS->>BG: データ送信<br/>(chrome.runtime.sendMessage)
-    BG->>BG: データ検証
-    BG->>DB: データ保存<br/>(Dexie.js)
-    
-    note over User, Options: 検索・表示フロー
-    User->>UI: メインUI起動
-    UI->>BG: データ取得要求
-    BG->>DB: データ読み込み
-    DB->>BG: 保存データ
-    BG->>UI: データ送信
-    UI->>User: データ表示<br/>(React)
-    
-    User->>UI: 検索キーワード入力
-    UI->>BG: 検索要求
-    BG->>DB: 検索実行<br/>(日本語正規化)
-    DB->>BG: 検索結果
-    BG->>UI: 結果送信
-    UI->>User: 結果表示
-    
-    note over User, Options: 設定フロー
-    User->>Options: 設定変更
-    Options->>BG: 設定保存要求
-    BG->>DB: 設定永続化
-    BG->>CS: 設定更新通知
-    CS->>CS: 抽出ルール更新
+動的にオブジェクトストアを増やす設計は、IndexedDBバージョン管理を複雑化しやすいため採用しません。  
+固定テーブル + 複合キーで管理します（`FR-20`, `NFR-12`）。
+
+```ts
+db.version(1).stores({
+  serviceConfigs: "&id, enabled, updatedAt",
+  records: "&[serviceId+uniqueKey], serviceId, extractedAt",
+  appSettings: "&id",
+});
 ```
 
-#### 2.5.3. 技術スタック構成図
+- 重複防止: `records` の主キーを `"[serviceId+uniqueKey]"` にする
+- 保存性能: 複数件保存は `bulkPut` + transaction を使う（`NFR-04`）
+- 注意: `bulkPut` をtransaction外で使うと部分成功が残る可能性があるため、原則transactionで囲む
 
-```mermaid
-graph TB
-    subgraph "開発環境"
-        direction TB
-        Node["Node.js"]
-        PNPM["pnpm<br/>(パッケージ管理)"]
-        Git["Git<br/>(バージョン管理)"]
-        TypeScript["TypeScript<br/>(言語)"]
-        
-        Node --> PNPM
-        Node --> TypeScript
-    end
-    
-    subgraph "フレームワーク"
-        direction TB
-        WXT["WXT<br/>(ブラウザ拡張)"]
-        React["React<br/>(UI)"]
-        
-        WXT --> React
-    end
-    
-    subgraph "UI・スタイリング"
-        direction TB
-        Shadcn["Shadcn/ui<br/>(コンポーネント)"]
-        Lucide["Lucide React<br/>(アイコン)"]
-        Tailwind["Tailwind CSS<br/>(CSS)"]
-        
-        Shadcn --> Lucide
-        Shadcn --> Tailwind
-    end
-    
-    subgraph "データ・状態管理"
-        direction TB
-        Dexie["Dexie.js<br/>(IndexedDB)"]
-        Zustand["Zustand<br/>(状態管理)"]
-        IndexedDB["IndexedDB<br/>(ストレージ)"]
-        
-        Dexie --> IndexedDB
-    end
-    
-    subgraph "開発品質"
-        direction TB
-        Biome["Biome<br/>(リンター/フォーマッター)"]
-        Vitest["Vitest<br/>(ユニットテスト)"]
-        Playwright["Playwright<br/>(E2Eテスト)"]
-        MarkdownLint["MarkdownLint<br/>(ドキュメント規約)"]
-    end
-    
-    %% 基本依存関係
-    WXT -.-> PNPM
-    React -.-> Shadcn
-    React -.-> Zustand
-    React -.-> Dexie
-    
-    %% 開発品質ツール
-    Vitest -.-> WXT
-    Playwright -.-> WXT
-```
-
-#### 2.5.4. データ構造図
+### 5.3. データ構造の関係（概念）
 
 ```mermaid
 erDiagram
-    SERVICE_CONFIG {
-        string serviceName "サービス名"
-        string[] activateUrlPatterns "対象URLパターン"
-        string updateAreaSelector "更新監視エリア"
-        string itemSelector "アイテム選択"
-        string uniqueKeyFieldName "ユニークキーフィールド名"
-        FIELD[] fields "フィールド定義"
-    }
-    
-    FIELD {
-        string name "フィールド名"
-        string selector "CSSセレクタ"
-        string type "タイプ (text/linkUrl/imageUrl/regex)"
-        string regex "正規表現(regexタイプ時)"
-    }
-    
-    EXTRACTED_DATA {
-        string id "ユニークID"
-        string extractedAt "抽出日時"
-        object data "抽出データ"
-    }
-    
-    DATA_RECORD {
-        string title "タイトル"
-        string link "リンクURL"
-        string thumbnail "サムネイル"
-        string itemId "アイテムID"
-    }
-    
-    INDEXEDDB {
-        string name "kansu_db"
-        string version "1"
-    }
-    
-    OBJECT_STORE {
-        string name "service_{serviceName}"
-        string keyPath "uniqueKeyFieldName"
-    }
-    
-    %% 関係
-    SERVICE_CONFIG ||--o{ FIELD : "contains"
-    SERVICE_CONFIG ||--o{ EXTRACTED_DATA : "generates"
-    EXTRACTED_DATA ||--|| DATA_RECORD : "contains"
-    INDEXEDDB ||--o{ OBJECT_STORE : "contains"
-    OBJECT_STORE ||--o{ EXTRACTED_DATA : "stores"
-    SERVICE_CONFIG ||--o{ OBJECT_STORE : "creates"
+    SERVICE_CONFIG ||--o{ FIELD_RULE : has
+    SERVICE_CONFIG ||--o{ RECORD : owns
+    RECORD ||--|| RECORD_DATA : contains
 ```
 
-## 3. 機能実装詳細
+- `SERVICE_CONFIG`: サービスごとの抽出設定（URL、セレクタ、主キー定義）
+- `FIELD_RULE`: 各フィールドの抽出ルール（text/link/image/regex）
+- `RECORD`: 抽出結果メタ情報（`serviceId`, `uniqueKey`, `extractedAt`）
+- `RECORD_DATA`: 実データ本体（title/link/thumbnail等）
 
-### 3.1. データ抽出モジュール (Content Script)
+## 6. メッセージ契約
 
-- **トリガー**: `DOMContentLoaded` イベントと、`MutationObserver` を使用して、指定された要素 (`updateAreaSelector`) の子要素の変更を監視します。
-- **データ抽出処理**:
-  - `itemSelector` に合致する要素群を取得します。
-  - 各要素から `fields` で定義されたルールに基づき、データを抽出します。
-    - `text`: `element.innerText` を使用します。
-    - `linkUrl`: `element.href` を使用します。
-    - `imageUrl`: `element.src` を使用します。
-    - `regex`: `String.prototype.match()` と指定された正規表現を用いて、`element.innerHTML` または `element.innerText` から文字列を抽出します。
-- **データ送信**: 抽出したデータは、`chrome.runtime.sendMessage` API を介してバックグラウンドスクリプトに送信します。
+### 6.1. メッセージ型（例）
 
-### 3.2. データ管理モジュール (Background Script)
+```ts
+export type RequestMessage =
+  | { type: "records/bulkUpsert"; payload: { records: ExtractedRecord[] } }
+  | { type: "records/search"; payload: SearchQuery }
+  | { type: "configs/list" }
+  | { type: "configs/save"; payload: ServiceConfig }
+  | { type: "data/export"; payload: { serviceId: string } }
+  | { type: "data/import"; payload: ImportPayload };
 
-- **データ受信**: コンテンツスクリプトやオプションページからメッセージを受け取り、IndexedDBへの各種操作（保存、検索、取得）をトリガーします。
-- **データベース操作**:
-  - **Dexie.js** を用いて、IndexedDBへのアクセスを抽象化し、効率的なデータ操作を実現します。
-  - サービスごとにオブジェクトストアを作成し、データを管理します。
-  - データの保存・更新は、`fields`のうち、ユーザーが設定で指定した **`uniqueKeyFieldName`** を主キーとして行い、データの重複を防ぎます。
+export type ResponseMessage<T = unknown> =
+  | { ok: true; data: T }
+  | { ok: false; error: { code: string; message: string; details?: unknown } };
+```
 
-## 4. データ構造
+### 6.2. ハンドラ実装ルール
 
-### 4.1. 設定データ (JSON)
+- `onMessage` で非同期応答する場合、互換性のため `return true` + `sendResponse` を基本にする
+- Promise返却による応答は利用可能な環境が広がっているが、互換性差を吸収する実装を優先する
+- 返却値は必ずシリアライズ可能なJSONに限定する
+
+## 7. 抽出エンジン設計（Content Script）
+
+### 7.1. 起動シーケンス
+
+1. 現在URLに一致する `ServiceConfig` を取得（`FR-01`）
+2. 対象設定が有効なら監視開始
+3. 初回抽出を実行（`FR-10`）
+4. 監視イベントで差分抽出を実行（`FR-11`）
+
+### 7.2. MutationObserver最適化
+
+- 監視対象は `observeRootSelector` 配下に限定
+- 変化通知はキューへ積み、`setTimeout` または `requestAnimationFrame` で一定間隔に集約
+- コールバック内でレイアウト計算を誘発する処理を避ける
+- UI非表示や対象外ページ遷移時は `disconnect()` する
+
+### 7.3. 抽出アルゴリズム（擬似手順）
+
+1. `itemSelector` で候補要素を取得
+2. 各 `FieldRule` を評価し値を抽出
+3. `uniqueKeyField` から主キーを生成
+4. 検索用 `normalizedSearchText` を生成
+5. `records/bulkUpsert` をBackgroundへ送信
+
+## 8. 検索・ソート・ページネーション
+
+### 8.1. 文字列正規化
+
+- 検索語/対象文字列ともに `String.prototype.normalize("NFKC")` を適用
+- かな差吸収のため、ひらがな/カタカナを同一表現へfoldするユーティリティを適用
+- 正規化は保存時にも計算しておき、検索時コストを下げる（`FR-21`, `NFR-01`）
+
+### 8.2. ソート
+
+- 文字列比較は `Intl.Collator("ja", { numeric: true, sensitivity: "base" })` を再利用
+- 不変性維持のため `toSorted()`（またはコピー後sort）を利用する
+
+### 8.3. ページング
+
+- DB取得時に `offset`/`limit` を適用
+- 検索条件変更時はページを先頭に戻す
+- 1ページ件数は設定可能（`FR-23`）
+
+## 9. インポート/エクスポート
+
+### 9.1. 形式
 
 ```json
 {
-  "serviceName": "Example.com",
-  "activateUrlPatterns": ["https://example.com/items/*"],
-  "updateAreaSelector": "#item-list",
-  "itemSelector": ".item-card",
-  "uniqueKeyFieldName": "itemId",
-  "fields": [
-    { "name": "title", "selector": ".card-title", "type": "text" },
-    { "name": "link", "selector": "a.card-link", "type": "linkUrl" },
-    { "name": "thumbnail", "selector": "img.card-img", "type": "imageUrl" },
-    { "name": "itemId", "selector": "a.card-link", "type": "regex", "regex": "href=\"https://example.com/items/([0-9]+)\"" }
-  ]
-}
-```
-
-### 4.2. 抽出データ (IndexedDB)
-
-- **オブジェクトストア名**: `service_{serviceName}`
-- **キー**: ユーザーが設定の `uniqueKeyFieldName` で指定したフィールドの値。この例では `itemId` フィールドの値（例: `"123"`）がキーとなる。
-- **レコード**:
-
-```json
-{
-  "id": "unique_id_12345",
-  "extractedAt": "2024-06-29T10:00:00Z",
-  "data": {
-    "title": "商品A",
-    "link": "https://example.com/items/123",
-    "thumbnail": "https://example.com/img/123.jpg",
-    "itemId": "123"
+  "schemaVersion": 1,
+  "service": {},
+  "records": [],
+  "meta": {
+    "exportedAt": "ISO-8601 string"
   }
 }
 ```
+
+### 9.2. ルール
+
+- インポート前に `schemaVersion` と必須フィールドを検証（`FR-41`）
+- 主キー衝突時はupsertで統一（`FR-42`）
+- 1サービス単位でtransaction実行し、途中失敗時はロールバック
+
+## 10. セキュリティ・権限設計
+
+- 権限は用途ベースで最小化（`storage`, `scripting`, 必要最小限のhost許可）
+- 外部通信を行わない構成を原則とする（`NFR-20`）
+- インポートJSONはサイズ上限・構造検証を行う（`NFR-23`）
+- CSP違反となる動的コード実行（`eval` 等）を行わない
+
+## 11. テスト戦略
+
+### 11.1. ユニット/統合（Vitest）
+
+- 抽出ロジック（field type別）
+- 正規化ロジック（NFKC、かなfold）
+- DB upsert/search/pagination
+- メッセージハンドラの異常系
+
+### 11.2. E2E（Playwright）
+
+- 拡張はpersistent contextで起動
+- MV3 Service Worker取得（`context.serviceWorkers()`）をfixture化
+- Popup→Options→Content Scriptの主要導線を自動化
+- CI上でも再現できるシナリオのみを必須ケースにする
+
+## 12. 運用・計測
+
+- 主要操作（検索、ソート、抽出バッチ）の処理時間を開発時に計測可能にする
+- パフォーマンス劣化を検知しやすいように、テストデータセット（例: 5,000件）を固定化する
+- 障害調査向けに、開発モード限定のデバッグログレベルを用意する
+
+### 12.1. 開発運用ポリシー
+
+- バージョン管理はGit/GitHubを利用する
+- ブランチ戦略はGitHub Flow（`main` を常にデプロイ可能に保つ）を採用する
+- コミットメッセージはConventional Commits準拠とする
+
+## 13. 要件トレーサビリティ（抜粋）
+
+- `FR-01`〜`FR-03`: 4章, 5章, 6章
+- `FR-10`〜`FR-13`: 7章
+- `FR-20`〜`FR-23`: 5章, 8章
+- `FR-30`〜`FR-33`: 4章, 11章
+- `FR-40`〜`FR-42`: 9章
+- `NFR-01`〜`NFR-04`: 5章, 7章, 8章
+- `NFR-10`〜`NFR-12`: 2章, 6章
+- `NFR-20`〜`NFR-23`: 2章, 9章, 10章
+- `NFR-30`〜`NFR-31`: 3章, 11章, 12章
+
+## 14. 参考（ベストプラクティス）
+
+- [Chrome Extensions: service worker lifecycle](https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/lifecycle)
+- [Chrome Extensions: messaging](https://developer.chrome.com/docs/extensions/develop/concepts/messaging)
+- [Chrome Web Store: best practices](https://developer.chrome.com/docs/webstore/best-practices)
+- [MDN: MutationObserver](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver)
+- [MDN: String.prototype.normalize](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize)
+- [MDN: Intl.Collator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Collator)
+- [Playwright: Chrome extensions](https://playwright.dev/docs/chrome-extensions)
+- [Dexie: Table.bulkPut()](https://old.dexie.org/docs/Table/Table.bulkPut())
