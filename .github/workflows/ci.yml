@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # pin: v6 (v6.0.2)
 
       - name: Setup toolchain
         uses: ./.github/actions/setup-node-pnpm
@@ -39,7 +39,7 @@ jobs:
         run: pnpm build
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # pin: v6 (v6.0.0)
         with:
           name: extension-build
           path: .output/
@@ -53,13 +53,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # pin: v6 (v6.0.2)
 
       - name: Setup toolchain
         uses: ./.github/actions/setup-node-pnpm
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # pin: v6 (v6.0.0)
         with:
           name: extension-build
           path: .output/
@@ -71,7 +71,7 @@ jobs:
         run: pnpm e2e
 
       - name: Upload E2E test results
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # pin: v6 (v6.0.0)
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
