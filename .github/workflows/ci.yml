@@ -2,90 +2,78 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   ci:
+    timeout-minutes: 20
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Install pnpm
-      uses: pnpm/action-setup@v4
-      with:
-        version: 9
-        
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'pnpm'
-        
-    - name: Install dependencies
-      run: pnpm install
-      
-    - name: Run checks
-      run: pnpm check
-      
-    - name: Run markdown lint
-      run: pnpm lint-md
-      
-    - name: Run tests
-      run: pnpm test
-      
-    - name: Build
-      run: pnpm build
-      
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: extension-build
-        path: .output/
-        include-hidden-files: true
-        retention-days: 1
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Run checks
+        run: pnpm check
+
+      - name: Run markdown lint
+        run: pnpm lint-md
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: extension-build
+          path: .output/
+          include-hidden-files: true
+          retention-days: 1
 
   e2e:
     needs: ci
+    timeout-minutes: 60
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Install pnpm
-      uses: pnpm/action-setup@v4
-      with:
-        version: 9
-        
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'pnpm'
-        
-    - name: Install dependencies
-      run: pnpm install
-      
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: extension-build
-        path: .output/
-        
-    - name: Install Playwright Browsers
-      run: pnpm exec playwright install --with-deps
-      
-    - name: Run E2E tests
-      run: pnpm e2e
-      
-    - name: Upload E2E test results
-      uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
-      with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v6
+        with:
+          name: extension-build
+          path: .output/
+
+      - name: Install Playwright Browsers
+        run: pnpm exec playwright install --with-deps
+
+      - name: Run E2E tests
+        run: pnpm e2e
+
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v6
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30

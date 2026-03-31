@@ -22,7 +22,8 @@
 - `README.md` — 開発者向けの入口（概要・主要コマンド・ドキュメント導線）
 
 ## 補足
-- `package.json` の `name` はテンプレート名（`wxt-react-starter`）だが、プロジェクトとしては「Kansu」を扱う。
+- `package.json` の `name` は `kansu-infinite-scroll-archiver`（表示名・製品名は「Kansu」）。ライセンスはルート `LICENSE`（MIT）。
+- Node の想定範囲は `engines.node`、pnpm の正は `packageManager`。GitHub Actions は `node-version-file: package.json` と `pnpm/action-setup`（`version` 省略で `packageManager` を参照）。
 
 ## 設計・ドキュメント
 詳細は `docs/requirements.md` と `docs/implementation_plan.md` を参照。TDD（Vitest）と E2E（Playwright）を計画に含む。

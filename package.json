@@ -1,9 +1,22 @@
 {
-  "name": "wxt-react-starter",
-  "description": "manifest.json description",
+  "name": "kansu-infinite-scroll-archiver",
+  "description": "Browser extension (Kansu): extract infinite-scroll pages into IndexedDB for search and organization.",
   "private": true,
   "version": "0.0.0",
+  "license": "MIT",
   "type": "module",
+  "packageManager": "pnpm@10.12.4",
+  "engines": {
+    "node": "^24.14.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/okathira/kansu-infinite-scroll-archiver.git"
+  },
+  "bugs": {
+    "url": "https://github.com/okathira/kansu-infinite-scroll-archiver/issues"
+  },
+  "homepage": "https://github.com/okathira/kansu-infinite-scroll-archiver#readme",
   "scripts": {
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",
