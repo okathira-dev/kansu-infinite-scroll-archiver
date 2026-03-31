@@ -5,9 +5,21 @@
 
 ## 現在のタスク
 
-実装フェーズへの移行
+`docs/implementation_plan.md` の Phase 1（ドメインモデルとメッセージ契約）に着手する。
 
 ## 進捗状況
+
+- [x] `docs/requirements.md` / `docs/implementation_plan.md` / `docs/implementation_guide.md` の現状レビュー
+- [x] Chrome Extension MV3 / MutationObserver / Playwright / 文字列正規化の最新ベストプラクティス調査
+- [x] `docs/requirements.md` の詳細化（機能仕様・非機能指標・受け入れ基準）
+- [x] `docs/implementation_plan.md` のフェーズ・テスト戦略更新
+- [x] `docs/implementation_guide.md` の設計詳細更新（データモデル・メッセージ契約・性能設計）
+- [x] 3ドキュメント間の整合性チェック
+- [x] 旧 `implementation_guide` の 2.2 と現行版の差分確認
+- [x] 現行 `implementation_guide` へ不足記述の追記（配置/責務詳細/共有モジュール/データフロー/開発運用）
+- [x] 追記後の lint と最終レビュー
+
+## 過去タスク（完了）
 
 - [X] WXTプロジェクトの作成と動作確認
 - [X] Gitの初期化と初回コミット
@@ -44,3 +56,11 @@
 - CIワークフローとPlaywrightワークフローの連携設定を完了：CIでビルドした成果物をPlaywrightで再利用するように設定した。
 - 同一ワークフロー内でE2Eテストを実行するように変更：CIジョブの後にE2Eジョブを実行し、ビルド成果物を効率的に再利用できるようにした。
 - 隠しファイルの問題を解決：.outputディレクトリが隠しディレクトリ扱いのため、include-hidden-files: trueを追加してアーティファクトが正しく処理されるようにした。
+- Serena MCP: プロジェクト `kansu-infinite-scroll-archiver` をアクティブ化しオンボーディング完了。メモリ `project/overview`, `suggested_commands`, `code_style_and_conventions`, `task_completion` を作成。
+- その後、Serena オンボーディングを再実行し、`package.json` / `biome.json` / `src/` 構成を再確認。上記4メモリを最新版に書き換え（依存バージョン、`src/lib`・`components/ui`、Playwright 初回 `install` 注記など）。
+- MarkdownLint（markdownlint-cli2）の除外は `.markdownlint-cli2.jsonc` の `ignores` のみ。`.cursor/**` と `.serena/**` を対象外とし、`Scratchpad.md` や `docs/` は `pnpm lint-md` / lint-staged のチェック対象。
+- さらに、`GEMINI.md` を削除。Serena メモリ `ai_agent_operational_lessons` を廃止し、運用メモは `code_style_and_conventions.md` に統合（Cursor ルールと Serena の役割差も同ファイルに記載）。
+- `docs/requirements.md` / `docs/implementation_plan.md` / `docs/implementation_guide.md` を再編し、`FR/NFR` ベースのトレーサビリティ、MV3ライフサイクル前提、`MutationObserver` バッチ化、`bulkPut + transaction`、`NFKC + かな差吸収` を明文化した。
+- 次アクション: Phase 1（ドメインモデルとメッセージ契約）を最小実装し、テストと要件ID対応を先に固める。
+- 旧 `implementation_guide` の 2.2/2.3/2.4 で重要だった記述の欠落を再点検し、現行版へ追記した（`src` 配置とWXTファイルベース構成、各エントリポイント責務の詳細、共有モジュール、データフロー、開発運用ポリシー）。
+- 依存関係を最新化済み。更新手順は [README.md](README.md) の「依存関係の更新」を参照。

@@ -3,5 +3,6 @@
     "default": true,
     "MD013": false
   },
-  "gitignore": true
+  "gitignore": true,
+  "ignores": [".cursor/**", ".serena/**"]
 }

@@ -37,8 +37,10 @@ export const test = base.extend<{
   // biome-ignore lint/correctness/noEmptyPattern: playwrightの制限によりdestructuringが必須のため `_` は使えない ref: https://github.com/microsoft/playwright/issues/8798
   context: async ({}, use) => {
     const context = await chromium.launchPersistentContext("", {
-      headless: true, // !!process.env.CI, // headlessはchromeとセットにする必要がある
-      channel: "chrome",
+      headless: true,
+      // Google Chrome / Edge はサイドロード用 CLI フラグを削除済み。拡張の E2E は Playwright 同梱の Chromium が必要。
+      // https://playwright.dev/docs/chrome-extensions
+      channel: "chromium",
       args: [
         `--disable-extensions-except=${pathToExtension}`,
         `--load-extension=${pathToExtension}`,

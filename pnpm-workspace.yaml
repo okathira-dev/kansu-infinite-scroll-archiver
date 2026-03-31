@@ -1,0 +1,6 @@
+minimumReleaseAge: 4320 # 3 days * 24 hours * 60 minutes
+
+onlyBuiltDependencies:
+  - '@tailwindcss/oxide'
+  - esbuild
+  - spawn-sync

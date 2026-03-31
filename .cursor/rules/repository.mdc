@@ -1,0 +1,50 @@
+---
+description: このリポジトリ全体に関する説明。構造、技術スタック、サポートファイルの概要。
+globs: 
+alwaysApply: false
+---
+# リポジトリ
+
+このリポジトリは、無限スクロール型サイトからデータを抽出・保存・検索するブラウザ拡張
+「Kansu (巻子)」の開発用です。
+
+## 環境
+
+主に以下のフレームワーク・ライブラリを使います。
+
+- WXT
+- TypeScript
+- React
+- Tailwind CSS
+- Zustand
+- Dexie (IndexedDB)
+- Biome
+- Vitest
+- Playwright
+- pnpm
+
+## プロジェクト構造
+
+- `src/entrypoints/`: WXT エントリ（background/content/popup。options は実装計画 Phase 4 で追加予定）
+- `src/components/` と `src/components/ui/`: UI コンポーネント
+- `src/lib/`: 共有ロジック・ユーティリティ
+- `docs/`: 要件・実装計画・実装ガイド
+- `src/**/*.test.ts`: ユニットテスト（Vitest）
+- `e2e/`: E2Eテスト（Playwright）
+
+## ルールとサポートファイル
+
+[global.mdc](mdc:.cursor/rules/global.mdc) には、AIエージェントへの全体指示（Scratchpad と Serena メモリ運用）が記載されています。
+
+プロジェクト開発をサポートするために以下を使用します。
+
+- [Scratchpad.md](mdc:Scratchpad.md): 短期的なタスク計画・進捗管理
+- Serena memories（`.serena/memories/*.md`）: 長期知識（規約・教訓・運用メモ）
+- [GITHUB-MCP.md](mdc:.cursor/GITHUB-MCP.md): GitHub MCP の利用手順（PAT はグローバル設定）
+
+## 参照ドキュメント
+
+- [README.md](mdc:README.md)
+- [requirements.md](mdc:docs/requirements.md)
+- [implementation_plan.md](mdc:docs/implementation_plan.md)
+- [implementation_guide.md](mdc:docs/implementation_guide.md)
