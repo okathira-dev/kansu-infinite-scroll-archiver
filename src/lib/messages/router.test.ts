@@ -1,5 +1,28 @@
+import Dexie from "dexie";
+import { IDBFactory, IDBKeyRange } from "fake-indexeddb";
 import { describe, expect, it } from "vitest";
+import { KansuDb } from "@/lib/db";
+import { RecordRepository, ServiceConfigRepository } from "@/lib/repositories";
 import { MessageRouter } from "./router";
+
+let testDbSequence = 0;
+
+const createTestRouter = () => {
+  const db = new KansuDb(`kansu-router-test-${testDbSequence}`);
+  testDbSequence += 1;
+  return {
+    db,
+    router: new MessageRouter({
+      serviceConfigRepository: new ServiceConfigRepository(db),
+      recordRepository: new RecordRepository(db),
+    }),
+  };
+};
+
+const closeAndDeleteDb = async (db: KansuDb) => {
+  db.close();
+  await db.delete();
+};
 
 const serviceConfigPayload = {
   id: "service-1",
@@ -17,8 +40,13 @@ const serviceConfigPayload = {
 };
 
 describe("メッセージルータ", () => {
+  // Node 環境の Vitest には IndexedDB 実装がないため、Dexie の依存先をモックに差し替える。
+  // これにより本番コード（KansuDb / Repository）を変更せず、永続化経路をそのまま検証できる。
+  Dexie.dependencies.indexedDB = new IDBFactory();
+  Dexie.dependencies.IDBKeyRange = IDBKeyRange;
+
   it("未知の type ではバリデーションエラーを返す", async () => {
-    const router = new MessageRouter();
+    const { db, router } = createTestRouter();
 
     const response = await router.handleRaw({
       type: "unknown/type",
@@ -28,10 +56,11 @@ describe("メッセージルータ", () => {
     if (!response.ok) {
       expect(response.error.code).toBe("VALIDATION_ERROR");
     }
+    await closeAndDeleteDb(db);
   });
 
   it("設定の保存と一覧取得を処理できる", async () => {
-    const router = new MessageRouter();
+    const { db, router } = createTestRouter();
 
     const saveResponse = await router.handleRaw({
       type: "configs/save",
@@ -46,10 +75,11 @@ describe("メッセージルータ", () => {
       expect(data.configs).toHaveLength(1);
       expect(data.configs[0]?.id).toBe("service-1");
     }
+    await closeAndDeleteDb(db);
   });
 
   it("一括 upsert と検索を処理できる", async () => {
-    const router = new MessageRouter();
+    const { db, router } = createTestRouter();
 
     await router.handleRaw({
       type: "configs/save",
@@ -95,5 +125,6 @@ describe("メッセージルータ", () => {
       expect(data.total).toBe(1);
       expect(data.records[0]?.uniqueKey).toBe("r1");
     }
+    await closeAndDeleteDb(db);
   });
 });

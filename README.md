@@ -33,6 +33,13 @@ pnpm dev
 - `pnpm e2e`: Playwright の E2E テストを実行
 - `pnpm lint-md`: Markdown の lint を実行
 
+### 開発時デバッグの注意点（要点）
+
+- `runtime.sendMessage` の手動テストは、Service Worker ではなく Popup / Content / Options 側のコンソールから送る（SW コンソールからは受信先不在エラーになることがある）。
+- IndexedDB（`kansu-archive`）の確認は Popup/Options 側の DevTools の `Application > IndexedDB` を優先する（SW 側では `No IndexedDB detected` と表示される場合がある）。
+- Service Worker の DevTools は、受信ログ・例外確認・ライフサイクル挙動の確認用途として使う。
+- 詳細手順は [WXT 開発モードのデバッグ・動作確認](docs/wxt-dev-debug.md) を参照。
+
 ## 依存関係の更新
 
 バージョンの正本は `package.json` と `pnpm-lock.yaml` とする。
@@ -69,6 +76,7 @@ pnpm dev
 - [要件定義](docs/requirements.md)
 - [実装計画](docs/implementation_plan.md)
 - [実装ガイド](docs/implementation_guide.md)
+- [WXT 開発モードのデバッグ・動作確認](docs/wxt-dev-debug.md)
 
 ## 開発時の参照順
 

@@ -1,4 +1,6 @@
+import { getKansuDb } from "@/lib/db";
 import { createErrorResponse, MessageRouter } from "@/lib/messages";
+import { RecordRepository, ServiceConfigRepository } from "@/lib/repositories";
 
 /**
  * Service Worker（MV3）のエントリ。
@@ -7,7 +9,11 @@ import { createErrorResponse, MessageRouter } from "@/lib/messages";
  * パース/検証エラーはルータ側の `VALIDATION_ERROR`、想定外例外は `INTERNAL_ERROR`。
  */
 export default defineBackground(() => {
-  const router = new MessageRouter();
+  const db = getKansuDb();
+  const router = new MessageRouter({
+    serviceConfigRepository: new ServiceConfigRepository(db),
+    recordRepository: new RecordRepository(db),
+  });
 
   browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     void router
