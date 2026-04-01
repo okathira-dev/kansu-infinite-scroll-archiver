@@ -8,6 +8,8 @@ alwaysApply: false
 
 このリポジトリで実装するときの基本ルールを定義する。
 
+エージェント向けの **言語・コロケーション・ドキュメント参照** は [kansu-agent-conventions.mdc](mdc:.cursor/rules/kansu-agent-conventions.mdc)（常時適用）に集約する。
+
 ## 基本方針
 
 - 依頼範囲に集中し、無関係なリファクタを混ぜない。

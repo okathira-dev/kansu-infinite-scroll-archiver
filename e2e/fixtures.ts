@@ -1,4 +1,4 @@
-// src: https://github.com/wxt-dev/examples/blob/main/examples/playwright-e2e-testing/e2e/fixtures.ts
+// 参照元: https://github.com/wxt-dev/examples/blob/main/examples/playwright-e2e-testing/e2e/fixtures.ts
 
 import path from "node:path";
 import { type BrowserContext, test as base, chromium } from "@playwright/test";

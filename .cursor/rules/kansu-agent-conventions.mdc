@@ -1,0 +1,24 @@
+---
+description: Kansu 向けエージェント規約（言語・コロケーション・ドキュメント）
+alwaysApply: true
+---
+
+# Kansu エージェント規約（セッション横断）
+
+## 言語
+
+- ユーザーへの説明・コミット/PR の説明は **日本語**。
+- **ソース内**: JSDoc、通常コメント、テストの `describe` / `it` / `test` のタイトルは **日本語**。
+- **英語のままにしてよいもの**: エラーコード、外部契約に載せる検証メッセージ本文、プロトコル固定キー。ユーザー向け文言は呼び出し側でマップする想定なら JSDoc で一言書いてよい。
+
+## 配置（コロケーション）
+
+- **原則**: 利用範囲に最も近い場所へ置く。
+- **複数エントリ**（content / background / popup / options 等）で共有する契約・ドメイン型・メッセージは `src/lib/` に集約する（例: `src/lib/types`, `src/lib/messages`）。
+- **単一機能専用**の型やヘルパは、その機能のディレクトリ側にコロケートする。
+- **新しい型ファイルや共有モジュールを追加する前に**、利用者がどこかを確認してから上記に従って置く。
+
+## 実装・ドキュメントの参照
+
+- 要件・フェーズ・技術仕様は [requirements.md](mdc:docs/requirements.md)、[implementation_plan.md](mdc:docs/implementation_plan.md)、[implementation_guide.md](mdc:docs/implementation_guide.md) を参照する。
+- 短期タスクと進捗は [Scratchpad.md](mdc:Scratchpad.md)。仕様変更時は関連ドキュメントと同期する（全体方針は [global.mdc](mdc:.cursor/rules/global.mdc)）。

@@ -5,7 +5,7 @@
 
 ## 現在のタスク
 
-`docs/implementation_plan.md` の Phase 1（ドメインモデルとメッセージ契約）に着手する。
+`docs/implementation_plan.md` の Phase 1（ドメインモデルとメッセージ契約）を完了し、Phase 2 着手可否の確認待ち。
 
 ## 進捗状況
 
@@ -18,6 +18,11 @@
 - [x] 旧 `implementation_guide` の 2.2 と現行版の差分確認
 - [x] 現行 `implementation_guide` へ不足記述の追記（配置/責務詳細/共有モジュール/データフロー/開発運用）
 - [x] 追記後の lint と最終レビュー
+- [x] `src/lib/types` の追加（`ServiceConfig` / `FieldRule` / `ExtractedRecord` / `SearchQuery` / import-export 型）
+- [x] `src/lib/types/validation.ts` で設定保存と message payload のランタイム検証を実装
+- [x] `src/lib/messages` の追加（request/response 契約、統一エラー形式、message parser）
+- [x] `src/entrypoints/background.ts` を契約準拠のメッセージルータに置換
+- [x] `src/lib/types/*.test.ts` と `src/lib/messages/*.test.ts` に正常系/異常系テストを追加
 
 ## 過去タスク（完了）
 
@@ -61,6 +66,6 @@
 - MarkdownLint（markdownlint-cli2）の除外は `.markdownlint-cli2.jsonc` の `ignores` のみ。`.cursor/**` と `.serena/**` を対象外とし、`Scratchpad.md` や `docs/` は `pnpm lint-md` / lint-staged のチェック対象。
 - さらに、`GEMINI.md` を削除。Serena メモリ `ai_agent_operational_lessons` を廃止し、運用メモは `code_style_and_conventions.md` に統合（Cursor ルールと Serena の役割差も同ファイルに記載）。
 - `docs/requirements.md` / `docs/implementation_plan.md` / `docs/implementation_guide.md` を再編し、`FR/NFR` ベースのトレーサビリティ、MV3ライフサイクル前提、`MutationObserver` バッチ化、`bulkPut + transaction`、`NFKC + かな差吸収` を明文化した。
-- 次アクション: Phase 1（ドメインモデルとメッセージ契約）を最小実装し、テストと要件ID対応を先に固める。
+- 次アクション: Phase 1 のDoD確認結果を提示し、Phase 2（Dexie ストレージ層）へ進むかを確認する。
 - 旧 `implementation_guide` の 2.2/2.3/2.4 で重要だった記述の欠落を再点検し、現行版へ追記した（`src` 配置とWXTファイルベース構成、各エントリポイント責務の詳細、共有モジュール、データフロー、開発運用ポリシー）。
 - 依存関係を最新化済み。更新手順は [README.md](README.md) の「依存関係の更新」を参照。

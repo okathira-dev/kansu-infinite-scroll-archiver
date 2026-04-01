@@ -1,4 +1,4 @@
-// src:https://github.com/wxt-dev/examples/blob/main/examples/playwright-e2e-testing/e2e/pages/popup.ts
+// 参照元: https://github.com/wxt-dev/examples/blob/main/examples/playwright-e2e-testing/e2e/pages/popup.ts
 import type { Page } from "@playwright/test";
 
 // このファイルは環境設定のためのテスト用です。実装が進むにつれてテスト内容を変える必要があります。

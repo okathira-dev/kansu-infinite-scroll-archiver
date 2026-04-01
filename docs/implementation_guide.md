@@ -186,7 +186,7 @@ erDiagram
 
 ## 6. メッセージ契約
 
-### 6.1. メッセージ型（例）
+### 6.1. メッセージ型（Phase 1 実装）
 
 ```ts
 export type RequestMessage =
@@ -202,11 +202,17 @@ export type ResponseMessage<T = unknown> =
   | { ok: false; error: { code: string; message: string; details?: unknown } };
 ```
 
+- 実装ファイル:
+  - `src/lib/messages/contracts.ts`（request/response 契約）
+  - `src/lib/messages/parser.ts`（メッセージ payload 検証）
+  - `src/lib/types/validation.ts`（`ServiceConfig`・検索条件・import/export の型ガード）
+
 ### 6.2. ハンドラ実装ルール
 
 - `onMessage` で非同期応答する場合、互換性のため `return true` + `sendResponse` を基本にする
 - Promise返却による応答は利用可能な環境が広がっているが、互換性差を吸収する実装を優先する
 - 返却値は必ずシリアライズ可能なJSONに限定する
+- 検証失敗時は `VALIDATION_ERROR` を返し、`details` に検証エラー配列（`field`, `message`）を含める
 
 ## 7. 抽出エンジン設計（Content Script）
 
