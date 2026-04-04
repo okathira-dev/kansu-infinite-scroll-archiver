@@ -152,4 +152,21 @@ describe("RecordRepository", () => {
     expect(idOnly.total).toBe(1);
     expect(idOnly.records[0]?.uniqueKey).toBe("foo-1");
   });
+
+  it("サービス単位でレコードを削除できる", async () => {
+    const repository = createRepository();
+    await repository.bulkUpsert([
+      createRecord({ serviceId: "service-1", uniqueKey: "r1", title: "A" }),
+      createRecord({ serviceId: "service-1", uniqueKey: "r2", title: "B" }),
+      createRecord({ serviceId: "service-2", uniqueKey: "r1", title: "C" }),
+    ]);
+
+    const deleted = await repository.deleteByServiceId("service-1");
+    expect(deleted).toBe(2);
+
+    const service1Records = await repository.listByServiceId("service-1");
+    const service2Records = await repository.listByServiceId("service-2");
+    expect(service1Records).toHaveLength(0);
+    expect(service2Records).toHaveLength(1);
+  });
 });

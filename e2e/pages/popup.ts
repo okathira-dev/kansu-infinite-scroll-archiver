@@ -1,22 +1,23 @@
-// 参照元: https://github.com/wxt-dev/examples/blob/main/examples/playwright-e2e-testing/e2e/pages/popup.ts
 import type { Page } from "@playwright/test";
-
-// このファイルは環境設定のためのテスト用です。実装が進むにつれてテスト内容を変える必要があります。
 
 export async function openPopup(page: Page, extensionId: string) {
   await page.goto(`chrome-extension://${extensionId}/popup.html`);
-
-  await page.waitForSelector("#counter");
+  await page.waitForSelector("#toggle-main-ui");
 
   const popup = {
-    getCounter: () => page.waitForSelector("#counter"),
-    clickCounter: async () => {
-      const counter = await popup.getCounter();
-      await counter.click();
+    getToggleButton: () => page.waitForSelector("#toggle-main-ui"),
+    getOptionsButton: () => page.waitForSelector("#open-options"),
+    clickToggleMainUi: async () => {
+      const button = await popup.getToggleButton();
+      await button.click();
     },
-    getCounterText: async () => {
-      const counter = await popup.getCounter();
-      return await counter.evaluate((el) => el.textContent);
+    clickOpenOptions: async () => {
+      const button = await popup.getOptionsButton();
+      await button.click();
+    },
+    getStatusText: async () => {
+      const status = await page.waitForSelector("#popup-status");
+      return await status.evaluate((el) => el.textContent);
     },
   };
   return popup;

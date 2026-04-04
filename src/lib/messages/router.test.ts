@@ -78,6 +78,66 @@ describe("メッセージルータ", () => {
     await closeAndDeleteDb(db);
   });
 
+  it("設定削除（関連レコード削除あり）を処理できる", async () => {
+    const { db, router } = createTestRouter();
+
+    await router.handleRaw({
+      type: "configs/save",
+      payload: serviceConfigPayload,
+    });
+    await router.handleRaw({
+      type: "records/bulkUpsert",
+      payload: {
+        records: [
+          {
+            serviceId: "service-1",
+            uniqueKey: "r1",
+            extractedAt: new Date().toISOString(),
+            fieldValues: {
+              id: { raw: "r1", normalized: "r1" },
+              title: { raw: "Title 1", normalized: "title 1" },
+            },
+          },
+        ],
+      },
+    });
+
+    const deleteResponse = await router.handleRaw({
+      type: "configs/delete",
+      payload: { id: "service-1", deleteRecords: true },
+    });
+    expect(deleteResponse.ok).toBe(true);
+    if (deleteResponse.ok) {
+      expect(deleteResponse.data).toEqual({ configId: "service-1", deletedRecords: 1 });
+    }
+
+    const listResponse = await router.handleRaw({ type: "configs/list" });
+    expect(listResponse.ok).toBe(true);
+    if (listResponse.ok) {
+      const data = listResponse.data as { configs: Array<{ id: string }> };
+      expect(data.configs).toHaveLength(0);
+    }
+
+    const searchResponse = await router.handleRaw({
+      type: "records/search",
+      payload: {
+        serviceId: "service-1",
+        keyword: "",
+        targetFieldNames: ["title"],
+        sortBy: "title",
+        sortOrder: "asc",
+        page: 1,
+        pageSize: 10,
+      },
+    });
+    expect(searchResponse.ok).toBe(true);
+    if (searchResponse.ok) {
+      const data = searchResponse.data as { total: number };
+      expect(data.total).toBe(0);
+    }
+    await closeAndDeleteDb(db);
+  });
+
   it("一括 upsert と検索を処理できる", async () => {
     const { db, router } = createTestRouter();
 

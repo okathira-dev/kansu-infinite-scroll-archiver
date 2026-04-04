@@ -380,6 +380,39 @@ export const validateExportPayload = (input: unknown): ValidationResult<{ servic
   return { ok: true, data: { serviceId } };
 };
 
+/** `configs/delete` 要求の payload（設定 ID と関連レコード削除フラグ）を検証する。 */
+export const validateConfigDeletePayload = (
+  input: unknown,
+): ValidationResult<{ id: string; deleteRecords?: boolean }> => {
+  const issues: ValidationIssue[] = [];
+  if (!isRecord(input)) {
+    return {
+      ok: false,
+      errors: [{ field: "configDeletePayload", message: "must be an object" }],
+    };
+  }
+
+  const id = asNonEmptyString(input.id, "configDeletePayload.id", issues);
+  if (typeof input.deleteRecords !== "undefined" && typeof input.deleteRecords !== "boolean") {
+    issues.push({
+      field: "configDeletePayload.deleteRecords",
+      message: "must be a boolean when provided",
+    });
+  }
+
+  if (!id || issues.length > 0) {
+    return { ok: false, errors: issues };
+  }
+
+  return {
+    ok: true,
+    data: {
+      id,
+      deleteRecords: input.deleteRecords as boolean | undefined,
+    },
+  };
+};
+
 /**
  * インポート JSON 全体を検証する（FR-41）。
  *

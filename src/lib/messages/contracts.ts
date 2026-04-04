@@ -10,6 +10,7 @@ export type RequestMessage =
   | { type: "records/search"; payload: SearchQuery }
   | { type: "configs/list" }
   | { type: "configs/save"; payload: ServiceConfig }
+  | { type: "configs/delete"; payload: { id: string; deleteRecords?: boolean } }
   | { type: "data/export"; payload: { serviceId: string } }
   | { type: "data/import"; payload: ImportPayload };
 

@@ -7,6 +7,7 @@
 import {
   type ValidationResult,
   validateBulkUpsertPayload,
+  validateConfigDeletePayload,
   validateExportPayload,
   validateImportPayload,
   validateSearchQuery,
@@ -51,6 +52,19 @@ export const parseRequestMessage = (input: unknown): ValidationResult<RequestMes
         };
       }
       return { ok: true, data: { type: "configs/save", payload: result.data } };
+    }
+    case "configs/delete": {
+      const result = validateConfigDeletePayload(input.payload);
+      if (!result.ok) {
+        return {
+          ok: false,
+          errors: result.errors.map((error) => ({
+            field: `message.payload.${error.field}`,
+            message: error.message,
+          })),
+        };
+      }
+      return { ok: true, data: { type: "configs/delete", payload: result.data } };
     }
     case "records/bulkUpsert": {
       const result = validateBulkUpsertPayload(input.payload);

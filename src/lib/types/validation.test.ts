@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   validateBulkUpsertPayload,
+  validateConfigDeletePayload,
   validateImportPayload,
   validateSearchQuery,
   validateServiceConfig,
@@ -108,5 +109,22 @@ describe("インポートペイロードバリデーション", () => {
     });
 
     expect(result.ok).toBe(true);
+  });
+});
+
+describe("設定削除ペイロードバリデーション", () => {
+  it("有効な削除ペイロードを受け入れる", () => {
+    const result = validateConfigDeletePayload({
+      id: "service-1",
+      deleteRecords: true,
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("id が空文字の場合は拒否する", () => {
+    const result = validateConfigDeletePayload({
+      id: "",
+    });
+    expect(result.ok).toBe(false);
   });
 });

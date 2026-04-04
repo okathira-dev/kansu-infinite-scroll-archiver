@@ -5,7 +5,7 @@
 
 ## 現在のタスク
 
-Phase 4（Popup / Options / メインUI）: `FR-21`〜`FR-23`・`FR-30`〜`FR-33` に沿い、設定 CRUD・検索（`targetFieldNames` 指定）・ソート・ページネーション・トースト等の UI を実装する。
+Phase 5（インポート / エクスポート）: `FR-40`〜`FR-42`・`NFR-23` に沿い、JSON schemaVersion 付きの I/O とバリデーション、エラー導線を実装する。
 
 ## 進捗状況
 
@@ -44,6 +44,12 @@ Phase 4（Popup / Options / メインUI）: `FR-21`〜`FR-23`・`FR-30`〜`FR-33
 - [x] `src/lib/search/textNormalization.test.ts` を新設し、NFKC・かな統一・英字混在・長音記号の正規化結果を期待値で固定
 - [x] `debug-fixtures/infinite-scroll.html` を日本語/英語/日英混在のタイトルローテーションへ更新
 - [x] `requirements.md` / `implementation_guide.md` / `wxt-dev-debug.md` に正規化範囲（自動読み一致なし）と fixture 方針を反映
+- [x] `configs/delete` メッセージ契約・バリデーション・Router・Repository を追加し、設定削除と関連レコード削除フローを実装
+- [x] Phase 4 の UI を実装（Popup トグル / Options CRUD / Content Script Shadow DOM メインUI）
+- [x] Zustand ストアを追加（`serviceConfigStore` / `searchStore`）し、UI からの検索・保存・削除を集約
+- [x] E2E を新UI仕様へ更新（`popup.spec.ts` / `optionsCrud.spec.ts` / `mainUiSearch.spec.ts`）し、既存抽出 E2E と併せて通過
+- [x] `@testing-library/*` + `jsdom` を導入し、フォーム/検索/ページネーションのコンポーネントテストを追加
+- [x] `pnpm check` / `pnpm test` / `pnpm e2e` を再通過
 
 ## 過去タスク（完了）
 
@@ -90,6 +96,6 @@ Phase 4（Popup / Options / メインUI）: `FR-21`〜`FR-23`・`FR-30`〜`FR-33
 - `docs/implementation_plan.md` と `docs/implementation_guide.md` は要件・設計の普遍的記述に留め、実装の進み具合や「いまどこまで終わったか」は本 Scratchpad とコードで追う（計画書に実装状況を書かない方針）。
 - Phase 2 として、Dexie スキーマ・Repository 層・MessageRouter 差し替え・Background 注入・関連テスト追加を完了した。
 - Phase 3 として、Content Script の抽出エンジン（URL一致、抽出器、MutationObserverバッチ、bulkUpsert送信、ユニットテスト）を実装し、`ExtractedRecord.fieldValues`（`raw` / `normalized`）・`fieldRules` / `targetFieldNames`・`wanakana` 正規化まで完了した。
-- 次アクション: Phase 4 で Popup / Options / メインUI を実装し、Zustand 等での状態管理と Background メッセージ経路の責務分割をコードに落とす。
+- 次アクション: Phase 5 で JSON インポート/エクスポートの UI 導線・スキーマ検証・エラー通知を実装し、既存メッセージ契約との整合を確認する。
 - 旧 `implementation_guide` の 2.2/2.3/2.4 で重要だった記述の欠落を再点検し、現行版へ追記した（`src` 配置とWXTファイルベース構成、各エントリポイント責務の詳細、共有モジュール、データフロー、開発運用ポリシー）。
 - 依存関係を最新化済み。更新手順は [README.md](README.md) の「依存関係の更新」を参照。

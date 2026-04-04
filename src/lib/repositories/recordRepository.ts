@@ -70,6 +70,10 @@ export class RecordRepository {
     return this.db.records.where("serviceId").equals(serviceId).toArray();
   }
 
+  async deleteByServiceId(serviceId: string): Promise<number> {
+    return this.db.records.where("serviceId").equals(serviceId).delete();
+  }
+
   async importPayload(payload: ImportPayload): Promise<ImportResult> {
     const summary = await this.db.transaction(
       "rw",

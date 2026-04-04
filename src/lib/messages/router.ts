@@ -60,6 +60,8 @@ export class MessageRouter {
         });
       case "configs/save":
         return this.handleConfigSave(message.payload);
+      case "configs/delete":
+        return this.handleConfigDelete(message.payload);
       case "records/bulkUpsert":
         return this.handleBulkUpsert(message.payload.records);
       case "records/search":
@@ -76,6 +78,23 @@ export class MessageRouter {
   private async handleConfigSave(config: ServiceConfig): Promise<ResponseMessage> {
     const configId = await this.serviceConfigRepository.save(config);
     return createSuccessResponse({ configId });
+  }
+
+  private async handleConfigDelete(payload: {
+    id: string;
+    deleteRecords?: boolean;
+  }): Promise<ResponseMessage> {
+    const deleted = await this.serviceConfigRepository.delete(payload.id);
+    if (!deleted) {
+      return createErrorResponse("SERVICE_NOT_FOUND", "service config was not found", {
+        serviceId: payload.id,
+      });
+    }
+
+    const deletedRecords = payload.deleteRecords
+      ? await this.recordRepository.deleteByServiceId(payload.id)
+      : 0;
+    return createSuccessResponse({ configId: payload.id, deletedRecords });
   }
 
   private async handleBulkUpsert(records: ImportPayload["records"]): Promise<ResponseMessage> {

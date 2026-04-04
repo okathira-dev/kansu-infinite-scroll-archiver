@@ -17,4 +17,13 @@ export class ServiceConfigRepository {
   async findById(id: string): Promise<ServiceConfig | undefined> {
     return this.db.serviceConfigs.get(id);
   }
+
+  async delete(id: string): Promise<boolean> {
+    const existing = await this.findById(id);
+    if (!existing) {
+      return false;
+    }
+    await this.db.serviceConfigs.delete(id);
+    return true;
+  }
 }
