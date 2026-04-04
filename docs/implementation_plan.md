@@ -17,15 +17,15 @@
 
 ## 3. フェーズ計画
 
-### 3.1. Phase 0: 基盤整備（完了済み）
+### 3.1. Phase 0: 基盤整備
 
 - **対象要件**: `NFR-31`
-- **実施済み内容**:
-  - WXT + React + TypeScript の初期化
-  - Biome / MarkdownLint / Vitest / Playwright / Husky / CI整備
-  - Dexie / Zustand導入
-- **残タスク**:
-  - テスト用拡張fixtureの安定化（今後のE2E追加に合わせて調整）
+- **範囲**:
+  - WXT + React + TypeScript のプロジェクト土台
+  - Biome / MarkdownLint / Vitest / Playwright / Husky / CI
+  - Dexie / Zustand の導入
+- **備考**:
+  - E2E 拡充に合わせた拡張 fixture の安定化は、運用・品質面で継続的に見直す
 
 ### 3.2. Phase 1: ドメインモデルとメッセージ契約
 
@@ -127,6 +127,11 @@
   - 拡張読み込みはpersistent contextで行う
   - MV3 Service Worker取得・再起動を考慮したfixtureを使う
   - Popup/Options/Content Scriptの主要導線をシナリオ化する
+
+### 4.1. 将来拡張（E2E 対応ブラウザ）
+
+- 現行の拡張 E2E は Chromium 実行を前提に設計する。
+- Firefox / WebKit の E2E は、ブラウザ別の拡張ロード手順・成果物・fixture 起動方式を分離したうえで、別トラックとして段階的に追加する。
 
 ## 5. リスクと緩和策
 

@@ -40,7 +40,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
-    "e2e:watch": "playwright test --ui"
+    "e2e:watch": "playwright test --ui",
+    "debug:fixture": "node scripts/serve-e2e-fixture.mjs"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",

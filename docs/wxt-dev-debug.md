@@ -95,6 +95,182 @@ chrome.runtime.sendMessage(
 `browser` グローバルが使える環境では `browser.runtime.sendMessage` でも可。  
 Service Worker 側は **受信ログ・例外確認**のためにコンソールを開いておく、という使い分けが実運用で安定します。
 
+## Content Script（抽出エンジン）のデバッグ
+
+対象ページに注入される **抽出エンジン**の構成は次のとおりです。
+
+| 項目 | 内容 |
+| --- | --- |
+| エントリ | `src/entrypoints/content/index.ts`（`matches: ["<all_urls>"]`） |
+| 本体 | `src/entrypoints/content/engine.ts` の `startContentEngine()` |
+| 補助 | URL 一致（`urlPatternMatcher.ts`）、抽出（`fieldExtractor.ts` / `recordExtractor.ts`）、mutation バッチ（`mutationBatchProcessor.ts`）、検索用文字列（`textNormalization.ts`） |
+
+ページを開き拡張が有効なら、**開発者がコンソールに何も打たなくても** Content Script が起動し、下記のとおり `configs/list` や `records/bulkUpsert` をコードから送る。挙動を追うときはログ・IndexedDB・Service Worker のコンソールを見る。メッセージ経路やペイロードだけ切り分けたいときは、上文「メッセージの手動テスト（Popup / Content / Options のコンソール）」と同様に、開発者が Popup や Content script コンテキストで `chrome.runtime.sendMessage(...)` をコンソールに貼って実行する。設定の投入は別項の `configs/save` 例のとおり手動送信する。
+
+### 通常動作の流れ
+
+次の番号付きは、**拡張（Content Script / Background）がページ読み込みから自動で行う処理**の順である。ここに出てくる `sendMessage` はいずれもコードが実行するもので、開発者がコンソールに打つ必要はない。
+
+1. Content Script が注入され、`index.ts` の `main` が `startContentEngine()` を呼ぶ。
+2. `engine.ts` 内で **`browser.runtime.sendMessage({ type: "configs/list" })`** が実行され、Background（`MessageRouter`）が IndexedDB から設定一覧を返す。
+3. 返った一覧から、**`enabled === true` かつ `urlPatterns` が現在の `location.href` に一致する**最初の 1 件だけを採用する。該当がなければ **何もしない**（コンソールにも出さない）。
+4. `observeRootSelector` でルート要素を解決できなければ **`Kansu: 監視ルートが見つかりません`** を警告して終了する。
+5. ルート配下の `itemSelector` からアイテムを列挙し、各 `FieldRule` で値を取り出す。`uniqueKeyField` が空のアイテムは保存対象から除外する。
+6. 抽出結果が 1 件以上あれば、コードから **`records/bulkUpsert`** を送る。DOM 変更は `MutationObserver` で受け、**約 200ms の遅延でまとめて**再抽出する（高頻度 mutation の過剰実行を抑える）。
+7. ページ離脱時に `pagehide` でオブザーバとバッチ処理を止める。
+
+**開発者が手動で `configs/list` だけ試したい場合**は、拡張コンテキストのコンソールから、上文「メッセージの手動テスト」のコード例と同じ `sendMessage` を実行すればよい（ページを開かなくても Background の応答だけ確認できる）。
+
+### コンソールの開き方（Chrome）
+
+ログは勝手に目に入らないため、**開発者**が次のように DevTools を開き、コンテキストを切り替える。
+
+- **Content Script のログ**（`Kansu:` で始まる `console.error` / `console.warn`）は、**対象サイトのタブ**で DevTools を開き、コンソール上部の **実行コンテキスト**を拡張機能の **Content script**（拡張名が表示される）に切り替えると見やすい。`top` のままだと Content Script のログが混ざらない・見えない場合がある。
+- **Service Worker 側**では、`chrome://extensions` から Service Worker の DevTools を開き、`bulkUpsert` や Dexie の例外が出ていないかを併せて確認する。
+
+### 設定が無いときの事前準備（手動で `configs/save`）
+
+通常のページ閲覧だけでは IndexedDB にサービス設定が無いことが多く、その場合 **Content Script は何もしない**。設定を入れたい **開発者**は次を実行する。
+
+Options UI が未整備の間は、**拡張のコンテキスト**（Popup を検証表示した DevTools、またはページ上でコンソールを Content script に切り替えた状態）から、次のように **`chrome.runtime.sendMessage` をコンソールに貼り付けて**設定を保存する。`urlPatterns` は **いま開いているページの URL** と一致させる（ワイルドカード `*` 可。`<all_urls>` も可）。
+
+```js
+chrome.runtime.sendMessage(
+  {
+    type: "configs/save",
+    payload: {
+      id: "service-debug-1",
+      name: "Debug",
+      urlPatterns: ["https://example.com/*"],
+      observeRootSelector: "body",
+      itemSelector: ".item",
+      uniqueKeyField: "id",
+      fields: [
+        { name: "id", selector: ".id", type: "text" },
+        { name: "title", selector: ".title", type: "text" },
+      ],
+      enabled: true,
+      updatedAt: new Date().toISOString(),
+    },
+  },
+  (response) => {
+    if (chrome.runtime.lastError) {
+      console.error(chrome.runtime.lastError.message);
+      return;
+    }
+    console.log(response);
+  },
+);
+```
+
+保存後、**開発者が対象タブをリロード**する（Content Script はページ読み込み時に起動する。手動 `save` だけでは、すでに注入済みのタブでは Content Script は自動では再実行されない）。`VALIDATION_ERROR` が返る場合は `src/lib/types/validation.ts` の `validateServiceConfig` に沿って必須項目・`uniqueKeyField` と `fields[].name` の整合を直す。
+
+上の `example.com` 用ペイロードはスキーマ確認向きで、**実 DOM には `.item` が無い**ため、そのままでは抽出件数は増えない。
+
+### 実サイト例: Hacker News（トップの記事一覧）
+
+**サイト**: [https://news.ycombinator.com/](https://news.ycombinator.com/)
+
+#### 手順の概要
+
+1. 拡張コンテキストのコンソールで、下の `configs/save` を実行する（`updatedAt` は実行時の ISO 文字列に置き換えてよい）。
+2. **Hacker News のタブを開いた状態で**そのタブをリロードする（`urlPatterns` が一致し、Content Script が起動する）。
+3. Popup 等の DevTools から IndexedDB の `records` を見て、`serviceId` が `service-hn-demo` の行が増えているか確認する。
+
+**設定例（`configs/save` の `payload`）**
+
+```js
+chrome.runtime.sendMessage(
+  {
+    type: "configs/save",
+    payload: {
+      id: "service-hn-demo",
+      name: "Hacker News (demo)",
+      urlPatterns: ["*://news.ycombinator.com/*"],
+      observeRootSelector: "#bigbox table",
+      itemSelector: "tr.athing",
+      uniqueKeyField: "link",
+      fields: [
+        { name: "link", selector: "span.titleline > a", type: "linkUrl" },
+        { name: "title", selector: "span.titleline > a", type: "text" },
+      ],
+      enabled: true,
+      updatedAt: new Date().toISOString(),
+    },
+  },
+  (response) => {
+    if (chrome.runtime.lastError) {
+      console.error(chrome.runtime.lastError.message);
+      return;
+    }
+    console.log(response);
+  },
+);
+```
+
+#### 補足
+
+- `observeRootSelector` が見つからないときはコンソールに `Kansu: 監視ルートが見つかりません` が出る。その場合は DevTools で一覧テーブルのセレクタを確認し、`#bigbox table` や `table.itemlist`、`body` など実在するルートに変えて再度 `configs/save` する。
+- Hacker News のトップは無限スクロールではなくページ送りが多い。**別ページへ遷移すると**ページ全体が読み込み直され、Content Script も再度走る。無限スクロールの再抽出確認は、別のサイトで同様にセレクタを合わせる必要がある。
+
+### E2E と同じ固定サンプルページで手動デバッグする
+
+実サイト依存を避けて切り分けたい場合は、E2E と同じ固定ページを使う。対象ファイルは `debug-fixtures/infinite-scroll.html` で、E2E でも同一ファイルを読み込んでいる。
+
+#### 手順
+
+1. ターミナルで fixture サーバを起動する。
+
+```bash
+pnpm debug:fixture
+```
+
+1. ブラウザで `http://127.0.0.1:41731/kansu-e2e/infinite-scroll` を開く。
+1. 拡張コンテキストのコンソールで、次の `configs/save` を実行する。
+1. 対象タブをリロードし、初回抽出で `records` が増えることを確認する。
+1. ページ上の `Add item` ボタンを押し、再抽出で件数が増えることを確認する（`MutationObserver` + バッチの確認）。
+
+```js
+chrome.runtime.sendMessage(
+  {
+    type: "configs/save",
+    payload: {
+      id: "service-e2e-manual",
+      name: "E2E Manual Fixture",
+      urlPatterns: ["http://127.0.0.1:41731/kansu-e2e/*"],
+      observeRootSelector: "#feed",
+      itemSelector: ".item",
+      uniqueKeyField: "link",
+      fields: [
+        { name: "link", selector: ".link", type: "linkUrl" },
+        { name: "title", selector: ".title", type: "text" },
+      ],
+      enabled: true,
+      updatedAt: new Date().toISOString(),
+    },
+  },
+  (response) => {
+    if (chrome.runtime.lastError) {
+      console.error(chrome.runtime.lastError.message);
+      return;
+    }
+    console.log(response);
+  },
+);
+```
+
+#### 補足（固定サンプルページ）
+
+- fixture サーバのポートを変えたい場合は `FIXTURE_PORT` を設定して起動する（bash 例: `FIXTURE_PORT=41800 pnpm debug:fixture` / PowerShell 例: `$env:FIXTURE_PORT=41800; pnpm debug:fixture`）。
+- 404 になる場合は `pnpm debug:fixture` のターミナルに表示された URL を優先する。
+- 固定ページで期待どおり動くのに実サイトで動かない場合は、サイト側 DOM（セレクタ）差分が原因である可能性が高い。
+
+### 抽出・保存が動いているかの見極め
+
+- **開発者**は、下記「IndexedDB（Dexie）の確認」のとおり DevTools で `records` に行が増えるか確認する。初回は上記の手動 `configs/save` で少なくとも 1 件書き込んでおくと DB が作成されやすい。
+- **拡張**は、無限スクロールで DOM が連続追加されても、抽出処理を **最大でも遅延間隔ごと**にまとめて実行する。**開発者**はページでスクロールしながら、即時に毎ノードで `bulkUpsert` が飛ばないことを確認する。
+- **開発者**は、抽出ロジック・URL 一致・バッチの回帰を `pnpm test` の `src/entrypoints/content/*.test.ts` で確認する。
+
 ## IndexedDB（Dexie）の確認
 
 ### データベース名・ストア
@@ -134,7 +310,7 @@ Service Worker 側は **受信ログ・例外確認**のためにコンソール
 
 ## ソースマップとホットリロード
 
-- WXT の dev ビルドではソースマップが有効になりやすく、Service Worker / Popup のスタックトレースから TypeScript 元行に近い位置へジャンプしやすいです。
+- WXT の dev ビルドではソースマップが有効になりやすく、Service Worker / Popup / Content Script のスタックトレースから TypeScript 元行に近い位置へジャンプしやすいです。
 - ファイル保存後のリロード挙動は WXT 版に依存します。反映されない場合は `chrome://extensions` の **「更新」** や、一度拡張の **無効→有効** も試してください。
 
 ## 自動テストとの役割分担

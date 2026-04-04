@@ -5,7 +5,7 @@
 
 ## 現在のタスク
 
-`docs/implementation_plan.md` の Phase 2（Dexie ストレージ層）を完了し、Phase 3（抽出エンジン）着手準備。
+`docs/implementation_plan.md` の Phase 3（抽出エンジン）を完了し、Phase 4（UI）へ進む準備を行う。
 
 ## 進捗状況
 
@@ -30,6 +30,12 @@
 - [x] `src/lib/repositories/recordRepository.test.ts` を追加し、重複 upsert / transaction ロールバック / ページ境界を検証
 - [x] `fake-indexeddb` を導入し、Dexie テストランタイムを整備
 - [x] `pnpm check` / `pnpm test` を通過
+- [x] `src/entrypoints/content/` を追加し、Content Script をエンジン本体とユーティリティへ分割
+- [x] URL パターン一致判定、フィールド抽出器（text/link/image/regex）、検索用正規化（NFKC + かな fold）を実装
+- [x] `MutationObserver` 通知のバッチ実行（delay queue）と `pagehide` cleanup を実装
+- [x] `records/bulkUpsert` 送信と失敗時継続のエラーハンドリングを実装
+- [x] Phase 3 向けのテスト/fixture を追加（DOM差分模擬、大量 mutation 集約、安全スキップ）
+- [x] 追加実装後に `pnpm check` / `pnpm test` を再通過
 
 ## 過去タスク（完了）
 
@@ -73,7 +79,9 @@
 - MarkdownLint（markdownlint-cli2）の除外は `.markdownlint-cli2.jsonc` の `ignores` のみ。`.cursor/**` と `.serena/**` を対象外とし、`Scratchpad.md` や `docs/` は `pnpm lint-md` / lint-staged のチェック対象。
 - さらに、`GEMINI.md` を削除。Serena メモリ `ai_agent_operational_lessons` を廃止し、運用メモは `code_style_and_conventions.md` に統合（Cursor ルールと Serena の役割差も同ファイルに記載）。
 - `docs/requirements.md` / `docs/implementation_plan.md` / `docs/implementation_guide.md` を再編し、`FR/NFR` ベースのトレーサビリティ、MV3ライフサイクル前提、`MutationObserver` バッチ化、`bulkPut + transaction`、`NFKC + かな差吸収` を明文化した。
+- `docs/implementation_plan.md` と `docs/implementation_guide.md` は要件・設計の普遍的記述に留め、実装の進み具合や「いまどこまで終わったか」は本 Scratchpad とコードで追う（計画書に実装状況を書かない方針）。
 - Phase 2 として、Dexie スキーマ・Repository 層・MessageRouter 差し替え・Background 注入・関連テスト追加を完了した。
-- 次アクション: Phase 3（Content Script 抽出エンジン）の実装範囲を確定し、抽出バッチ処理（MutationObserver + queue）に着手する。
+- Phase 3 として、Content Script の抽出エンジン（URL一致、抽出器、MutationObserverバッチ、bulkUpsert送信、ユニットテスト）を実装した。
+- 次アクション: Phase 4（Popup / Options / メインUI）に向けて、UI状態管理と検索導線の責務分割を確定する。
 - 旧 `implementation_guide` の 2.2/2.3/2.4 で重要だった記述の欠落を再点検し、現行版へ追記した（`src` 配置とWXTファイルベース構成、各エントリポイント責務の詳細、共有モジュール、データフロー、開発運用ポリシー）。
 - 依存関係を最新化済み。更新手順は [README.md](README.md) の「依存関係の更新」を参照。

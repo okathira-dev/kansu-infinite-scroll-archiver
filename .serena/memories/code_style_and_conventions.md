@@ -40,3 +40,4 @@
 ## ドキュメント
 - Markdown は markdownlint-cli2 でチェック（`pnpm lint-md`）
 - **開発用ドキュメントに日付をメモしない**。経緯や順序が必要ならリストや本文で明示する（`docs/`、`Scratchpad.md`、本メモリ群、README、`.cursor` の説明など）。
+- **plan / guide は普遍的記述のみ、進捗は Scratchpad**、手順文の主語明示、WXT の `content.ts` と `content/index.ts` 併存禁止 … などセッションで固定した方針の**正本は** `.cursor/rules/kansu-agent-conventions.mdc` の「ドキュメントの役割分担」「WXT エントリ」を参照（本文の二重掲載はしない）。

@@ -37,7 +37,7 @@
 | 状態管理 | Zustand | UI状態とフォーム状態 |
 | 永続化 | Dexie (IndexedDB) | 設定・抽出データ保存 |
 | 品質 | Biome + MarkdownLint | lint/format/doc規約 |
-| テスト | Vitest + Playwright（Phase 4 以降に React Testing Library を追加予定） | 単体/統合/コンポーネント（予定）/E2E |
+| テスト | Vitest + Playwright（UI コンポーネントの網羅に Testing Library 等を併用しうる） | 単体/統合/コンポーネント/E2E |
 
 ## 4. アーキテクチャ
 
@@ -63,21 +63,20 @@ flowchart LR
 
 - プロジェクトのソースコードは `src` 配下に集約する
 - WXTのファイルベース構成に従い、エントリーポイントを責務単位で分離する
-  - `src/entrypoints/content*`: ページ注入と抽出ロジック
-  - `src/entrypoints/background*`: メッセージ受信と永続化
+  - `src/entrypoints/content/` … Content Script（エントリは `index.ts`。補助モジュールは同ディレクトリにコロケート。WXT では `content.ts` と `content/index.ts` を**併存させない**）
+  - `src/entrypoints/background.ts` … Background（Service Worker）
   - `src/entrypoints/popup/*`: ブラウザアクションUI
-  - `src/entrypoints/options/*`: 設定管理UI
+  - `src/entrypoints/options/*`: 設定管理UI（WXT の Options エントリ）
 - 参照: <https://wxt.dev/guide/essentials/project-structure.html#adding-a-src-directory>
 
 ### 4.2. 各エントリーポイントの責務
 
 - **Content Script**
   - ページ内でのデータ操作の主担当
-  - URL一致判定
+  - URL 一致判定と抽出パイプライン（監視・パース・Background への送信）
   - メインUIの注入と管理（検索、検索対象項目選択、ソート、ページネーション、表示件数変更）
-  - 抽出処理（監視・パース・送信）
-  - 保存済みデータの表示（検索/ソート条件を受け取り、Background経由で取得）
-  - メインUI表示（検索、ソート、ページング）
+  - 保存済みデータの一覧表示（検索・ソート条件を受け取り、Background 経由で取得した結果の再描画）
+  - Popup からのメインUI表示トグルとの連携
 - **Background Service Worker**
   - メッセージルーティング
   - IndexedDBへの保存/検索
@@ -116,7 +115,7 @@ flowchart LR
 
 1. Options UIでサービス設定やグローバル設定を更新する
 2. Options UIがBackgroundへ保存要求を送る
-3. BackgroundがIndexedDBへ永続化し、必要に応じてContent Scriptへ反映通知する
+3. BackgroundがIndexedDBへ永続化する。Content Script へ設定変更を伝える方式（`runtime` メッセージ、タブの再読み込み、エントリの再実行など）は実装方針として選択する
 
 ## 5. データモデル
 
@@ -186,7 +185,7 @@ erDiagram
 
 ## 6. メッセージ契約
 
-### 6.1. メッセージ型（Phase 1 実装）
+### 6.1. メッセージ型（契約）
 
 ```ts
 export type RequestMessage =
@@ -301,9 +300,9 @@ export type ResponseMessage<T = unknown> =
 - Popup→Options→Content Scriptの主要導線を自動化
 - CI上でも再現できるシナリオのみを必須ケースにする
 
-### 11.3. コンポーネント（予定）
+### 11.3. コンポーネント
 
-- `implementation_plan.md` の Phase 4 に合わせ、フォーム・一覧・通知などは **Vitest + React Testing Library** で補う想定。導入時は依存に `@testing-library/react` 等を追加する。
+- フォーム・一覧・通知などの UI は、**Vitest + React Testing Library** で補う選択肢がある。導入時は依存に `@testing-library/react` 等を追加する。
 
 ## 12. 運用・計測
 

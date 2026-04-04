@@ -22,3 +22,12 @@ alwaysApply: true
 
 - 要件・フェーズ・技術仕様は [requirements.md](mdc:docs/requirements.md)、[implementation_plan.md](mdc:docs/implementation_plan.md)、[implementation_guide.md](mdc:docs/implementation_guide.md) を参照する。
 - 短期タスクと進捗は [Scratchpad.md](mdc:Scratchpad.md)。仕様変更時は関連ドキュメントと同期する（全体方針は [global.mdc](mdc:.cursor/rules/global.mdc)）。
+
+### ドキュメントの役割分担（永続方針）
+
+- **`docs/implementation_plan.md` と `docs/implementation_guide.md`** は、**実装の進みやリポジトリの現在状態に依存しない普遍的な記述**に限定する（例: 「実装済み」「現状」「Phase X が完了」などのスナップショットは書かない）。進捗・いまどこまで終わったかは **Scratchpad.md とコード**で追う。
+- **`docs/wxt-dev-debug.md`** など手順系は、**誰が何をするか**（開発者がコンソールに打つ／拡張が自動で送るなど）を**本文の主語で明示**する。読み手向けの説明として足りることはメタ見出し（例: 「主語の整理」）で繰り返さない。
+
+### WXT エントリ（Content Script）
+
+- **`src/entrypoints/content.ts` と `src/entrypoints/content/index.ts` を併存させない**。WXT はどちらも `content` エントリとして解釈し、重複エントリエラーになる。補助モジュールを `content/` 配下に置くなら **`content/index.ts` をエントリ**とする方式に寄せる。

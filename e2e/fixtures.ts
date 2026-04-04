@@ -59,3 +59,47 @@ export const test = base.extend<{
 });
 
 export const expect = test.expect;
+
+/**
+ * 拡張コンテキスト（popup ページ）から runtime message を送信する。
+ *
+ * Service Worker から自分自身へ送る経路を避けるため、常に拡張ページ経由で実行する。
+ */
+export const sendRuntimeMessage = async <TResponse>(
+  context: BrowserContext,
+  extensionId: string,
+  message: unknown,
+): Promise<TResponse> => {
+  const extensionPage = await context.newPage();
+  try {
+    await extensionPage.goto(`chrome-extension://${extensionId}/popup.html`);
+    const response = await extensionPage.evaluate(async (request) => {
+      const runtime = (
+        globalThis as {
+          chrome?: {
+            runtime?: {
+              lastError?: { message?: string };
+              sendMessage: (payload: unknown, callback: (result: unknown) => void) => void;
+            };
+          };
+        }
+      ).chrome?.runtime;
+      if (!runtime) {
+        throw new Error("runtime API is not available");
+      }
+
+      return await new Promise<unknown>((resolve, reject) => {
+        runtime.sendMessage(request, (result: unknown) => {
+          if (runtime.lastError) {
+            reject(new Error(runtime.lastError.message ?? "unknown runtime error"));
+            return;
+          }
+          resolve(result);
+        });
+      });
+    }, message);
+    return response as TResponse;
+  } finally {
+    await extensionPage.close();
+  }
+};
