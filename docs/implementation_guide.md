@@ -175,6 +175,17 @@ export interface ExtractedRecord {
   extractedAt: string;
   fieldValues: Record<string, RecordFieldValue>;
 }
+
+export interface SearchQuery {
+  serviceId: string;
+  keyword: string;
+  /** 検索照合に使うフィールド名（`fieldValues[name].normalized` のみ） */
+  targetFieldNames: string[];
+  sortBy: string;
+  sortOrder: "asc" | "desc";
+  page: number;
+  pageSize: number;
+}
 ```
 
 ### 5.2. IndexedDBスキーマ方針
@@ -210,13 +221,13 @@ db.version(1).stores({
 erDiagram
     SERVICE_CONFIG ||--o{ FIELD_RULE : has
     SERVICE_CONFIG ||--o{ RECORD : owns
-    RECORD ||--|| RECORD_DATA : contains
+    RECORD ||--o{ RECORD_FIELD_VALUE : "fieldValues"
 ```
 
 - `SERVICE_CONFIG`: サービスごとの抽出設定（URL、セレクタ、主キー定義）
-- `FIELD_RULE`: 各フィールドの抽出ルール（text/link/image/regex）
-- `RECORD`: 抽出結果メタ情報（`serviceId`, `uniqueKey`, `extractedAt`）
-- `RECORD_DATA`: 実データ本体（title/link/thumbnail等）
+- `FIELD_RULE`: 各フィールドの抽出ルール（text/link/image/regex）。設定上の配列キーは `fieldRules`
+- `RECORD`: 抽出結果 1 件（`serviceId`, `uniqueKey`, `extractedAt` とフィールド値のマップ）
+- `RECORD_FIELD_VALUE`: フィールド名ごとの `raw`（表示用）と `normalized`（検索用）。永続化上は `ExtractedRecord.fieldValues` のエントリとして格納
 
 ## 6. メッセージ契約
 
@@ -282,8 +293,9 @@ export type ResponseMessage<T = unknown> =
   （
   [MDN: String.prototype.normalize()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize)
   ）。
-- かな差吸収のため、ひらがな/カタカナを同一表現へfoldするユーティリティを適用
+- かな差吸収のため `wanakana.toHiragana` を適用し、`passRomaji: true` / `convertLongVowelMark: false` を固定して英字の過変換と長音の過展開を避ける
 - 正規化は保存時に `fieldValues.*.normalized` へ事前計算し、検索時は `targetFieldNames` の対象だけ照合する（`FR-21`, `NFR-01`）
+- 辞書同梱は行わず、自動読み変換（漢字→かな）は対象外とする
 
 ### 8.2. ソート
 

@@ -52,6 +52,7 @@ this.version(1).stores({
 
 ### `records` のキーとインデックス
 
+- 1 行のペイロードは `ExtractedRecord` に対応する。可変フィールドは `fieldValues: Record<string, { raw, normalized }>` にまとめ、全文結合した検索用テキスト列は持たない。キーワード検索は `SearchQuery.targetFieldNames` で指定した名前の `normalized` のみを対象とする（実装・要件は `implementation_guide.md` のデータモデル節と `requirements.md` の `FR-21` を参照）。
 - 複合主鍵 `serviceId` + `uniqueKey` は、Dexie の複合キー構文
   `[a+b]`（例: `&[serviceId+uniqueKey]`）に対応する。
   仕様は

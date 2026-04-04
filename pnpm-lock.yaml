@@ -38,6 +38,9 @@ importers:
       tailwindcss:
         specifier: ^4.2.2
         version: 4.2.2
+      wanakana:
+        specifier: ^5.3.1
+        version: 5.3.1
       zustand:
         specifier: ^5.0.12
         version: 5.0.12(@types/react@19.2.14)(react@19.2.4)
@@ -2567,6 +2570,10 @@ packages:
       jsdom:
         optional: true
 
+  wanakana@5.3.1:
+    resolution: {integrity: sha512-OSDqupzTlzl2LGyqTdhcXcl6ezMiFhcUwLBP8YKaBIbMYW1wAwDvupw2T9G9oVaKT9RmaSpyTXjxddFPUcFFIw==, tarball: https://registry.npmjs.org/wanakana/-/wanakana-5.3.1.tgz}
+    engines: {node: '>=12'}
+
   watchpack@2.4.4:
     resolution: {integrity: sha512-c5EGNOiyxxV5qmTtAB7rbiXxi1ooX1pQKMLX/MIabJjRA0SJBQOjKF+KSVfHkr9U1cADPon0mRiVe/riyaiDUA==}
     engines: {node: '>=10.13.0'}
@@ -4949,6 +4956,8 @@ snapshots:
       '@types/node': 25.5.0
     transitivePeerDependencies:
       - msw
+
+  wanakana@5.3.1: {}
 
   watchpack@2.4.4:
     dependencies:

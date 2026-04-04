@@ -5,7 +5,7 @@
 
 ## 現在のタスク
 
-Phase 3 の正規化設計を再構成し、`fieldValues`（raw/normalized）への置換と `fields` 多義性解消（`fieldRules` / `targetFieldNames`）を反映する。
+Phase 4（Popup / Options / メインUI）: `FR-21`〜`FR-23`・`FR-30`〜`FR-33` に沿い、設定 CRUD・検索（`targetFieldNames` 指定）・ソート・ページネーション・トースト等の UI を実装する。
 
 ## 進捗状況
 
@@ -31,7 +31,7 @@ Phase 3 の正規化設計を再構成し、`fieldValues`（raw/normalized）へ
 - [x] `fake-indexeddb` を導入し、Dexie テストランタイムを整備
 - [x] `pnpm check` / `pnpm test` を通過
 - [x] `src/entrypoints/content/` を追加し、Content Script をエンジン本体とユーティリティへ分割
-- [x] URL パターン一致判定、フィールド抽出器（text/link/image/regex）、検索用正規化（NFKC + かな fold）を実装
+- [x] URL パターン一致判定、フィールド抽出器（text/link/image/regex）、検索用正規化（NFKC + `wanakana.toHiragana` によるかな統一）を実装
 - [x] `MutationObserver` 通知のバッチ実行（delay queue）と `pagehide` cleanup を実装
 - [x] `records/bulkUpsert` 送信と失敗時継続のエラーハンドリングを実装
 - [x] Phase 3 向けのテスト/fixture を追加（DOM差分模擬、大量 mutation 集約、安全スキップ）
@@ -40,6 +40,10 @@ Phase 3 の正規化設計を再構成し、`fieldValues`（raw/normalized）へ
 - [x] `ServiceConfig.fields` / `SearchQuery.fields` を `fieldRules` / `targetFieldNames` にリネーム
 - [x] `RecordRepository.search` を対象フィールド限定の正規化検索へ修正（キーワードも同一正規化）
 - [x] 型・バリデーション・メッセージ経路・テスト・`implementation_guide.md` を新設計に同期
+- [x] `wanakana` を導入し、`normalizeForSearch` のかな統一処理をライブラリ化（`passRomaji: true`, `convertLongVowelMark: false` を固定）
+- [x] `src/lib/search/textNormalization.test.ts` を新設し、NFKC・かな統一・英字混在・長音記号の正規化結果を期待値で固定
+- [x] `debug-fixtures/infinite-scroll.html` を日本語/英語/日英混在のタイトルローテーションへ更新
+- [x] `requirements.md` / `implementation_guide.md` / `wxt-dev-debug.md` に正規化範囲（自動読み一致なし）と fixture 方針を反映
 
 ## 過去タスク（完了）
 
@@ -85,7 +89,7 @@ Phase 3 の正規化設計を再構成し、`fieldValues`（raw/normalized）へ
 - `docs/requirements.md` / `docs/implementation_plan.md` / `docs/implementation_guide.md` を再編し、`FR/NFR` ベースのトレーサビリティ、MV3ライフサイクル前提、`MutationObserver` バッチ化、`bulkPut + transaction`、`NFKC + かな差吸収` を明文化した。
 - `docs/implementation_plan.md` と `docs/implementation_guide.md` は要件・設計の普遍的記述に留め、実装の進み具合や「いまどこまで終わったか」は本 Scratchpad とコードで追う（計画書に実装状況を書かない方針）。
 - Phase 2 として、Dexie スキーマ・Repository 層・MessageRouter 差し替え・Background 注入・関連テスト追加を完了した。
-- Phase 3 として、Content Script の抽出エンジン（URL一致、抽出器、MutationObserverバッチ、bulkUpsert送信、ユニットテスト）を実装した。
-- 次アクション: Phase 4（Popup / Options / メインUI）に向けて、UI状態管理と検索導線の責務分割を確定する。
+- Phase 3 として、Content Script の抽出エンジン（URL一致、抽出器、MutationObserverバッチ、bulkUpsert送信、ユニットテスト）を実装し、`ExtractedRecord.fieldValues`（`raw` / `normalized`）・`fieldRules` / `targetFieldNames`・`wanakana` 正規化まで完了した。
+- 次アクション: Phase 4 で Popup / Options / メインUI を実装し、Zustand 等での状態管理と Background メッセージ経路の責務分割をコードに落とす。
 - 旧 `implementation_guide` の 2.2/2.3/2.4 で重要だった記述の欠落を再点検し、現行版へ追記した（`src` 配置とWXTファイルベース構成、各エントリポイント責務の詳細、共有モジュール、データフロー、開発運用ポリシー）。
 - 依存関係を最新化済み。更新手順は [README.md](README.md) の「依存関係の更新」を参照。

@@ -1,5 +1,4 @@
-const toHiragana = (value: string): string =>
-  value.replace(/[\u30A1-\u30F6]/g, (char) => String.fromCharCode(char.charCodeAt(0) - 0x60));
+import { toHiragana } from "wanakana";
 
 const collapseWhitespaces = (value: string): string => value.replace(/\s+/g, " ").trim();
 
@@ -7,9 +6,17 @@ const collapseWhitespaces = (value: string): string => value.replace(/\s+/g, " "
  * 検索向けに文字列を正規化する。
  *
  * - NFKC 正規化
- * - カタカナ → ひらがな fold
+ * - カタカナ → ひらがな fold（wanakana）
  * - 小文字化
  * - 空白の正規化
  */
 export const normalizeForSearch = (value: string): string =>
-  collapseWhitespaces(toHiragana(value.normalize("NFKC")).toLowerCase());
+  collapseWhitespaces(
+    toHiragana(value.normalize("NFKC"), {
+      // 英字をかなへ自動変換しない（検索語としての英単語を維持する）。
+      passRomaji: true,
+      // 長音記号の展開（オー→おう等）による過変換を避ける。
+      convertLongVowelMark: false,
+      useObsoleteKana: false,
+    }).toLowerCase(),
+  );

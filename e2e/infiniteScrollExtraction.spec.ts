@@ -16,7 +16,7 @@ type RuntimeResponse<TData> = { ok: true; data: TData } | { ok: false; error: Re
 interface SearchRecord {
   serviceId: string;
   uniqueKey: string;
-  data: Record<string, string>;
+  fieldValues: Record<string, { raw: string; normalized: string }>;
 }
 
 interface SearchResponseData {
@@ -42,7 +42,7 @@ const buildSearchRequest = (serviceId: string) => ({
   payload: {
     serviceId,
     keyword: "",
-    fields: ["title", "link"],
+    targetFieldNames: ["title", "link"],
     sortBy: "title",
     sortOrder: "asc" as const,
     page: 1,
@@ -75,7 +75,7 @@ test("無限スクロール抽出: 初回抽出とDOM追加後の再抽出", asy
       observeRootSelector: "#feed",
       itemSelector: ".item",
       uniqueKeyField: "link",
-      fields: [
+      fieldRules: [
         { name: "link", selector: ".link", type: "linkUrl" },
         { name: "title", selector: ".title", type: "text" },
       ],

@@ -272,6 +272,7 @@ chrome.runtime.sendMessage(
 
 #### 補足（固定サンプルページ）
 
+- fixture の `.title` は日本語/英語/日英混在の固定ローテーション（例: `日本語タイトル`, `English headline`, `日本語 and English`）で生成される。検索正規化の手動確認時は、かな統一・英字保持・NFKC の効き方をこの混在タイトルで確認する。
 - fixture サーバのポートを変えたい場合は `FIXTURE_PORT` を設定して起動する（bash 例: `FIXTURE_PORT=41800 pnpm debug:fixture` / PowerShell 例: `$env:FIXTURE_PORT=41800; pnpm debug:fixture`）。
 - 自動投入および上記例の `urlPatterns` は `http://127.0.0.1:*/kansu-e2e/*` とし、**ポート番号に依存しない**。`pnpm dev` ではシェルから渡した `FIXTURE_PORT` が `serve-e2e-fixture.mjs` と `wxt.config.ts` の `webExt.startUrls` の両方に効く。ポート競合時はエラーで終了する。
 - 404 になる場合は `pnpm debug:fixture` のターミナルに表示された URL を優先する。
