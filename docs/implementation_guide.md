@@ -2,7 +2,10 @@
 
 ## 1. このドキュメントの目的
 
-本ドキュメントは、`docs/requirements.md` の要件（`FR-*`, `NFR-*`）を実装レベルに落とし込むための技術仕様です。  
+本ドキュメントは、
+[requirements.md の「4. 機能要件（MVP）」](requirements.md#4-機能要件mvp) と
+[「5. 非機能要件」](requirements.md#5-非機能要件)
+の要件（`FR-*`, `NFR-*`）を実装レベルに落とし込むための技術仕様です。  
 実装時に迷いやすい以下を明確化します。
 
 - Manifest V3前提の実行モデル
@@ -10,11 +13,26 @@
 - Content Script/Background間のメッセージ契約
 - 抽出、検索、ソート、インポート/エクスポートの実装方針
 
+### 1.1. 位置づけと読み方（重要）
+
+- **[implementation_plan.md の「1. 基本方針」](implementation_plan.md#1-基本方針)** を補足する、やや抽象的なイメージと技術方針の束として読む。図や箇条書きは理解の助けであり、**リポジトリの唯一の正本（source of truth）ではない**。
+- **実装・改修の最終判断**は、優先順位が高い順に
+  [requirements.md の要件](requirements.md#4-機能要件mvp)、
+  既存ソース、テスト、メッセージ型・バリデーション等の契約に従う。本書とコードや要件が食い違う場合は、**本書が古いか簡略化されている可能性**を疑う。
+- 詳細な永続化スキーマの意図は
+  [storage-and-db-design.md の「設計意図」](storage-and-db-design.md#設計意図)
+  も参照する（本書の DB 節は概要に留まる場合がある）。
+
+**本書だけを過信して実装に当てはめるのは避ける。** 足りない具体性はコード探索とテストで補う。
+
 ## 2. 設計原則
 
 ### 2.1. MV3前提のイベント駆動
 
-- Service Workerは停止/再開されるため、グローバル変数を信頼しない（`NFR-10`）
+- Service Workerは停止/再開されるため、グローバル変数を信頼しない（`NFR-10`）。
+  挙動は
+  [Chrome Extensions: service worker lifecycle](https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/lifecycle)
+  を参照。
 - 復元可能な状態はIndexedDB/`chrome.storage`へ保存する
 - 処理は再入可能・冪等（同一メッセージの再処理に耐える）にする
 
@@ -25,7 +43,10 @@
 
 ### 2.3. 高頻度DOM変更への耐性
 
-- `MutationObserver` コールバックでは重い処理を直接実行しない（`NFR-03`）
+- `MutationObserver` コールバックでは重い処理を直接実行しない（`NFR-03`）。
+  API は
+  [MDN: MutationObserver](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver)
+  を参照。
 - 変更通知をキュー化して、抽出処理はバッチで実行する（`FR-13`）
 
 ## 3. 技術スタック
@@ -154,8 +175,15 @@ export interface ExtractedRecord {
 
 ### 5.2. IndexedDBスキーマ方針
 
-動的にオブジェクトストアを増やす設計は、IndexedDBバージョン管理を複雑化しやすいため採用しません。  
+動的にオブジェクトストアを増やす設計は、IndexedDBバージョン管理を複雑化しやすいため採用しません
+（
+[MDN: IDBDatabase.createObjectStore()](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/createObjectStore)、
+[MDN: IDBOpenDBRequest upgradeneeded](https://developer.mozilla.org/en-US/docs/Web/API/IDBOpenDBRequest/upgradeneeded_event)
+）。  
 固定テーブル + 複合キーで管理します（`FR-20`, `NFR-12`）。
+詳細な意図は
+[storage-and-db-design.md の「固定ストアとバージョン管理」](storage-and-db-design.md#固定ストアとバージョン管理)
+を参照。
 
 ```ts
 db.version(1).stores({
@@ -166,7 +194,10 @@ db.version(1).stores({
 ```
 
 - 重複防止: `records` の主キーを `"[serviceId+uniqueKey]"` にする
-- 保存性能: 複数件保存は `bulkPut` + transaction を使う（`NFR-04`）
+- 保存性能: 複数件保存は `bulkPut` + transaction を使う（`NFR-04`）。
+  `bulkPut` の挙動は
+  [Dexie: Table.bulkPut()](https://dexie.org/docs/Table/Table.bulkPut())
+  を参照。
 - 注意: `bulkPut` をtransaction外で使うと部分成功が残る可能性があるため、原則transactionで囲む
 
 ### 5.3. データ構造の関係（概念）
@@ -208,7 +239,9 @@ export type ResponseMessage<T = unknown> =
 
 ### 6.2. ハンドラ実装ルール
 
-- `onMessage` で非同期応答する場合、互換性のため `return true` + `sendResponse` を基本にする
+- `onMessage` で非同期応答する場合、互換性のため `return true` + `sendResponse` を基本にする（
+  [Chrome Extensions: messaging](https://developer.chrome.com/docs/extensions/develop/concepts/messaging)
+  ）。
 - Promise返却による応答は利用可能な環境が広がっているが、互換性差を吸収する実装を優先する
 - 返却値は必ずシリアライズ可能なJSONに限定する
 - 検証失敗時は `VALIDATION_ERROR` を返し、`details` に検証エラー配列（`field`, `message`）を含める
@@ -242,12 +275,18 @@ export type ResponseMessage<T = unknown> =
 ### 8.1. 文字列正規化
 
 - 検索語/対象文字列ともに `String.prototype.normalize("NFKC")` を適用
+  （
+  [MDN: String.prototype.normalize()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize)
+  ）。
 - かな差吸収のため、ひらがな/カタカナを同一表現へfoldするユーティリティを適用
 - 正規化は保存時にも計算しておき、検索時コストを下げる（`FR-21`, `NFR-01`）
 
 ### 8.2. ソート
 
 - 文字列比較は `Intl.Collator("ja", { numeric: true, sensitivity: "base" })` を再利用
+  （
+  [MDN: Intl.Collator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Collator)
+  ）。
 - 不変性維持のため `toSorted()`（またはコピー後sort）を利用する
 
 ### 8.3. ページング
@@ -295,7 +334,9 @@ export type ResponseMessage<T = unknown> =
 
 ### 11.2. E2E（Playwright）
 
-- 拡張はpersistent contextで起動
+- 拡張はpersistent contextで起動（
+  [Playwright: Chrome extensions](https://playwright.dev/docs/chrome-extensions)
+  ）。
 - MV3 Service Worker取得（`context.serviceWorkers()`）をfixture化
 - Popup→Options→Content Scriptの主要導線を自動化
 - CI上でも再現できるシナリオのみを必須ケースにする

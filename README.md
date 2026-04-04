@@ -68,7 +68,7 @@ pnpm dev
 - `src/entrypoints/`: WXT エントリーポイント
 - `src/lib/`: 共有ロジック・ユーティリティ
 - `src/components/ui/`: 再利用 UI コンポーネント
-- `docs/`: 要件・実装計画・実装ガイド
+- `docs/`: 要件・実装計画・実装ガイド・ストレージ設計
 - `e2e/`: Playwright の E2E テスト
 
 ## ドキュメント
@@ -77,6 +77,7 @@ pnpm dev
 - [実装計画](docs/implementation_plan.md)
 - [実装ガイド](docs/implementation_guide.md)
 - [WXT 開発モードのデバッグ・動作確認](docs/wxt-dev-debug.md)
+- [ストレージと DB 設計](docs/storage-and-db-design.md)
 
 ## 開発時の参照順
 
