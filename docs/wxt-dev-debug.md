@@ -21,7 +21,7 @@ pnpm dev
 ```
 
 公式の説明どおり、WXT は [web-ext](https://www.npmjs.com/package/web-ext) 経由でブラウザを開き、拡張を読み込んだ状態で起動します。  
-Firefox で試す場合は `pnpm dev:firefox`（`package.json` のスクリプト）。
+Firefox で fixture 付き起動を試す場合は `pnpm dev:firefox`。拡張だけ起動したい場合は `pnpm dev:extension` / `pnpm dev:extension:firefox` を使う。
 
 ### CLI オプション（公式）
 
@@ -217,7 +217,18 @@ chrome.runtime.sendMessage(
 
 実サイト依存を避けて切り分けたい場合は、E2E と同じ固定ページを使う。対象ファイルは `debug-fixtures/infinite-scroll.html` で、E2E でも同一ファイルを読み込んでいる。
 
-#### 手順
+#### 最短手順（推奨）
+
+1. `pnpm dev` を実行する。
+1. fixture サーバ起動後に、`wxt.config.ts` の `webExt.startUrls`（`KANSU_DEV_OPEN_FIXTURE=1` のときのみ有効）により、WXT が起動したブラウザ内で `http://127.0.0.1:41731/kansu-e2e/infinite-scroll` が開くことを確認する。
+1. 開発ビルドでは、`service-e2e-manual` 設定が未登録のときだけ自動投入されるため、そのまま対象タブをリロードして抽出確認へ進める。
+
+`pnpm dev` / `pnpm dev:firefox` は `concurrently` で `pnpm debug:fixture` と `pnpm dev:extension`（または `pnpm dev:extension:firefox`）を並列実行する。`cross-env KANSU_DEV_OPEN_FIXTURE=1` により、WXT 側だけ `webExt.startUrls` が有効になる（fixture サーバはこの変数を参照しない）。  
+fixture ポートは環境変数 **`FIXTURE_PORT`** で指定し、未設定なら `41731`。他ツールの `PORT` と衝突しやすいため、本リポジトリでは **`FIXTURE_PORT` に統一**する。指定ポートが既に使われている場合は `EADDRINUSE` で失敗する（別プロセスを止めるか `FIXTURE_PORT` を変える）。  
+例（PowerShell）: `$env:FIXTURE_PORT=41800; pnpm dev`。bash 例: `FIXTURE_PORT=41800 pnpm dev`。  
+拡張だけを起動したい場合は `pnpm dev:extension` または `pnpm dev:extension:firefox` を使う。
+
+#### 手動手順（挙動を分離して検証したい場合）
 
 1. ターミナルで fixture サーバを起動する。
 
@@ -237,7 +248,7 @@ chrome.runtime.sendMessage(
     payload: {
       id: "service-e2e-manual",
       name: "E2E Manual Fixture",
-      urlPatterns: ["http://127.0.0.1:41731/kansu-e2e/*"],
+      urlPatterns: ["http://127.0.0.1:*/kansu-e2e/*"],
       observeRootSelector: "#feed",
       itemSelector: ".item",
       uniqueKeyField: "link",
@@ -262,6 +273,7 @@ chrome.runtime.sendMessage(
 #### 補足（固定サンプルページ）
 
 - fixture サーバのポートを変えたい場合は `FIXTURE_PORT` を設定して起動する（bash 例: `FIXTURE_PORT=41800 pnpm debug:fixture` / PowerShell 例: `$env:FIXTURE_PORT=41800; pnpm debug:fixture`）。
+- 自動投入および上記例の `urlPatterns` は `http://127.0.0.1:*/kansu-e2e/*` とし、**ポート番号に依存しない**。`pnpm dev` ではシェルから渡した `FIXTURE_PORT` が `serve-e2e-fixture.mjs` と `wxt.config.ts` の `webExt.startUrls` の両方に効く。ポート競合時はエラーで終了する。
 - 404 になる場合は `pnpm debug:fixture` のターミナルに表示された URL を優先する。
 - 固定ページで期待どおり動くのに実サイトで動かない場合は、サイト側 DOM（セレクタ）差分が原因である可能性が高い。
 

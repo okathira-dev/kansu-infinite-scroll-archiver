@@ -20,4 +20,15 @@ describe("URL パターン一致判定", () => {
     const patterns = ["https://foo.example/*", "*://bar.example/*"];
     expect(matchesAnyUrlPattern(patterns, "https://bar.example/list")).toBe(true);
   });
+
+  it("ローカル fixture はポート番号をワイルドカードで任意にできる", () => {
+    const pattern = "http://127.0.0.1:*/kansu-e2e/*";
+    expect(matchesUrlPattern(pattern, "http://127.0.0.1:41731/kansu-e2e/infinite-scroll")).toBe(
+      true,
+    );
+    expect(matchesUrlPattern(pattern, "http://127.0.0.1:41800/kansu-e2e/infinite-scroll")).toBe(
+      true,
+    );
+    expect(matchesUrlPattern(pattern, "http://127.0.0.1:41731/other/path")).toBe(false);
+  });
 });

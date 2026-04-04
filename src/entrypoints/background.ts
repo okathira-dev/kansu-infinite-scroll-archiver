@@ -1,4 +1,8 @@
 import { getKansuDb } from "@/lib/db";
+import {
+  createManualFixtureServiceConfig,
+  manualFixtureServiceId,
+} from "@/lib/dev/fixtureServiceConfig";
 import { createErrorResponse, MessageRouter } from "@/lib/messages";
 import { RecordRepository, ServiceConfigRepository } from "@/lib/repositories";
 
@@ -10,10 +14,28 @@ import { RecordRepository, ServiceConfigRepository } from "@/lib/repositories";
  */
 export default defineBackground(() => {
   const db = getKansuDb();
+  const serviceConfigRepository = new ServiceConfigRepository(db);
   const router = new MessageRouter({
-    serviceConfigRepository: new ServiceConfigRepository(db),
+    serviceConfigRepository,
     recordRepository: new RecordRepository(db),
   });
+
+  // 開発デバッグ専用の fixture 設定の自動投入
+  // Vite は import.meta.env をビルド時に静的置換し tree-shaking を効かせる（公式: https://vite.dev/guide/env-and-mode.html ）。
+  // そのため本番ビルドでは import.meta.env.DEV が偽に置換され、この if ブロック内とそこから辿るモジュールはバンドルから落ちる。
+  if (import.meta.env.DEV) {
+    void serviceConfigRepository
+      .findById(manualFixtureServiceId)
+      .then(async (existingConfig) => {
+        if (existingConfig) {
+          return;
+        }
+        await serviceConfigRepository.save(createManualFixtureServiceConfig());
+      })
+      .catch((error: unknown) => {
+        console.error("Kansu: fixture 設定の初期投入に失敗しました", error);
+      });
+  }
 
   browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     void router

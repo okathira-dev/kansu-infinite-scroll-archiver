@@ -24,5 +24,6 @@ const server = createServer(async (request, response) => {
 });
 
 server.listen(port, "127.0.0.1", () => {
-  console.log(`[kansu] fixture server: http://127.0.0.1:${port}${fixtureRoute}`);
+  const fixtureUrl = `http://127.0.0.1:${port}${fixtureRoute}`;
+  console.log(`[kansu] fixture server: ${fixtureUrl}`);
 });
