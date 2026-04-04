@@ -31,7 +31,7 @@ const serviceConfigPayload = {
   observeRootSelector: "body",
   itemSelector: ".item",
   uniqueKeyField: "id",
-  fields: [
+  fieldRules: [
     { name: "id", selector: ".id", type: "text" as const },
     { name: "title", selector: ".title", type: "text" as const },
   ],
@@ -94,8 +94,10 @@ describe("メッセージルータ", () => {
             serviceId: "service-1",
             uniqueKey: "r1",
             extractedAt: new Date().toISOString(),
-            normalizedSearchText: "title one",
-            data: { id: "r1", title: "Title 1" },
+            fieldValues: {
+              id: { raw: "r1", normalized: "r1" },
+              title: { raw: "Title 1", normalized: "title 1" },
+            },
           },
         ],
       },
@@ -108,7 +110,7 @@ describe("メッセージルータ", () => {
       payload: {
         serviceId: "service-1",
         keyword: "title",
-        fields: ["title"],
+        targetFieldNames: ["title"],
         sortBy: "title",
         sortOrder: "asc",
         page: 1,

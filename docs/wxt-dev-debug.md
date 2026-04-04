@@ -145,7 +145,7 @@ chrome.runtime.sendMessage(
       observeRootSelector: "body",
       itemSelector: ".item",
       uniqueKeyField: "id",
-      fields: [
+      fieldRules: [
         { name: "id", selector: ".id", type: "text" },
         { name: "title", selector: ".title", type: "text" },
       ],
@@ -163,7 +163,7 @@ chrome.runtime.sendMessage(
 );
 ```
 
-保存後、**開発者が対象タブをリロード**する（Content Script はページ読み込み時に起動する。手動 `save` だけでは、すでに注入済みのタブでは Content Script は自動では再実行されない）。`VALIDATION_ERROR` が返る場合は `src/lib/types/validation.ts` の `validateServiceConfig` に沿って必須項目・`uniqueKeyField` と `fields[].name` の整合を直す。
+保存後、**開発者が対象タブをリロード**する（Content Script はページ読み込み時に起動する。手動 `save` だけでは、すでに注入済みのタブでは Content Script は自動では再実行されない）。`VALIDATION_ERROR` が返る場合は `src/lib/types/validation.ts` の `validateServiceConfig` に沿って必須項目・`uniqueKeyField` と `fieldRules[].name` の整合を直す。
 
 上の `example.com` 用ペイロードはスキーマ確認向きで、**実 DOM には `.item` が無い**ため、そのままでは抽出件数は増えない。
 
@@ -190,7 +190,7 @@ chrome.runtime.sendMessage(
       observeRootSelector: "#bigbox table",
       itemSelector: "tr.athing",
       uniqueKeyField: "link",
-      fields: [
+      fieldRules: [
         { name: "link", selector: "span.titleline > a", type: "linkUrl" },
         { name: "title", selector: "span.titleline > a", type: "text" },
       ],
@@ -241,7 +241,7 @@ chrome.runtime.sendMessage(
       observeRootSelector: "#feed",
       itemSelector: ".item",
       uniqueKeyField: "link",
-      fields: [
+      fieldRules: [
         { name: "link", selector: ".link", type: "linkUrl" },
         { name: "title", selector: ".title", type: "text" },
       ],

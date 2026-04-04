@@ -1,6 +1,6 @@
 import type { ExtractedRecord, ServiceConfig } from "@/lib/types";
-import { extractFieldData } from "./fieldExtractor";
-import { buildNormalizedSearchText } from "./textNormalization";
+import { extractFieldRawValues } from "./fieldExtractor";
+import { buildFieldValues } from "./textNormalization";
 
 export interface ExtractRecordsOptions {
   config: ServiceConfig;
@@ -29,21 +29,19 @@ export const extractRecordsFromDom = ({
 
   const records: ExtractedRecord[] = [];
   for (const itemElement of itemElements) {
-    const data = extractFieldData(itemElement, config.fields, pageUrl);
-    const uniqueKey = (data[config.uniqueKeyField] ?? "").trim();
+    const fieldRawValues = extractFieldRawValues(itemElement, config.fieldRules, pageUrl);
+    const uniqueKey = (fieldRawValues[config.uniqueKeyField] ?? "").trim();
     if (uniqueKey.length === 0) {
       continue;
     }
 
-    const normalizedSearchText =
-      buildNormalizedSearchText(Object.values(data)) || buildNormalizedSearchText([uniqueKey]);
+    const fieldValues = buildFieldValues(fieldRawValues);
 
     records.push({
       serviceId: config.id,
       uniqueKey,
       extractedAt,
-      data,
-      normalizedSearchText,
+      fieldValues,
     });
   }
 

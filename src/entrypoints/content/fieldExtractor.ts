@@ -62,14 +62,14 @@ export const extractFieldValue = (
 };
 
 /** item 要素からフィールド定義一式を抽出する。 */
-export const extractFieldData = (
+export const extractFieldRawValues = (
   itemElement: ParentNode,
-  fields: FieldRule[],
+  fieldRules: FieldRule[],
   pageUrl: string,
 ): Record<string, string> => {
-  const data: Record<string, string> = {};
-  for (const fieldRule of fields) {
-    data[fieldRule.name] = extractFieldValue(itemElement, fieldRule, pageUrl);
+  const fieldRawValues: Record<string, string> = {};
+  for (const fieldRule of fieldRules) {
+    fieldRawValues[fieldRule.name] = extractFieldValue(itemElement, fieldRule, pageUrl);
   }
-  return data;
+  return fieldRawValues;
 };

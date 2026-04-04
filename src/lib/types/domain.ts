@@ -33,9 +33,9 @@ export interface ServiceConfig {
   observeRootSelector: string;
   /** 1 アイテム相当の DOM を指すセレクタ。 */
   itemSelector: string;
-  /** 重複判定に使うフィールド名。`fields` 内の `name` と一致すること。 */
+  /** 重複判定に使うフィールド名。`fieldRules` 内の `name` と一致すること。 */
   uniqueKeyField: string;
-  fields: FieldRule[];
+  fieldRules: FieldRule[];
   /** 有効なときのみ抽出パイプラインを動かす（FR-01）。 */
   enabled: boolean;
   /** ISO 8601 など、更新時刻の文字列。 */
@@ -43,17 +43,24 @@ export interface ServiceConfig {
 }
 
 /**
- * IndexedDB に保存する 1 件の抽出結果。
+ * 抽出フィールド 1 件分の値。
  *
- * `normalizedSearchText` は検索負荷軽減のため事前計算した文字列（NFKC・かな fold 等は別モジュールで生成想定）。
+ * `raw` は表示・エクスポート用途の生値、`normalized` は検索高速化のための正規化済み値。
+ */
+export interface RecordFieldValue {
+  raw: string;
+  normalized: string;
+}
+
+/**
+ * IndexedDB に保存する 1 件の抽出結果。
  */
 export interface ExtractedRecord {
   serviceId: string;
   uniqueKey: string;
   extractedAt: string;
-  /** フィールド名 → 抽出文字列。 */
-  data: Record<string, string>;
-  normalizedSearchText: string;
+  /** フィールド名 → 抽出値（生値 + 検索用正規化値）。 */
+  fieldValues: Record<string, RecordFieldValue>;
 }
 
 /** 一覧のソート方向。 */
@@ -64,9 +71,9 @@ export interface SearchQuery {
   serviceId: string;
   /** 空文字は「キーワードなし（全件対象）」として扱う実装が可能。 */
   keyword: string;
-  /** キーワード検索の対象とする `data` のキー一覧。 */
-  fields: string[];
-  /** ソートに使う `data` のキー。 */
+  /** キーワード検索の対象とするフィールド名一覧。 */
+  targetFieldNames: string[];
+  /** ソートに使うフィールド名。 */
   sortBy: string;
   sortOrder: SortOrder;
   /** 1 始まりのページ番号。 */

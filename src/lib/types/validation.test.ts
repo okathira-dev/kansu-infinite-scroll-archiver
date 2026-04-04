@@ -13,7 +13,7 @@ const validServiceConfig = {
   observeRootSelector: "body",
   itemSelector: ".item",
   uniqueKeyField: "id",
-  fields: [
+  fieldRules: [
     {
       name: "id",
       selector: ".id",
@@ -35,7 +35,7 @@ describe("サービス設定バリデーション", () => {
     expect(result.ok).toBe(true);
   });
 
-  it("uniqueKeyField が fields に存在しない場合は拒否する", () => {
+  it("uniqueKeyField が fieldRules に存在しない場合は拒否する", () => {
     const result = validateServiceConfig({
       ...validServiceConfig,
       uniqueKeyField: "unknown",
@@ -53,7 +53,7 @@ describe("検索クエリバリデーション", () => {
     const result = validateSearchQuery({
       serviceId: "service-1",
       keyword: "abc",
-      fields: ["title"],
+      targetFieldNames: ["title"],
       sortBy: "title",
       sortOrder: "asc",
       page: 1,
@@ -67,7 +67,7 @@ describe("検索クエリバリデーション", () => {
     const result = validateSearchQuery({
       serviceId: "service-1",
       keyword: "abc",
-      fields: ["title"],
+      targetFieldNames: ["title"],
       sortBy: "title",
       sortOrder: "up",
       page: 1,
@@ -96,8 +96,10 @@ describe("インポートペイロードバリデーション", () => {
           serviceId: "service-1",
           uniqueKey: "k1",
           extractedAt: now,
-          normalizedSearchText: "title",
-          data: { id: "k1", title: "hello" },
+          fieldValues: {
+            id: { raw: "k1", normalized: "k1" },
+            title: { raw: "hello", normalized: "hello" },
+          },
         },
       ],
       meta: {

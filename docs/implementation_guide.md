@@ -159,17 +159,21 @@ export interface ServiceConfig {
   observeRootSelector: string;
   itemSelector: string;
   uniqueKeyField: string;
-  fields: FieldRule[];
+  fieldRules: FieldRule[];
   enabled: boolean;
   updatedAt: string;
+}
+
+export interface RecordFieldValue {
+  raw: string;
+  normalized: string;
 }
 
 export interface ExtractedRecord {
   serviceId: string;
   uniqueKey: string;
   extractedAt: string;
-  data: Record<string, string>;
-  normalizedSearchText: string;
+  fieldValues: Record<string, RecordFieldValue>;
 }
 ```
 
@@ -267,7 +271,7 @@ export type ResponseMessage<T = unknown> =
 1. `itemSelector` で候補要素を取得
 2. 各 `FieldRule` を評価し値を抽出
 3. `uniqueKeyField` から主キーを生成
-4. 検索用 `normalizedSearchText` を生成
+4. `fieldValues[fieldName] = { raw, normalized }` を生成
 5. `records/bulkUpsert` をBackgroundへ送信
 
 ## 8. 検索・ソート・ページネーション
@@ -279,7 +283,7 @@ export type ResponseMessage<T = unknown> =
   [MDN: String.prototype.normalize()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize)
   ）。
 - かな差吸収のため、ひらがな/カタカナを同一表現へfoldするユーティリティを適用
-- 正規化は保存時にも計算しておき、検索時コストを下げる（`FR-21`, `NFR-01`）
+- 正規化は保存時に `fieldValues.*.normalized` へ事前計算し、検索時は `targetFieldNames` の対象だけ照合する（`FR-21`, `NFR-01`）
 
 ### 8.2. ソート
 

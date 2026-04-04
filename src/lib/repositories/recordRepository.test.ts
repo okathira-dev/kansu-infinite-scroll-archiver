@@ -2,6 +2,7 @@ import Dexie from "dexie";
 import { IDBFactory, IDBKeyRange } from "fake-indexeddb";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { KansuDb } from "@/lib/db";
+import { normalizeForSearch } from "@/lib/search/textNormalization";
 import type { ExtractedRecord, SearchQuery } from "@/lib/types";
 import { RecordRepository } from "./recordRepository";
 
@@ -12,16 +13,20 @@ const createRecord = (params: {
   serviceId: string;
   uniqueKey: string;
   title: string;
-  normalizedSearchText?: string;
 }): ExtractedRecord => ({
   serviceId: params.serviceId,
   uniqueKey: params.uniqueKey,
   extractedAt: "2026-04-02T00:00:00.000Z",
-  data: {
-    id: params.uniqueKey,
-    title: params.title,
+  fieldValues: {
+    id: {
+      raw: params.uniqueKey,
+      normalized: normalizeForSearch(params.uniqueKey),
+    },
+    title: {
+      raw: params.title,
+      normalized: normalizeForSearch(params.title),
+    },
   },
-  normalizedSearchText: params.normalizedSearchText ?? params.title.toLowerCase(),
 });
 
 const createRepository = () => {
@@ -68,7 +73,7 @@ describe("RecordRepository", () => {
 
     const records = await repository.listByServiceId("service-1");
     expect(records).toHaveLength(1);
-    expect(records[0]?.data.title).toBe("更新タイトル");
+    expect(records[0]?.fieldValues.title?.raw).toBe("更新タイトル");
   });
 
   it("bulkPut が途中で失敗した場合に transaction をロールバックする", async () => {
@@ -100,7 +105,7 @@ describe("RecordRepository", () => {
     const baseQuery: Omit<SearchQuery, "page"> = {
       serviceId: "service-1",
       keyword: "",
-      fields: ["title"],
+      targetFieldNames: ["title"],
       sortBy: "title",
       sortOrder: "asc",
       pageSize: 2,
@@ -114,5 +119,37 @@ describe("RecordRepository", () => {
     const outOfRange = await repository.search({ ...baseQuery, page: 3 });
     expect(outOfRange.total).toBe(3);
     expect(outOfRange.records).toHaveLength(0);
+  });
+
+  it("targetFieldNames で指定したフィールドのみを検索対象にする", async () => {
+    const repository = createRepository();
+    await repository.bulkUpsert([
+      createRecord({ serviceId: "service-1", uniqueKey: "foo-1", title: "Alpha" }),
+      createRecord({ serviceId: "service-1", uniqueKey: "bar-1", title: "foo headline" }),
+    ]);
+
+    const titleOnly = await repository.search({
+      serviceId: "service-1",
+      keyword: "foo",
+      targetFieldNames: ["title"],
+      sortBy: "title",
+      sortOrder: "asc",
+      page: 1,
+      pageSize: 10,
+    });
+    expect(titleOnly.total).toBe(1);
+    expect(titleOnly.records[0]?.uniqueKey).toBe("bar-1");
+
+    const idOnly = await repository.search({
+      serviceId: "service-1",
+      keyword: "foo",
+      targetFieldNames: ["id"],
+      sortBy: "title",
+      sortOrder: "asc",
+      page: 1,
+      pageSize: 10,
+    });
+    expect(idOnly.total).toBe(1);
+    expect(idOnly.records[0]?.uniqueKey).toBe("foo-1");
   });
 });

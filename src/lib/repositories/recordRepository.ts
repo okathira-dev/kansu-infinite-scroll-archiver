@@ -1,4 +1,5 @@
 import type { KansuDb } from "@/lib/db";
+import { normalizeForSearch } from "@/lib/search/textNormalization";
 import type { ExtractedRecord, ImportPayload, SearchQuery, SearchResult } from "@/lib/types";
 
 /** bulk upsert 実行結果。 */
@@ -41,20 +42,19 @@ export class RecordRepository {
 
   async search(query: SearchQuery): Promise<SearchResult> {
     const candidates = await this.db.records.where("serviceId").equals(query.serviceId).toArray();
-    const needle = query.keyword.trim().toLowerCase();
+    const needle = normalizeForSearch(query.keyword);
     const filtered =
       needle.length === 0
         ? candidates
-        : candidates.filter((record) => {
-            if (record.normalizedSearchText.toLowerCase().includes(needle)) {
-              return true;
-            }
-            return query.fields.some((field) => record.data[field]?.toLowerCase().includes(needle));
-          });
+        : candidates.filter((record) =>
+            query.targetFieldNames.some((fieldName) =>
+              record.fieldValues[fieldName]?.normalized.includes(needle),
+            ),
+          );
 
     const sorted = [...filtered].sort((left, right) => {
-      const leftValue = left.data[query.sortBy] ?? "";
-      const rightValue = right.data[query.sortBy] ?? "";
+      const leftValue = left.fieldValues[query.sortBy]?.raw ?? "";
+      const rightValue = right.fieldValues[query.sortBy]?.raw ?? "";
       const order = collator.compare(leftValue, rightValue);
       return query.sortOrder === "asc" ? order : -order;
     });

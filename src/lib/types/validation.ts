@@ -9,6 +9,7 @@ import type {
   FieldRule,
   FieldType,
   ImportPayload,
+  RecordFieldValue,
   SearchQuery,
   ServiceConfig,
   SortOrder,
@@ -40,6 +41,14 @@ const asNonEmptyString = (
   return value;
 };
 
+const asString = (value: unknown, field: string, issues: ValidationIssue[]): string | null => {
+  if (typeof value !== "string") {
+    issues.push({ field, message: "must be a string" });
+    return null;
+  }
+  return value;
+};
+
 const asStringArray = (
   value: unknown,
   field: string,
@@ -62,25 +71,31 @@ const asStringArray = (
   return values;
 };
 
-const asStringRecord = (
+const asRecordFieldValues = (
   value: unknown,
   field: string,
   issues: ValidationIssue[],
-): Record<string, string> | null => {
+): Record<string, RecordFieldValue> | null => {
   if (!isRecord(value)) {
-    issues.push({ field, message: "must be an object with string values" });
+    issues.push({ field, message: "must be an object with field value entries" });
     return null;
   }
 
-  const data: Record<string, string> = {};
+  const fieldValues: Record<string, RecordFieldValue> = {};
   for (const [key, entry] of Object.entries(value)) {
-    if (typeof entry !== "string") {
-      issues.push({ field: `${field}.${key}`, message: "must be a string" });
+    if (!isRecord(entry)) {
+      issues.push({ field: `${field}.${key}`, message: "must be an object" });
       continue;
     }
-    data[key] = entry;
+
+    const raw = asString(entry.raw, `${field}.${key}.raw`, issues);
+    const normalized = asString(entry.normalized, `${field}.${key}.normalized`, issues);
+    if (raw !== null && normalized !== null) {
+      fieldValues[key] = { raw, normalized };
+    }
   }
-  return data;
+
+  return fieldValues;
 };
 
 const isFieldType = (value: unknown): value is FieldType =>
@@ -138,7 +153,7 @@ const parseFieldRule = (
   };
 };
 
-/** 1 件の `ExtractedRecord` を検証する。`data` はすべて文字列値であること。 */
+/** 1 件の `ExtractedRecord` を検証する。`fieldValues` は各フィールドの raw/normalized を持つ。 */
 const parseExtractedRecord = (
   input: unknown,
   field: string,
@@ -152,14 +167,9 @@ const parseExtractedRecord = (
   const serviceId = asNonEmptyString(input.serviceId, `${field}.serviceId`, issues);
   const uniqueKey = asNonEmptyString(input.uniqueKey, `${field}.uniqueKey`, issues);
   const extractedAt = asNonEmptyString(input.extractedAt, `${field}.extractedAt`, issues);
-  const normalizedSearchText = asNonEmptyString(
-    input.normalizedSearchText,
-    `${field}.normalizedSearchText`,
-    issues,
-  );
-  const data = asStringRecord(input.data, `${field}.data`, issues);
+  const fieldValues = asRecordFieldValues(input.fieldValues, `${field}.fieldValues`, issues);
 
-  if (!serviceId || !uniqueKey || !extractedAt || !normalizedSearchText || !data) {
+  if (!serviceId || !uniqueKey || !extractedAt || !fieldValues) {
     return null;
   }
 
@@ -167,8 +177,7 @@ const parseExtractedRecord = (
     serviceId,
     uniqueKey,
     extractedAt,
-    data,
-    normalizedSearchText,
+    fieldValues,
   };
 };
 
@@ -203,24 +212,24 @@ export const validateServiceConfig = (input: unknown): ValidationResult<ServiceC
     issues.push({ field: "serviceConfig.enabled", message: "must be a boolean" });
   }
 
-  const parsedFields: FieldRule[] = [];
-  if (!Array.isArray(input.fields) || input.fields.length === 0) {
-    issues.push({ field: "serviceConfig.fields", message: "must be a non-empty array" });
+  const parsedFieldRules: FieldRule[] = [];
+  if (!Array.isArray(input.fieldRules) || input.fieldRules.length === 0) {
+    issues.push({ field: "serviceConfig.fieldRules", message: "must be a non-empty array" });
   } else {
-    for (let index = 0; index < input.fields.length; index += 1) {
+    for (let index = 0; index < input.fieldRules.length; index += 1) {
       const parsedRule = parseFieldRule(
-        input.fields[index],
-        `serviceConfig.fields[${index}]`,
+        input.fieldRules[index],
+        `serviceConfig.fieldRules[${index}]`,
         issues,
       );
       if (parsedRule) {
-        parsedFields.push(parsedRule);
+        parsedFieldRules.push(parsedRule);
       }
     }
   }
 
-  // 主キーに指定した名前が fields に存在しないと、抽出後に一意キーが決められない（FR-02/FR-03）。
-  if (uniqueKeyField && parsedFields.every((fieldRule) => fieldRule.name !== uniqueKeyField)) {
+  // 主キーに指定した名前が fieldRules に存在しないと、抽出後に一意キーが決められない（FR-02/FR-03）。
+  if (uniqueKeyField && parsedFieldRules.every((fieldRule) => fieldRule.name !== uniqueKeyField)) {
     issues.push({
       field: "serviceConfig.uniqueKeyField",
       message: "must reference an existing field name",
@@ -250,7 +259,7 @@ export const validateServiceConfig = (input: unknown): ValidationResult<ServiceC
       observeRootSelector,
       itemSelector,
       uniqueKeyField,
-      fields: parsedFields,
+      fieldRules: parsedFieldRules,
       enabled: input.enabled,
       updatedAt,
     },
@@ -274,7 +283,11 @@ export const validateSearchQuery = (input: unknown): ValidationResult<SearchQuer
   if (typeof input.keyword !== "string") {
     issues.push({ field: "searchQuery.keyword", message: "must be a string" });
   }
-  const fields = asStringArray(input.fields, "searchQuery.fields", issues);
+  const targetFieldNames = asStringArray(
+    input.targetFieldNames,
+    "searchQuery.targetFieldNames",
+    issues,
+  );
   const sortBy = asNonEmptyString(input.sortBy, "searchQuery.sortBy", issues);
 
   if (!isSortOrder(input.sortOrder)) {
@@ -299,7 +312,7 @@ export const validateSearchQuery = (input: unknown): ValidationResult<SearchQuer
 
   if (
     !serviceId ||
-    !fields ||
+    !targetFieldNames ||
     !sortBy ||
     !isSortOrder(input.sortOrder) ||
     typeof input.page !== "number" ||
@@ -314,7 +327,7 @@ export const validateSearchQuery = (input: unknown): ValidationResult<SearchQuer
     data: {
       serviceId,
       keyword,
-      fields,
+      targetFieldNames,
       sortBy,
       sortOrder: input.sortOrder,
       page: input.page,

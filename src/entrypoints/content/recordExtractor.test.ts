@@ -60,9 +60,9 @@ describe("レコード抽出", () => {
     expect(firstSnapshot).toHaveLength(1);
     expect(secondSnapshot).toHaveLength(2);
     expect(secondSnapshot[1]?.uniqueKey).toBe("a2");
-    expect(secondSnapshot[0]?.data.link).toBe("https://example.com/posts/a1");
-    expect(secondSnapshot[0]?.data.thumbnail).toBe("https://example.com/images/a1.png");
-    expect(secondSnapshot[0]?.data.digits).toBe("100");
+    expect(secondSnapshot[0]?.fieldValues.link?.raw).toBe("https://example.com/posts/a1");
+    expect(secondSnapshot[0]?.fieldValues.thumbnail?.raw).toBe("https://example.com/images/a1.png");
+    expect(secondSnapshot[0]?.fieldValues.digits?.raw).toBe("100");
   });
 
   it("主キー欠落や抽出失敗があっても安全にスキップできる", () => {
@@ -87,6 +87,6 @@ describe("レコード抽出", () => {
 
     expect(records).toHaveLength(1);
     expect(records[0]?.uniqueKey).toBe("ok-1");
-    expect(records[0]?.normalizedSearchText.length).toBeGreaterThan(0);
+    expect(records[0]?.fieldValues.id?.normalized.length).toBeGreaterThan(0);
   });
 });

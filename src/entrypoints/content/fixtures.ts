@@ -7,7 +7,7 @@ export const sampleServiceConfig: ServiceConfig = {
   observeRootSelector: "#feed",
   itemSelector: ".item",
   uniqueKeyField: "id",
-  fields: [
+  fieldRules: [
     { name: "id", selector: ".id", type: "text" },
     { name: "title", selector: ".title", type: "text" },
     { name: "link", selector: ".link", type: "linkUrl" },

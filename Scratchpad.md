@@ -5,7 +5,7 @@
 
 ## 現在のタスク
 
-`docs/implementation_plan.md` の Phase 3（抽出エンジン）を完了し、Phase 4（UI）へ進む準備を行う。
+Phase 3 の正規化設計を再構成し、`fieldValues`（raw/normalized）への置換と `fields` 多義性解消（`fieldRules` / `targetFieldNames`）を反映する。
 
 ## 進捗状況
 
@@ -36,6 +36,10 @@
 - [x] `records/bulkUpsert` 送信と失敗時継続のエラーハンドリングを実装
 - [x] Phase 3 向けのテスト/fixture を追加（DOM差分模擬、大量 mutation 集約、安全スキップ）
 - [x] 追加実装後に `pnpm check` / `pnpm test` を再通過
+- [x] `ExtractedRecord` を `fieldValues`（`raw` / `normalized`）へ置換し、`normalizedSearchText` と `data` を削除
+- [x] `ServiceConfig.fields` / `SearchQuery.fields` を `fieldRules` / `targetFieldNames` にリネーム
+- [x] `RecordRepository.search` を対象フィールド限定の正規化検索へ修正（キーワードも同一正規化）
+- [x] 型・バリデーション・メッセージ経路・テスト・`implementation_guide.md` を新設計に同期
 
 ## 過去タスク（完了）
 
