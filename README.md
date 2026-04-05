@@ -30,7 +30,9 @@ pnpm dev
 - `pnpm check`: Biome の format/lint/check を実行
 - `pnpm compile`: TypeScript の型チェック
 - `pnpm test`: Vitest のユニットテストを実行
-- `pnpm e2e`: Playwright の E2E テストを実行
+- `pnpm e2e`: `pnpm build` のあと Playwright の E2E を実行（`.output/chrome-mv3` の取り違え防止）
+- `pnpm e2e:watch`: 同上のあと Playwright UI モード
+- `pnpm e2e:only`: ビルドなしで E2E のみ（直前にビルド済みのとき／CI でアーティファクトを展開したあと）
 - `pnpm lint-md`: Markdown の lint を実行
 - `pnpm storybook`: Storybook（UI カタログ）を起動
 - `pnpm build-storybook`: Storybook の静的ビルドを生成

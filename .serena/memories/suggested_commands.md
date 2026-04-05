@@ -29,8 +29,9 @@
 ## テスト
 - `pnpm test` — Vitest 一回実行
 - `pnpm test:watch` — ウォッチ
-- `pnpm e2e` — Playwright
-- `pnpm e2e:watch` — Playwright UI
+- `pnpm e2e` — `pnpm build` 後に Playwright（`.output/chrome-mv3` 未生成の取り違え防止）
+- `pnpm e2e:watch` — 同上のあと Playwright UI
+- `pnpm e2e:only` — ビルドなしで Playwright のみ（CI・直前ビルド済み向け）
 
 ## Git など（Windows）
 - `git status`, `git diff` — 変更確認
