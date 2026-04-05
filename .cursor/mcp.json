@@ -13,6 +13,14 @@
         "--project",
         "${workspaceFolder}"
       ]
+    },
+    "playwright": {
+      "command": "pnpm dlx",
+      "args": ["@playwright/mcp@latest"]
+    },
+    "chrome-devtools": {
+      "command": "pnpm dlx",
+      "args": ["chrome-devtools-mcp@latest"]
     }
   }
 }

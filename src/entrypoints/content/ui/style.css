@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import "@/assets/tailwind.css";
 
 #kansu-main-panel {
   position: fixed;
