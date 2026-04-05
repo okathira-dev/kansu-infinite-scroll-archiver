@@ -17,6 +17,8 @@ interface SearchBarProps {
   onKeywordChange: (keyword: string) => void;
   onToggleTargetField: (fieldName: string) => void;
   onPageSizeChange: (pageSize: number) => void;
+  /** content の Select が Shadow 内にポータルする先（拡張UIルート配下）。 */
+  selectPortalContainer?: HTMLElement | null;
 }
 
 export function SearchBar({
@@ -27,6 +29,7 @@ export function SearchBar({
   onKeywordChange,
   onToggleTargetField,
   onPageSizeChange,
+  selectPortalContainer = null,
 }: SearchBarProps) {
   return (
     <section className="space-y-3">
@@ -68,7 +71,7 @@ export function SearchBar({
           <SelectTrigger id="kansu-page-size" className="w-full">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent portalContainer={selectPortalContainer ?? undefined}>
             <SelectItem value="10">10</SelectItem>
             <SelectItem value="20">20</SelectItem>
             <SelectItem value="50">50</SelectItem>

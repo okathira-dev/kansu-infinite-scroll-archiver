@@ -21,6 +21,8 @@ import { SearchBar } from "./SearchBar";
 
 interface MainPanelProps {
   onRequestClose: () => void;
+  /** Shadow 内の要素。Select の Portal 先にし、ホストページではなく拡張UIのスタイルを当てる。 */
+  selectPortalContainer?: HTMLElement | null;
 }
 
 const findInitialConfig = (configs: ServiceConfig[]): ServiceConfig | null => {
@@ -52,7 +54,10 @@ const buildDefaultQueryFromConfig = (config: ServiceConfig): Partial<SearchQuery
   };
 };
 
-export function MainPanel({ onRequestClose }: MainPanelProps) {
+export function MainPanel({ onRequestClose, selectPortalContainer = null }: MainPanelProps) {
+  // TODO(content/Radix): メニュー表示時に Radix がホスト document.body に data-radix-focus-guard を挿入する。
+  // ページによっては余白など空間が生じ、開閉のたびにページがガクつく。SelectContent の Portal 先を Shadow 内にしても解消しない。
+  // 緩和の検討は docs/implementation_plan.md「リスクと緩和策」を参照。
   const { configs, fetchConfigs } = useServiceConfigStore();
   const {
     query,
@@ -197,7 +202,7 @@ export function MainPanel({ onRequestClose }: MainPanelProps) {
                   <SelectTrigger id="kansu-service-select" className="w-full">
                     <SelectValue placeholder="サービスを選択" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent portalContainer={selectPortalContainer ?? undefined}>
                     {configs.map((config) => (
                       <SelectItem key={config.id} value={config.id}>
                         {config.name}
@@ -215,6 +220,7 @@ export function MainPanel({ onRequestClose }: MainPanelProps) {
                 onKeywordChange={setKeyword}
                 onToggleTargetField={handleToggleTargetField}
                 onPageSizeChange={setPageSize}
+                selectPortalContainer={selectPortalContainer}
               />
 
               <Separator />

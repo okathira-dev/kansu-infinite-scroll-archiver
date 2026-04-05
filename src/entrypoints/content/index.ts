@@ -29,10 +29,14 @@ export default defineContentScript({
       isolateEvents: true,
       onMount: (container) => {
         const reactHost = document.createElement("div");
+        const selectPortalHost = document.createElement("div");
+        selectPortalHost.setAttribute("data-kansu-select-portal-host", "");
         container.append(reactHost);
+        container.append(selectPortalHost);
         const root = ReactDOM.createRoot(reactHost);
         root.render(
           createElement(MainPanel, {
+            selectPortalContainer: selectPortalHost,
             onRequestClose: () => {
               ui.remove();
               isMounted = false;
