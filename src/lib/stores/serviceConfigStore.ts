@@ -49,7 +49,8 @@ export const useServiceConfigStore = create<ServiceConfigStoreState>((set, get) 
       });
       const typedResponse = response as ResponseMessage<{ configId: string }>;
       if (!typedResponse.ok) {
-        set({ loading: false, error: getErrorMessage(typedResponse) });
+        // 失敗通知は Options 側ハンドラの toast に任せ、ここでは error を立てない（二重トースト防止）
+        set({ loading: false });
         return { ok: false };
       }
 
@@ -62,11 +63,8 @@ export const useServiceConfigStore = create<ServiceConfigStoreState>((set, get) 
       }
       set({ loading: false, configs: nextConfigs, error: null });
       return { ok: true, configId: typedResponse.data.configId };
-    } catch (error) {
-      set({
-        loading: false,
-        error: error instanceof Error ? error.message : "unknown runtime error",
-      });
+    } catch (_error) {
+      set({ loading: false });
       return { ok: false };
     }
   },
@@ -79,18 +77,15 @@ export const useServiceConfigStore = create<ServiceConfigStoreState>((set, get) 
       });
       const typedResponse = response as ResponseMessage<{ deletedRecords: number }>;
       if (!typedResponse.ok) {
-        set({ loading: false, error: getErrorMessage(typedResponse) });
+        set({ loading: false });
         return { ok: false };
       }
 
       const nextConfigs = get().configs.filter((config) => config.id !== id);
       set({ loading: false, configs: nextConfigs, error: null });
       return { ok: true, deletedRecords: typedResponse.data.deletedRecords };
-    } catch (error) {
-      set({
-        loading: false,
-        error: error instanceof Error ? error.message : "unknown runtime error",
-      });
+    } catch (_error) {
+      set({ loading: false });
       return { ok: false };
     }
   },

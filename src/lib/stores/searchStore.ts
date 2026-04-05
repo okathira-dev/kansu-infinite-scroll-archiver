@@ -30,6 +30,9 @@ const createDefaultQuery = (): SearchQuery => ({
 
 const defaultResult: SearchResult = { records: [], total: 0 };
 
+/** デバウンス等で複数リクエストが重なったとき、最後に発行した検索だけが結果を反映する */
+let searchRequestSequence = 0;
+
 export const useSearchStore = create<SearchStoreState>((set, get) => ({
   query: createDefaultQuery(),
   result: defaultResult,
@@ -110,12 +113,16 @@ export const useSearchStore = create<SearchStoreState>((set, get) => ({
       return false;
     }
 
+    const requestId = ++searchRequestSequence;
     set({ loading: true, error: null });
     try {
       const response = await browser.runtime.sendMessage({
         type: "records/search",
         payload: query,
       });
+      if (requestId !== searchRequestSequence) {
+        return false;
+      }
       const typedResponse = response as ResponseMessage<SearchResult>;
       if (!typedResponse.ok) {
         set({
@@ -131,6 +138,9 @@ export const useSearchStore = create<SearchStoreState>((set, get) => ({
       });
       return true;
     } catch (error) {
+      if (requestId !== searchRequestSequence) {
+        return false;
+      }
       set({
         loading: false,
         error: error instanceof Error ? error.message : "unknown runtime error",

@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { E2E_STEP_TIMEOUT_MS } from "./constants";
 import { expect, sendRuntimeMessage, test } from "./fixtures";
 import { waitForMainPanel } from "./pages/mainPanel";
 import { openPopup } from "./pages/popup";
@@ -63,7 +64,7 @@ test("メインUI: 検索・ソート・ページ移動を実行できる", asyn
   assertSuccess(saveResponse, "設定投入失敗");
 
   await page.goto(FIXTURE_URL);
-  await page.waitForSelector("#feed .item");
+  await page.waitForSelector("#feed .item", { timeout: E2E_STEP_TIMEOUT_MS });
   await page.click("#add-items-10");
 
   const popupPage = await context.newPage();
@@ -80,7 +81,7 @@ test("メインUI: 検索・ソート・ページ移動を実行できる", asyn
 
   await mainPanel.fillKeyword("");
   await expect
-    .poll(async () => await mainPanel.getPanel().textContent(), { timeout: 10_000 })
+    .poll(async () => await mainPanel.getPanel().textContent(), { timeout: E2E_STEP_TIMEOUT_MS })
     .toContain("合計 12 件");
   await mainPanel.goToNextPage();
   await expect(mainPanel.getPanel().getByText("2 / 2 ページ")).toBeVisible();

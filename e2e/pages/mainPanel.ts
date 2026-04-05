@@ -1,7 +1,8 @@
 import type { Page } from "@playwright/test";
+import { E2E_STEP_TIMEOUT_MS } from "../constants";
 
 export async function waitForMainPanel(page: Page) {
-  await page.waitForSelector("#kansu-main-panel");
+  await page.waitForSelector("#kansu-main-panel", { timeout: E2E_STEP_TIMEOUT_MS });
   return {
     getPanel: () => page.locator("#kansu-main-panel"),
     fillKeyword: async (keyword: string) => {

@@ -1,4 +1,5 @@
 import { defineConfig } from "@playwright/test";
+import { E2E_STEP_TIMEOUT_MS } from "./e2e/constants";
 
 /**
  * Read environment variables from file.
@@ -13,6 +14,13 @@ import { defineConfig } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "./e2e",
+  /**
+   * アサーション待ちは最大 3s 以下。`waitForSelector` / `expect.poll` は `e2e/constants` と揃える。
+   * `click` / `fill` には `actionTimeout` を載せない（Radix Dialog 等のフォーカス安定待ちが長引きうるため）。
+   */
+  expect: {
+    timeout: E2E_STEP_TIMEOUT_MS,
+  },
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */

@@ -113,6 +113,7 @@ export function MainPanel({ onRequestClose, selectPortalContainer = null }: Main
       query.sortBy.trim().length === 0 ||
       query.targetFieldNames.length === 0
     ) {
+      void search();
       return;
     }
     const timerId = window.setTimeout(() => {

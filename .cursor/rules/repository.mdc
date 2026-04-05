@@ -25,7 +25,7 @@ alwaysApply: false
 
 ## プロジェクト構造
 
-- `src/entrypoints/`: WXT エントリ（background/content/popup。options は実装計画 Phase 4 で追加予定）
+- `src/entrypoints/`: WXT エントリ（background / content / popup / options）
 - `src/components/` と `src/components/ui/`: UI コンポーネント
 - `src/lib/`: 共有ロジック・ユーティリティ
 - `docs/`: 要件・実装計画・実装ガイド・ストレージ設計

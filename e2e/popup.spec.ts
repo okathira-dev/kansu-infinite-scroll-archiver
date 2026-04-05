@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { E2E_STEP_TIMEOUT_MS } from "./constants";
 import { expect, test } from "./fixtures";
 import { openPopup } from "./pages/popup";
 
@@ -20,13 +21,14 @@ test("Popup: メインUI切替メッセージを現在タブへ送信できる",
     });
   });
   await page.goto(FIXTURE_URL);
-  await page.waitForSelector("#feed .item");
+  await page.waitForSelector("#feed .item", { timeout: E2E_STEP_TIMEOUT_MS });
 
   const popupPage = await context.newPage();
   const popup = await openPopup(popupPage, extensionId);
   await popup.clickToggleMainUi();
   await expect(await popup.getStatusText()).toContain("送信");
 
+  await page.waitForSelector("#kansu-main-panel", { timeout: E2E_STEP_TIMEOUT_MS });
   await expect(page.locator("#kansu-main-panel")).toBeVisible();
   await popupPage.close();
 });

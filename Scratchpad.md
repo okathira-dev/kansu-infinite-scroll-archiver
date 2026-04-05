@@ -50,6 +50,7 @@ Phase 5（インポート / エクスポート）: `FR-40`〜`FR-42`・`NFR-23` 
 - [x] E2E を新UI仕様へ更新（`popup.spec.ts` / `optionsCrud.spec.ts` / `mainUiSearch.spec.ts`）し、既存抽出 E2E と併せて通過
 - [x] `@testing-library/*` + `jsdom` を導入し、フォーム/検索/ページネーションのコンポーネントテストを追加
 - [x] `pnpm check` / `pnpm test` / `pnpm e2e` を再通過
+- [x] Phase 4 レビュー由来のフォローアップ（実装・`docs/implementation_guide.md` / `docs/implementation_plan.md` への方針記載）
 
 ## 過去タスク（完了）
 

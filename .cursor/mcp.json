@@ -15,12 +15,12 @@
       ]
     },
     "playwright": {
-      "command": "pnpm dlx",
-      "args": ["@playwright/mcp@latest"]
+      "command": "pnpm",
+      "args": ["dlx", "@playwright/mcp@latest"]
     },
     "chrome-devtools": {
-      "command": "pnpm dlx",
-      "args": ["chrome-devtools-mcp@latest"]
+      "command": "pnpm",
+      "args": ["dlx", "chrome-devtools-mcp@latest"]
     }
   }
 }

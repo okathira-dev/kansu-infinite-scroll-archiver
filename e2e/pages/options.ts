@@ -1,8 +1,9 @@
 import type { Page } from "@playwright/test";
+import { E2E_STEP_TIMEOUT_MS } from "../constants";
 
 export async function openOptionsPage(page: Page, extensionId: string) {
   await page.goto(`chrome-extension://${extensionId}/options.html`);
-  await page.waitForSelector("text=Kansu 設定");
+  await page.waitForSelector("text=Kansu 設定", { timeout: E2E_STEP_TIMEOUT_MS });
 
   return {
     clickNewConfig: async () => {
@@ -30,6 +31,10 @@ export async function openOptionsPage(page: Page, extensionId: string) {
     },
     clickSave: async () => {
       await page.click("#save-config");
+    },
+    clickEditByName: async (name: string) => {
+      const card = page.locator("[data-slot='card']").filter({ hasText: name }).first();
+      await card.getByRole("button", { name: "編集" }).click();
     },
     clickDeleteByName: async (name: string) => {
       const card = page.locator("[data-slot='card']").filter({ hasText: name }).first();

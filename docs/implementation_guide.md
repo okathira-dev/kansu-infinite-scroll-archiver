@@ -109,7 +109,7 @@ flowchart LR
   - Optionsへの導線
 - **Options**
   - サービス設定CRUD
-  - アプリ全体のグローバル設定管理
+  - グローバル設定（`appSettings`）は IndexedDB にテーブルとして拡張余地を確保し、UI と読み書きメッセージは後続フェーズで追加する
   - データ管理（サービス単位のインポート/エクスポートを基本とし、全体操作への拡張余地を確保）
 
 ### 4.3. 共有モジュール
@@ -134,9 +134,13 @@ flowchart LR
 
 #### 設定フロー
 
-1. Options UIでサービス設定やグローバル設定を更新する
-2. Options UIがBackgroundへ保存要求を送る
-3. BackgroundがIndexedDBへ永続化する。Content Script へ設定変更を伝える方式（`runtime` メッセージ、タブの再読み込み、エントリの再実行など）は実装方針として選択する
+1. Options UI でサービス設定を更新する（グローバル設定 UI は後続フェーズ）
+2. Options UI が Background へ保存要求を送る
+3. Background が IndexedDB へ永続化する。Content Script へ設定変更を伝える方式（`runtime` メッセージ、タブの再読み込み、エントリの再実行など）は実装方針として選択する
+
+**Options の保存・削除失敗通知**: 保存・削除 API が失敗したとき、ストアの `error` と画面の `toast` を二重に出さない。失敗理由の即時通知はハンドラ側のトーストに寄せ、一覧取得（`fetchConfigs`）失敗などは従来どおりストアの `error` を UI が表示してよい。
+
+**メイン UI と Options の同時利用**: メイン UI が開いたまま Options で設定を変えた場合、いつ `configs/list` 相当の再取得を行うかは仕様として固定していない。再マウント・明示メッセージ・ページ再読み込みのいずれかで整合を取る余地がある（リリース前に方針を決める）。
 
 ## 5. データモデル
 
@@ -311,6 +315,12 @@ export type ResponseMessage<T = unknown> =
 - 検索条件変更時はページを先頭に戻す
 - 1ページ件数は設定可能（`FR-23`）
 
+### 8.4. メイン UI の検索と契約の分界
+
+- **Background 経路**: `validateSearchQuery` により、`targetFieldNames` が空の `SearchQuery` は不正として拒否する（メッセージ契約上も空配列は許容しない）。
+- **Content / メイン UI**: 上記に至る前に、クエリが検索不能な状態（`serviceId`・`sortBy` が空、`targetFieldNames` が空など）では `records/search` を送らず、クライアント側ストアで検索結果を空に戻す。UI の「対象フィールドなし」と API 検証の役割を分ける。
+- **インクリメンタル検索の競合**: 入力デバウンス等で複数の `sendMessage` が重なる場合、古い応答が新しい結果を上書きしないよう、ストア側でリクエスト世代などの打ち消しを行う。
+
 ## 9. インポート/エクスポート
 
 ### 9.1. 形式
@@ -338,6 +348,7 @@ export type ResponseMessage<T = unknown> =
 - 外部通信を行わない構成を原則とする（`NFR-20`）
 - インポートJSONはサイズ上限・構造検証を行う（`NFR-23`）
 - CSP違反となる動的コード実行（`eval` 等）を行わない
+- **Content Script の注入範囲**: 実装では `matches` を広く取りうるが、`NFR-21`（最小権限）に照らし、リリース前に対象 URL と `host_permissions` を再評価する（実装計画 Phase 6 の権限見直しと一体で扱う）。
 
 ## 11. テスト戦略
 
@@ -361,6 +372,18 @@ export type ResponseMessage<T = unknown> =
 
 - フォーム・一覧・通知などの UI は、**Vitest + React Testing Library** で補う選択肢がある。導入時は依存に `@testing-library/react` 等を追加する。
 
+### 11.4. 主要 UI 要件とテストの対応（参照用）
+
+| 要件 | 実装の主な所在 | 主なテスト |
+| --- | --- | --- |
+| `FR-21` | `RecordRepository.search` / 正規化 / メイン UI `SearchBar` / `searchStore` | 単体（正規化・リポジトリ・`searchStore`）、E2E `mainUiSearch` |
+| `FR-22` | リポジトリソート / メイン UI | 単体、E2E `mainUiSearch` |
+| `FR-23` | ページネーション UI / リポジトリ | 単体、E2E `mainUiSearch` |
+| `FR-30` | Popup / Content のメイン UI トグル | E2E `popup.spec.ts` |
+| `FR-31` | Options の CRUD | E2E `optionsCrud.spec.ts` |
+| `FR-32` | `sonner` 等のトースト（メイン UI・Options） | コンポーネント・手動確認 |
+| `FR-33` | メイン UI のキーボードショートカット（例: Alt+矢印） | 単体 E2E は任意。利用者向け説明の有無は製品方針で決める |
+
 ## 12. 運用・計測
 
 - 主要操作（検索、ソート、抽出バッチ）の処理時間を開発時に計測可能にする
@@ -378,7 +401,7 @@ export type ResponseMessage<T = unknown> =
 - `FR-01`〜`FR-03`: 4章, 5章, 6章
 - `FR-10`〜`FR-13`: 7章
 - `FR-20`〜`FR-23`: 5章, 8章
-- `FR-30`〜`FR-33`: 4章, 11章
+- `FR-30`〜`FR-33`: 4章, 8章（8.4）, 11章（11.4 の表）
 - `FR-40`〜`FR-42`: 9章
 - `NFR-01`〜`NFR-04`: 5章, 7章, 8章
 - `NFR-10`〜`NFR-12`: 2章, 6章
