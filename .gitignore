@@ -30,3 +30,12 @@ web-ext.config.ts
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Storybook（`pnpm build-storybook` の出力）
+/storybook-static/
+
+# Vitest（カバレッジを有効にしたときの出力先の例）
+/coverage/
+
+# TypeScript（incremental ビルドのキャッシュ）
+*.tsbuildinfo

@@ -14,6 +14,8 @@ export default defineConfig({
       "**/e2e/**", // E2Eテストディレクトリを除外
       "**/playwright-report/**",
       "**/test-results/**",
+      "**/*.stories.*",
+      "**/*.mdx",
     ],
   },
 });

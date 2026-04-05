@@ -32,6 +32,10 @@ pnpm dev
 - `pnpm test`: Vitest のユニットテストを実行
 - `pnpm e2e`: Playwright の E2E テストを実行
 - `pnpm lint-md`: Markdown の lint を実行
+- `pnpm storybook`: Storybook（UI カタログ）を起動
+- `pnpm build-storybook`: Storybook の静的ビルドを生成
+
+拡張本体の動作確認は `pnpm dev`、デザイン確認は `pnpm storybook` を使い分ける。
 
 ### 開発時デバッグの注意点（要点）
 
