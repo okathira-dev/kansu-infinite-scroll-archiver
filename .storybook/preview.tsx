@@ -13,6 +13,14 @@ const preview: Preview = {
         date: /Date$/i,
       },
     },
+    /**
+     * a11y 違反を警告（todo）ではなく失敗（error）として扱う。
+     * Storybook のテスト UI / Vitest アドオン連携時は CLI・CI でも失敗になる。
+     * @see https://storybook.js.org/docs/writing-tests/accessibility-testing#test-behavior
+     */
+    a11y: {
+      test: "error",
+    },
   },
 };
 

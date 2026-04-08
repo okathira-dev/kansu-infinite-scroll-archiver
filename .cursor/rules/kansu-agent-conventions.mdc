@@ -38,3 +38,18 @@ alwaysApply: true
 - `ServiceConfig` の抽出ルール配列は **`fieldRules`**（旧来の `fields` という名前は使わない）。
 - `SearchQuery` の検索対象フィールドは **`targetFieldNames`**（`fieldValues[name].normalized` のみ照合）。
 - 漢字の自動読み推定・辞書形態素解析による一致は **スコープ外**（`wanakana` は表記ゆれ・かな統一の範囲）。詳細は `docs/requirements.md` の `FR-21` と `docs/implementation_guide.md` の正規化節。
+
+### Storybook
+
+- **コンポーネント配置**: Storybook 対象のコンポーネントは **コンポーネント単位のフォルダ**を作り、`index.tsx`（実装）と `*.stories.tsx`（ストーリー）を同居させる。
+- **複合 UI の階層**: Tabs のような複合 UI は **さらに 1 階層深く**分割し、`<親>/<サブコンポーネント>/index.tsx` で実装を分離する（例: `tabs/Tabs/index.tsx`, `tabs/TabsContent/index.tsx`）。
+- **複合 UI の Story 配置**: 複合 UI のストーリーもサブコンポーネントフォルダに同居させる（例: `tabs/Tabs/Tabs.stories.tsx`, `tabs/TabsTrigger/TabsTrigger.stories.tsx`）。この方針は Tabs 以外の複合 UI（`card` / `dialog` / `select` / `table` / `pagination` など）にも適用する。
+- **Story の `title`**: フォルダ構造ベースの自動タイトルを使うため、**`title` は原則書かない**（特別な理由がある場合のみ明示）。
+- **`src/components/ui`（atom 想定）**: Controls で主要 props を触れる **Controls 用ストーリー**（`args` 中心、必要なら `render` は最小）を **必ず用意**する。単体プレビューでは **`aria-label` 等の ARIA で名前を補ってよい**。
+- **UI ストーリーの `args`**: `satisfies Meta<typeof Component>` の範囲に収まる props のみを扱い、**Storybook 専用の疑似 props（Meta 以上の独自 args）を追加しない**。
+- **複合 UI（Tabs など）**: ストーリーはコンポーネント名のフォルダへ分割し、**サブコンポーネントごとに個別の `.stories.tsx`** を作る。
+- **複合 UI のサブ用ストーリー**: キャンバスは **実利用に近い親子構成**で組み、`meta.component` と `args` は **そのサブコンポーネント**に対応させ、`render` 内では **`{...args}` を当該サブ（またはそれに渡す専用 props）にだけ** 当てる。
+- **UI 以外**（content / options / popup 等、molecules 以上）: **可視の説明テキスト・`Label` との紐付け**など、実画面に近い形で a11y を満たす。
+- **本番との切り分け**: Storybook 向けの ARIA やデモ専用の付け方を **実アプリへそのままコピーして量産しない**。
+- Storybook プロジェクトのみのテストは `pnpm test:storybook`（`package.json` のスクリプトが正本）。
+- **`meta.args`**: **全ストーリーで共通して指定したい値**（例: `children`）があるときは、**必要に応じて `meta.args` に書いてよい**。個別ストーリーだけの差分はそのストーリーの `args` に書く。

@@ -51,6 +51,12 @@ Phase 5（インポート / エクスポート）: `FR-40`〜`FR-42`・`NFR-23` 
 - [x] `@testing-library/*` + `jsdom` を導入し、フォーム/検索/ページネーションのコンポーネントテストを追加
 - [x] `pnpm check` / `pnpm test` / `pnpm e2e` を再通過
 - [x] Phase 4 レビュー由来のフォローアップ（実装・`docs/implementation_guide.md` / `docs/implementation_plan.md` への方針記載）
+- [x] Storybook の複合 UI ストーリーを「通常構成 + Controls は当該サブ（または専用 props）」へ統一（`card` / `dialog` / `pagination` / `select` / `table` / `tabs`）
+- [x] `SelectContent` に `scrollUpButtonProps` / `scrollDownButtonProps` を追加し、`SelectScrollUpButton` / `SelectScrollDownButton` ストーリーを実利用構成で Controls 対象化
+- [x] `DialogTrigger` / `DialogTitle` ストーリーで `DialogTitle` / `DialogDescription` の文脈を補完し、ダイアログ a11y 前提を明示
+- [x] `TableBody` / `TableFooter` / `TableRow` ストーリーをヘッダ付きの通常テーブル構成へ調整
+- [x] Stories の Controls 同期で使っていた `useEffect` を `useArgs` へ置換（`Select` / `SelectItem` / `PaginationControls` / `SearchBar` / `RecordTable`）
+- [x] Storybook 構成変更後に `pnpm run compile` / `pnpm test:storybook` を再通過
 
 ## 過去タスク（完了）
 

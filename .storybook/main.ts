@@ -8,7 +8,7 @@ const rootDir = path.resolve(fileURLToPath(new URL(".", import.meta.url)), "..")
 
 const config: StorybookConfig = {
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(ts|tsx)"],
-  addons: ["@storybook/addon-docs"],
+  addons: ["@storybook/addon-docs", "@storybook/addon-a11y", "@storybook/addon-vitest"],
   /** `preview` の `tags: ['autodocs']` と整合 */
   // docs: {
   //   autodocs: "tag", // preview.tsx で tags: ['autodocs'] と設定しているため不要？ 型エラーが出る

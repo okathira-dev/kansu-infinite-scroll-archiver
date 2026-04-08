@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.tsx";
+import App from "./App";
 import "@/assets/tailwind.css"; // WXTでTailwindを使うため: https://github.com/wxt-dev/examples/tree/main/examples/react-shadcn#installation-walkthrough
 
 // biome-ignore lint/style/noNonNullAssertion: テンプレートのため

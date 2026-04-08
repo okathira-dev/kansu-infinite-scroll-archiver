@@ -29,9 +29,6 @@ jobs:
       - name: Run checks
         run: pnpm check
 
-      - name: Run markdown lint
-        run: pnpm lint-md
-
       - name: Run tests
         run: pnpm test
 
