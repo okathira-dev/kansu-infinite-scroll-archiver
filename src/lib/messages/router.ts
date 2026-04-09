@@ -1,4 +1,5 @@
 import { getKansuDb } from "@/lib/db";
+import { SUPPORTED_SCHEMA_VERSION } from "@/lib/import-export/schemaVersion";
 import { RecordRepository, ServiceConfigRepository } from "@/lib/repositories";
 import type { ImportPayload, ServiceConfig } from "@/lib/types";
 import {
@@ -41,6 +42,20 @@ export class MessageRouter {
   async handleRaw(input: unknown): Promise<ResponseMessage> {
     const parsedMessage = parseRequestMessage(input);
     if (!parsedMessage.ok) {
+      // `data/import` の schema 不一致は汎用 VALIDATION_ERROR でもよいが、UI が分岐しやすい専用コードを返す
+      const hasUnsupportedSchemaVersion = parsedMessage.errors.some(
+        (error) =>
+          error.field === "message.payload.importPayload.schemaVersion" &&
+          error.message.includes("supported schemaVersion"),
+      );
+      if (hasUnsupportedSchemaVersion) {
+        return createErrorResponse(
+          "UNSUPPORTED_SCHEMA_VERSION",
+          `unsupported schemaVersion. expected ${SUPPORTED_SCHEMA_VERSION}`,
+          parsedMessage.errors,
+        );
+      }
+
       return createErrorResponse(
         "VALIDATION_ERROR",
         "request validation failed",
@@ -109,6 +124,7 @@ export class MessageRouter {
     return createSuccessResponse(result);
   }
 
+  /** サービス設定と全レコードを JSON 用ペイロードにまとめる（`FR-40`）。 */
   private async handleExport(serviceId: string): Promise<ResponseMessage> {
     const service = await this.serviceConfigRepository.findById(serviceId);
     if (!service) {
@@ -119,7 +135,7 @@ export class MessageRouter {
 
     const records = await this.recordRepository.listByServiceId(serviceId);
     return createSuccessResponse({
-      schemaVersion: 1,
+      schemaVersion: SUPPORTED_SCHEMA_VERSION,
       service,
       records,
       meta: {

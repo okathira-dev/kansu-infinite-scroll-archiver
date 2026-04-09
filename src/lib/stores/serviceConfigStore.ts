@@ -1,6 +1,16 @@
+/**
+ * Options 用: サービス設定一覧と Background へのメッセージ橋渡し。
+ *
+ * `exportServiceData` / `importServiceData` は Phase 5 の `data/export`・`data/import` を叩く。
+ * 失敗理由は `getImportExportErrorMessage` で日本語化し、呼び出し側のトーストに載せる。
+ */
 import { create } from "zustand";
+import { getImportExportErrorMessage } from "@/lib/import-export";
 import type { ResponseMessage } from "@/lib/messages";
-import type { ServiceConfig } from "@/lib/types";
+import type { ExportPayload, ImportPayload, ImportResult, ServiceConfig } from "@/lib/types";
+
+/** インポート/エクスポートは `error` ストアではなく `errorMessage` で返し、二重トーストを避ける */
+type StoreResult<T> = { ok: true; data: T } | { ok: false; errorMessage: string };
 
 interface ServiceConfigStoreState {
   configs: ServiceConfig[];
@@ -12,6 +22,10 @@ interface ServiceConfigStoreState {
     id: string,
     deleteRecords?: boolean,
   ) => Promise<{ ok: true; deletedRecords: number } | { ok: false }>;
+  /** Background 経由でエクスポート用ペイロードを取得（ファイル保存は UI 側）。 */
+  exportServiceData: (serviceId: string) => Promise<StoreResult<ExportPayload>>;
+  /** 検証済みペイロードを保存後、`configs/list` でストアを再同期する。 */
+  importServiceData: (payload: ImportPayload) => Promise<StoreResult<ImportResult>>;
 }
 
 const getErrorMessage = (response: ResponseMessage<unknown>): string =>
@@ -87,6 +101,74 @@ export const useServiceConfigStore = create<ServiceConfigStoreState>((set, get) 
     } catch (_error) {
       set({ loading: false });
       return { ok: false };
+    }
+  },
+  async exportServiceData(serviceId) {
+    set({ loading: true, error: null });
+    try {
+      const response = await browser.runtime.sendMessage({
+        type: "data/export",
+        payload: { serviceId },
+      });
+      const typedResponse = response as ResponseMessage<ExportPayload>;
+      if (!typedResponse.ok) {
+        set({ loading: false });
+        return {
+          ok: false,
+          errorMessage: getImportExportErrorMessage(typedResponse.error),
+        };
+      }
+
+      set({ loading: false, error: null });
+      return { ok: true, data: typedResponse.data };
+    } catch (error) {
+      set({ loading: false });
+      return {
+        ok: false,
+        errorMessage: getImportExportErrorMessage(error),
+      };
+    }
+  },
+  async importServiceData(payload) {
+    set({ loading: true, error: null });
+    try {
+      const response = await browser.runtime.sendMessage({
+        type: "data/import",
+        payload,
+      });
+      const typedResponse = response as ResponseMessage<ImportResult>;
+      if (!typedResponse.ok) {
+        set({ loading: false });
+        return {
+          ok: false,
+          errorMessage: getImportExportErrorMessage(typedResponse.error),
+        };
+      }
+
+      const configListResponse = await browser.runtime.sendMessage({
+        type: "configs/list",
+      });
+      const typedConfigListResponse = configListResponse as ResponseMessage<{
+        configs: ServiceConfig[];
+      }>;
+      if (typedConfigListResponse.ok) {
+        set({
+          configs: typedConfigListResponse.data.configs,
+          loading: false,
+          error: null,
+        });
+      } else {
+        // インポート自体は成功しているため一覧取得失敗では error を立てず、次回表示で fetch すればよい
+        set({ loading: false, error: null });
+      }
+
+      return { ok: true, data: typedResponse.data };
+    } catch (error) {
+      set({ loading: false });
+      return {
+        ok: false,
+        errorMessage: getImportExportErrorMessage(error),
+      };
     }
   },
 }));

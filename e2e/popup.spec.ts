@@ -26,10 +26,11 @@ test("Popup: メインUI切替メッセージを現在タブへ送信できる",
   const popupPage = await context.newPage();
   const popup = await openPopup(popupPage, extensionId);
   await popup.clickToggleMainUi();
-  await expect(await popup.getStatusText()).toContain("送信");
+  await expect
+    .poll(async () => await popup.getStatusText(), { timeout: E2E_STEP_TIMEOUT_MS })
+    .toBe("メインUIの表示切替を送信しました");
 
-  await page.waitForSelector("#kansu-main-panel", { timeout: E2E_STEP_TIMEOUT_MS });
-  await expect(page.locator("#kansu-main-panel")).toBeVisible();
+  await expect(page.locator("#kansu-main-panel")).toBeVisible({ timeout: E2E_STEP_TIMEOUT_MS });
   await popupPage.close();
 });
 

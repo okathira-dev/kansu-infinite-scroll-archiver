@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { E2E_STEP_TIMEOUT_MS } from "./constants";
+import { E2E_BACKGROUND_SYNC_TIMEOUT_MS, E2E_STEP_TIMEOUT_MS } from "./constants";
 import { expect, sendRuntimeMessage, test } from "./fixtures";
 
 const FIXTURE_URL = "https://example.com/kansu-e2e/infinite-scroll";
@@ -101,7 +101,7 @@ test("無限スクロール抽出: 初回抽出とDOM追加後の再抽出", asy
         return response.data.total;
       },
       {
-        timeout: E2E_STEP_TIMEOUT_MS,
+        timeout: E2E_BACKGROUND_SYNC_TIMEOUT_MS,
         message: "初回抽出未達: records/search の total が 2 にならない",
       },
     )
@@ -121,7 +121,7 @@ test("無限スクロール抽出: 初回抽出とDOM追加後の再抽出", asy
         return response.data.total;
       },
       {
-        timeout: E2E_STEP_TIMEOUT_MS,
+        timeout: E2E_BACKGROUND_SYNC_TIMEOUT_MS,
         message: "再抽出未達: DOM 追加後に total が 3 にならない",
       },
     )
@@ -141,7 +141,7 @@ test("無限スクロール抽出: 初回抽出とDOM追加後の再抽出", asy
         return response.data.total;
       },
       {
-        timeout: E2E_STEP_TIMEOUT_MS,
+        timeout: E2E_BACKGROUND_SYNC_TIMEOUT_MS,
         message: "一括追加後の再抽出未達: DOM 一括追加後に total が 13 にならない",
       },
     )

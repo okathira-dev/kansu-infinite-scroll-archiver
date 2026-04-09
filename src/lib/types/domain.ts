@@ -103,3 +103,16 @@ export interface ExportPayload {
 
 /** インポート時は `ExportPayload` と同一構造を要求する。 */
 export interface ImportPayload extends ExportPayload {}
+
+/**
+ * `data/import` 成功時の件数サマリ（`FR-42` の upsert 集計を UI へ伝える）。
+ *
+ * - `imported`: ペイロード内のレコード件数
+ * - `created` / `updated`: 既存キー有無に基づく概算（`RecordRepository.summarizeUpsert`）
+ */
+export interface ImportResult {
+  serviceId: string;
+  imported: number;
+  created: number;
+  updated: number;
+}

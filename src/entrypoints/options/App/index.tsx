@@ -1,4 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+/**
+ * Options 画面本体。アプリ設定タブの JSON インポート/エクスポートはファイル I/O をクライアントで行い、IndexedDB 更新は Background へ委譲する（Phase 5）。
+ */
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,6 +28,13 @@ import { Toaster } from "@/components/ui/sonner";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  createExportFileName,
+  downloadJsonText,
+  getValidationIssueMessage,
+  parseImportJsonText,
+  stringifyExportPayload,
+} from "@/lib/import-export";
 import { useServiceConfigStore } from "@/lib/stores";
 import type { FieldRule, FieldType, ServiceConfig } from "@/lib/types";
 import { validateServiceConfig } from "@/lib/types";
@@ -106,13 +116,24 @@ const toServiceConfig = (editor: ConfigEditorState): ServiceConfig => ({
 });
 
 function App() {
-  const { configs, loading, error, fetchConfigs, saveConfig, deleteConfig } =
-    useServiceConfigStore();
+  const {
+    configs,
+    loading,
+    error,
+    fetchConfigs,
+    saveConfig,
+    deleteConfig,
+    exportServiceData,
+    importServiceData,
+  } = useServiceConfigStore();
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editor, setEditor] = useState<ConfigEditorState>(createDefaultEditorState);
   const [editingConfigId, setEditingConfigId] = useState<string | null>(null);
   const [deleteDialogConfigId, setDeleteDialogConfigId] = useState<string | null>(null);
   const [deleteRecords, setDeleteRecords] = useState(false);
+  const [selectedExportServiceId, setSelectedExportServiceId] = useState("");
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const importFileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     void fetchConfigs();
@@ -131,6 +152,21 @@ function App() {
       }),
     [configs],
   );
+
+  // エクスポート対象セレクト: 一覧が変わったら先頭へフォールバック（削除後の空 ID を防ぐ）
+  useEffect(() => {
+    if (sortedConfigs.length === 0) {
+      setSelectedExportServiceId("");
+      return;
+    }
+
+    setSelectedExportServiceId((previous) => {
+      if (previous.length > 0 && sortedConfigs.some((config) => config.id === previous)) {
+        return previous;
+      }
+      return sortedConfigs[0]?.id ?? "";
+    });
+  }, [sortedConfigs]);
 
   const handleNewConfig = () => {
     setEditingConfigId(null);
@@ -193,6 +229,55 @@ function App() {
     );
     setDeleteDialogConfigId(null);
     setDeleteRecords(false);
+  };
+
+  /** `data/export` → ローカル JSON ダウンロード（`FR-40`）。 */
+  const handleExportServiceData = async () => {
+    if (selectedExportServiceId.length === 0) {
+      toast.error("エクスポート対象のサービスを選択してください。");
+      return;
+    }
+
+    const response = await exportServiceData(selectedExportServiceId);
+    if (!response.ok) {
+      toast.error(response.errorMessage);
+      return;
+    }
+
+    const payload = response.data;
+    const jsonText = stringifyExportPayload(payload);
+    const fileName = createExportFileName(payload.service.id, payload.meta.exportedAt);
+    downloadJsonText(fileName, jsonText);
+    toast.success(`JSON をエクスポートしました（${payload.records.length} 件）。`);
+  };
+
+  /** ファイルを `parseImportJsonText` で検証してから `data/import`（`FR-41`/`FR-42`）。 */
+  const handleImportServiceData = async () => {
+    if (!importFile) {
+      toast.error("インポートする JSON ファイルを選択してください。");
+      return;
+    }
+
+    const fileText = await importFile.text();
+    const parsedImport = parseImportJsonText(fileText);
+    if (!parsedImport.ok) {
+      toast.error(getValidationIssueMessage(parsedImport.errors));
+      return;
+    }
+
+    const response = await importServiceData(parsedImport.data);
+    if (!response.ok) {
+      toast.error(response.errorMessage);
+      return;
+    }
+
+    toast.success(
+      `インポートしました（処理: ${response.data.imported} / 新規: ${response.data.created} / 更新: ${response.data.updated}）。`,
+    );
+    setImportFile(null);
+    if (importFileInputRef.current) {
+      importFileInputRef.current.value = "";
+    }
   };
 
   return (
@@ -281,14 +366,100 @@ function App() {
           </TabsContent>
 
           <TabsContent value="global">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">グローバル設定</CardTitle>
-                <CardDescription>
-                  今後のフェーズで、デフォルトページサイズ等の共通設定を追加予定です。
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            <div className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">データ管理（JSON）</CardTitle>
+                  <CardDescription>
+                    サービス単位で、設定と抽出データをエクスポート・インポートできます。
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <section className="space-y-2">
+                    <h3 className="text-sm font-medium">エクスポート</h3>
+                    <p className="text-sm text-muted-foreground">
+                      対象サービスを選択して JSON をダウンロードします。
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+                      <div className="grid gap-2">
+                        <Label htmlFor="export-service-id">サービス</Label>
+                        <Select
+                          value={selectedExportServiceId}
+                          onValueChange={setSelectedExportServiceId}
+                        >
+                          <SelectTrigger id="export-service-id" className="w-full">
+                            <SelectValue placeholder="エクスポート対象を選択" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {sortedConfigs.map((config) => (
+                              <SelectItem key={config.id} value={config.id}>
+                                {config.name} ({config.id})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button
+                        id="export-service-data"
+                        type="button"
+                        onClick={handleExportServiceData}
+                        disabled={sortedConfigs.length === 0 || loading}
+                      >
+                        JSON をエクスポート
+                      </Button>
+                    </div>
+                  </section>
+
+                  <Separator />
+
+                  <section className="space-y-2">
+                    <h3 className="text-sm font-medium">インポート</h3>
+                    <p className="text-sm text-muted-foreground">
+                      `schemaVersion` と必須項目を検証してから反映します。
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+                      <div className="grid gap-2">
+                        <Label htmlFor="import-json-file">JSON ファイル</Label>
+                        <Input
+                          ref={importFileInputRef}
+                          id="import-json-file"
+                          type="file"
+                          accept=".json,application/json"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0] ?? null;
+                            setImportFile(file);
+                          }}
+                        />
+                      </div>
+                      <Button
+                        id="import-service-data"
+                        type="button"
+                        onClick={() => {
+                          void handleImportServiceData();
+                        }}
+                        disabled={!importFile || loading}
+                      >
+                        JSON をインポート
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {importFile
+                        ? `選択中: ${importFile.name}`
+                        : "ファイル未選択（サービス設定 + 抽出データを含む JSON を指定）"}
+                    </p>
+                  </section>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">グローバル設定</CardTitle>
+                  <CardDescription>
+                    今後のフェーズで、デフォルトページサイズ等の共通設定を追加予定です。
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

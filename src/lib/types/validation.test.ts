@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { SUPPORTED_SCHEMA_VERSION } from "@/lib/import-export/schemaVersion";
 import {
   validateBulkUpsertPayload,
   validateConfigDeletePayload,
@@ -109,6 +110,39 @@ describe("インポートペイロードバリデーション", () => {
     });
 
     expect(result.ok).toBe(true);
+  });
+
+  it("非対応 schemaVersion を拒否する", () => {
+    const now = new Date().toISOString();
+    const result = validateImportPayload({
+      schemaVersion: SUPPORTED_SCHEMA_VERSION + 1,
+      service: validServiceConfig,
+      records: [
+        {
+          serviceId: "service-1",
+          uniqueKey: "k1",
+          extractedAt: now,
+          fieldValues: {
+            id: { raw: "k1", normalized: "k1" },
+            title: { raw: "hello", normalized: "hello" },
+          },
+        },
+      ],
+      meta: {
+        exportedAt: now,
+      },
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(
+        result.errors.some(
+          (error) =>
+            error.field === "importPayload.schemaVersion" &&
+            error.message.includes("supported schemaVersion"),
+        ),
+      ).toBe(true);
+    }
   });
 });
 

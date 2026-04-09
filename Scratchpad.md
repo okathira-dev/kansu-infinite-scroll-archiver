@@ -5,7 +5,7 @@
 
 ## 現在のタスク
 
-Phase 5（インポート / エクスポート）: `FR-40`〜`FR-42`・`NFR-23` に沿い、JSON schemaVersion 付きの I/O とバリデーション、エラー導線を実装する。
+Phase 4 の細かい UI 修正と Phase 6（品質強化・リリース準備）の着手項目を整理する。
 
 ## 進捗状況
 
@@ -57,6 +57,11 @@ Phase 5（インポート / エクスポート）: `FR-40`〜`FR-42`・`NFR-23` 
 - [x] `TableBody` / `TableFooter` / `TableRow` ストーリーをヘッダ付きの通常テーブル構成へ調整
 - [x] Stories の Controls 同期で使っていた `useEffect` を `useArgs` へ置換（`Select` / `SelectItem` / `PaginationControls` / `SearchBar` / `RecordTable`）
 - [x] Storybook 構成変更後に `pnpm run compile` / `pnpm test:storybook` を再通過
+- [x] `src/lib/import-export` を追加（`SUPPORTED_SCHEMA_VERSION`、JSON parse/stringify、ファイル保存、エラーマッピング）
+- [x] `validateImportPayload` を strict schemaVersion 判定へ更新し、`MessageRouter` で `UNSUPPORTED_SCHEMA_VERSION` を返却
+- [x] Options（`serviceConfigStore` / `App`）にサービス単位 JSON エクスポート・インポート導線を実装
+- [x] `validation` / `router` / `options` / E2E テストを Phase 5 要件（round-trip・不正 schemaVersion・JSON I/O）へ拡充
+- [x] `pnpm check` / `pnpm test` / `pnpm e2e` を通過（E2E 初回の Popup テストタイムアウトは再実行で解消）
 
 ## 過去タスク（完了）
 
@@ -103,6 +108,6 @@ Phase 5（インポート / エクスポート）: `FR-40`〜`FR-42`・`NFR-23` 
 - `docs/implementation_plan.md` と `docs/implementation_guide.md` は要件・設計の普遍的記述に留め、実装の進み具合や「いまどこまで終わったか」は本 Scratchpad とコードで追う（計画書に実装状況を書かない方針）。
 - Phase 2 として、Dexie スキーマ・Repository 層・MessageRouter 差し替え・Background 注入・関連テスト追加を完了した。
 - Phase 3 として、Content Script の抽出エンジン（URL一致、抽出器、MutationObserverバッチ、bulkUpsert送信、ユニットテスト）を実装し、`ExtractedRecord.fieldValues`（`raw` / `normalized`）・`fieldRules` / `targetFieldNames`・`wanakana` 正規化まで完了した。
-- 次アクション: Phase 5 で JSON インポート/エクスポートの UI 導線・スキーマ検証・エラー通知を実装し、既存メッセージ契約との整合を確認する。
+- 次アクション: Phase 4 の細かい UI 修正タスクを再開し、Phase 6（品質強化とリリース準備）に着手する。
 - 旧 `implementation_guide` の 2.2/2.3/2.4 で重要だった記述の欠落を再点検し、現行版へ追記した（`src` 配置とWXTファイルベース構成、各エントリポイント責務の詳細、共有モジュール、データフロー、開発運用ポリシー）。
 - 依存関係を最新化済み。更新手順は [README.md](README.md) の「依存関係の更新」を参照。

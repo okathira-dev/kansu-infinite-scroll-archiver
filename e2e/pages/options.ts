@@ -1,6 +1,7 @@
 import type { Page } from "@playwright/test";
 import { E2E_STEP_TIMEOUT_MS } from "../constants";
 
+/** Options ページの共通操作。タブ切替・JSON I/O は Phase 5 の E2E 向け。 */
 export async function openOptionsPage(page: Page, extensionId: string) {
   await page.goto(`chrome-extension://${extensionId}/options.html`);
   await page.waitForSelector("text=Kansu 設定", { timeout: E2E_STEP_TIMEOUT_MS });
@@ -42,6 +43,21 @@ export async function openOptionsPage(page: Page, extensionId: string) {
     },
     confirmDelete: async () => {
       await page.click("#confirm-delete-config");
+    },
+    openGlobalSettingsTab: async () => {
+      await page.getByRole("tab", { name: "アプリ設定" }).click();
+    },
+    openServiceSettingsTab: async () => {
+      await page.getByRole("tab", { name: "サービス設定" }).click();
+    },
+    clickExportServiceData: async () => {
+      await page.click("#export-service-data");
+    },
+    setImportJsonFile: async (params: { name: string; mimeType: string; buffer: Uint8Array }) => {
+      await page.setInputFiles("#import-json-file", params);
+    },
+    clickImportServiceData: async () => {
+      await page.click("#import-service-data");
     },
   };
 }

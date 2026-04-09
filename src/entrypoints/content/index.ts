@@ -19,8 +19,25 @@ export default defineContentScript({
   matches: ["<all_urls>"],
   cssInjectionMode: "ui",
   async main(ctx) {
-    await startContentEngine();
     let isMounted = false;
+    let pendingToggleCount = 0;
+    let toggleMainUi: (() => void) | null = null;
+
+    const messageListener = (message: unknown) => {
+      if (!isToggleMainUiMessage(message)) {
+        return undefined;
+      }
+      if (!toggleMainUi) {
+        // UI 準備前のトグル要求は取りこぼさず、準備完了後に反映する。
+        pendingToggleCount += 1;
+        return Promise.resolve({ ok: true, visible: isMounted, pending: true });
+      }
+      toggleMainUi();
+      return Promise.resolve({ ok: true, visible: isMounted });
+    };
+    browser.runtime.onMessage.addListener(messageListener);
+
+    await startContentEngine();
 
     const ui = await createShadowRootUi(ctx, {
       name: "kansu-main-ui",
@@ -49,7 +66,7 @@ export default defineContentScript({
         mounted?.root.unmount();
       },
     });
-    const toggleMainUi = () => {
+    toggleMainUi = () => {
       if (isMounted) {
         ui.remove();
         isMounted = false;
@@ -58,16 +75,11 @@ export default defineContentScript({
       ui.mount();
       isMounted = true;
     };
-
-    const messageListener = (message: unknown) => {
-      if (!isToggleMainUiMessage(message)) {
-        return undefined;
-      }
+    if (pendingToggleCount % 2 === 1) {
       toggleMainUi();
-      return Promise.resolve({ ok: true, visible: isMounted });
-    };
+    }
+    pendingToggleCount = 0;
 
-    browser.runtime.onMessage.addListener(messageListener);
     window.addEventListener(
       "pagehide",
       () => {

@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { E2E_STEP_TIMEOUT_MS } from "./constants";
+import { E2E_BACKGROUND_SYNC_TIMEOUT_MS, E2E_STEP_TIMEOUT_MS } from "./constants";
 import { expect, sendRuntimeMessage, test } from "./fixtures";
 import { waitForMainPanel } from "./pages/mainPanel";
 import { openPopup } from "./pages/popup";
@@ -70,7 +70,9 @@ test("メインUI: 検索・ソート・ページ移動を実行できる", asyn
   const popupPage = await context.newPage();
   const popup = await openPopup(popupPage, extensionId);
   await popup.clickToggleMainUi();
-  await expect(await popup.getStatusText()).toContain("送信");
+  await expect
+    .poll(async () => await popup.getStatusText(), { timeout: E2E_STEP_TIMEOUT_MS })
+    .toBe("メインUIの表示切替を送信しました");
   await popupPage.close();
 
   const mainPanel = await waitForMainPanel(page);
@@ -81,7 +83,9 @@ test("メインUI: 検索・ソート・ページ移動を実行できる", asyn
 
   await mainPanel.fillKeyword("");
   await expect
-    .poll(async () => await mainPanel.getPanel().textContent(), { timeout: E2E_STEP_TIMEOUT_MS })
+    .poll(async () => await mainPanel.getPanel().textContent(), {
+      timeout: E2E_BACKGROUND_SYNC_TIMEOUT_MS,
+    })
     .toContain("合計 12 件");
   await mainPanel.goToNextPage();
   await expect(mainPanel.getPanel().getByText("2 / 2 ページ")).toBeVisible();

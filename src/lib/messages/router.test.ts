@@ -2,6 +2,7 @@ import Dexie from "dexie";
 import { IDBFactory, IDBKeyRange } from "fake-indexeddb";
 import { describe, expect, it } from "vitest";
 import { KansuDb } from "@/lib/db";
+import { SUPPORTED_SCHEMA_VERSION } from "@/lib/import-export/schemaVersion";
 import { RecordRepository, ServiceConfigRepository } from "@/lib/repositories";
 import { MessageRouter } from "./router";
 
@@ -38,6 +39,34 @@ const serviceConfigPayload = {
   enabled: true,
   updatedAt: new Date().toISOString(),
 };
+
+const createImportPayload = (schemaVersion = SUPPORTED_SCHEMA_VERSION) => ({
+  schemaVersion,
+  service: serviceConfigPayload,
+  records: [
+    {
+      serviceId: "service-1",
+      uniqueKey: "r1",
+      extractedAt: new Date().toISOString(),
+      fieldValues: {
+        id: { raw: "r1", normalized: "r1" },
+        title: { raw: "imported title", normalized: "imported title" },
+      },
+    },
+    {
+      serviceId: "service-1",
+      uniqueKey: "r2",
+      extractedAt: new Date().toISOString(),
+      fieldValues: {
+        id: { raw: "r2", normalized: "r2" },
+        title: { raw: "imported title 2", normalized: "imported title 2" },
+      },
+    },
+  ],
+  meta: {
+    exportedAt: new Date().toISOString(),
+  },
+});
 
 describe("メッセージルータ", () => {
   // Node 環境の Vitest には IndexedDB 実装がないため、Dexie の依存先をモックに差し替える。
@@ -186,6 +215,103 @@ describe("メッセージルータ", () => {
       };
       expect(data.total).toBe(1);
       expect(data.records[0]?.uniqueKey).toBe("r1");
+    }
+    await closeAndDeleteDb(db);
+  });
+
+  it("サービス単位エクスポートを処理できる", async () => {
+    const { db, router } = createTestRouter();
+
+    await router.handleRaw({
+      type: "configs/save",
+      payload: serviceConfigPayload,
+    });
+    await router.handleRaw({
+      type: "records/bulkUpsert",
+      payload: {
+        records: [
+          {
+            serviceId: "service-1",
+            uniqueKey: "r1",
+            extractedAt: new Date().toISOString(),
+            fieldValues: {
+              id: { raw: "r1", normalized: "r1" },
+              title: { raw: "Title 1", normalized: "title 1" },
+            },
+          },
+        ],
+      },
+    });
+
+    const exportResponse = await router.handleRaw({
+      type: "data/export",
+      payload: { serviceId: "service-1" },
+    });
+    expect(exportResponse.ok).toBe(true);
+    if (exportResponse.ok) {
+      const data = exportResponse.data as {
+        schemaVersion: number;
+        service: { id: string };
+        records: Array<{ uniqueKey: string }>;
+      };
+      expect(data.schemaVersion).toBe(SUPPORTED_SCHEMA_VERSION);
+      expect(data.service.id).toBe("service-1");
+      expect(data.records).toHaveLength(1);
+      expect(data.records[0]?.uniqueKey).toBe("r1");
+    }
+    await closeAndDeleteDb(db);
+  });
+
+  it("インポートで upsert 集計を返せる", async () => {
+    const { db, router } = createTestRouter();
+
+    await router.handleRaw({
+      type: "configs/save",
+      payload: serviceConfigPayload,
+    });
+    await router.handleRaw({
+      type: "records/bulkUpsert",
+      payload: {
+        records: [
+          {
+            serviceId: "service-1",
+            uniqueKey: "r1",
+            extractedAt: new Date().toISOString(),
+            fieldValues: {
+              id: { raw: "r1", normalized: "r1" },
+              title: { raw: "before import", normalized: "before import" },
+            },
+          },
+        ],
+      },
+    });
+
+    const importResponse = await router.handleRaw({
+      type: "data/import",
+      payload: createImportPayload(),
+    });
+    expect(importResponse.ok).toBe(true);
+    if (importResponse.ok) {
+      expect(importResponse.data).toEqual({
+        serviceId: "service-1",
+        imported: 2,
+        created: 1,
+        updated: 1,
+      });
+    }
+    await closeAndDeleteDb(db);
+  });
+
+  it("非対応 schemaVersion では専用エラーを返す", async () => {
+    const { db, router } = createTestRouter();
+    const response = await router.handleRaw({
+      type: "data/import",
+      payload: createImportPayload(SUPPORTED_SCHEMA_VERSION + 1),
+    });
+
+    expect(response.ok).toBe(false);
+    if (!response.ok) {
+      expect(response.error.code).toBe("UNSUPPORTED_SCHEMA_VERSION");
     }
     await closeAndDeleteDb(db);
   });

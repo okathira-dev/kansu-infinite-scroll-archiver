@@ -1,18 +1,16 @@
 import type { KansuDb } from "@/lib/db";
 import { normalizeForSearch } from "@/lib/search/textNormalization";
-import type { ExtractedRecord, ImportPayload, SearchQuery, SearchResult } from "@/lib/types";
+import type {
+  ExtractedRecord,
+  ImportPayload,
+  ImportResult,
+  SearchQuery,
+  SearchResult,
+} from "@/lib/types";
 
 /** bulk upsert 実行結果。 */
 export interface BulkUpsertResult {
   processed: number;
-  created: number;
-  updated: number;
-}
-
-/** import 実行結果。 */
-export interface ImportResult {
-  serviceId: string;
-  imported: number;
   created: number;
   updated: number;
 }
@@ -74,6 +72,10 @@ export class RecordRepository {
     return this.db.records.where("serviceId").equals(serviceId).delete();
   }
 
+  /**
+   * 検証済み `ImportPayload` を 1 トランザクションで反映（`NFR-12`）。
+   * 設定は上書き put、レコードは `bulkPut` で upsert。件数は `FR-42` 通知用に集計する。
+   */
   async importPayload(payload: ImportPayload): Promise<ImportResult> {
     const summary = await this.db.transaction(
       "rw",

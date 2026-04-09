@@ -4,6 +4,8 @@
  * 外部（メッセージ・JSON）から入る `unknown` を扱うため、型アサーションではなくここで弾く。
  * エラーメッセージは英語のまま（`details` 用・デバッグ向け）。呼び出し側でユーザー向け文言にマップしてよい。
  */
+
+import { SUPPORTED_SCHEMA_VERSION } from "@/lib/import-export/schemaVersion";
 import type {
   ExtractedRecord,
   FieldRule,
@@ -414,10 +416,13 @@ export const validateConfigDeletePayload = (
 };
 
 /**
- * インポート JSON 全体を検証する（FR-41）。
+ * インポート JSON 全体を検証する（`FR-41` / `NFR-23`）。
  *
  * ネストした検証エラーは `importPayload.` プレフィックスを付けてフラットに集約し、
  * メッセージ層の `VALIDATION_ERROR` と一貫した場所特定ができるようにする。
+ *
+ * `schemaVersion` は `@/lib/import-export/schemaVersion` の `SUPPORTED_SCHEMA_VERSION` と一致する場合のみ通す。
+ * 不一致時は `MessageRouter` が `UNSUPPORTED_SCHEMA_VERSION` に昇格しうる（フィールド名・メッセージ文言に依存）。
  */
 export const validateImportPayload = (input: unknown): ValidationResult<ImportPayload> => {
   const issues: ValidationIssue[] = [];
@@ -427,6 +432,11 @@ export const validateImportPayload = (input: unknown): ValidationResult<ImportPa
 
   if (typeof input.schemaVersion !== "number") {
     issues.push({ field: "importPayload.schemaVersion", message: "must be a number" });
+  } else if (input.schemaVersion !== SUPPORTED_SCHEMA_VERSION) {
+    issues.push({
+      field: "importPayload.schemaVersion",
+      message: `must be supported schemaVersion (${SUPPORTED_SCHEMA_VERSION})`,
+    });
   }
 
   const serviceResult = validateServiceConfig(input.service);
@@ -458,6 +468,7 @@ export const validateImportPayload = (input: unknown): ValidationResult<ImportPa
 
   if (
     typeof input.schemaVersion !== "number" ||
+    input.schemaVersion !== SUPPORTED_SCHEMA_VERSION ||
     !serviceResult.ok ||
     !recordsResult.ok ||
     !exportedAt ||

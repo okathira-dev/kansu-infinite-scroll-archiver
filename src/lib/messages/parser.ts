@@ -106,6 +106,7 @@ export const parseRequestMessage = (input: unknown): ValidationResult<RequestMes
       return { ok: true, data: { type: "data/export", payload: result.data } };
     }
     case "data/import": {
+      // UI 側でも検証するが、任意の送信元を想定し Background 入口で必ず弾く（`NFR-23`）
       const result = validateImportPayload(input.payload);
       if (!result.ok) {
         return {
