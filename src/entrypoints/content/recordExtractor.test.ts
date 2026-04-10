@@ -89,4 +89,25 @@ describe("レコード抽出", () => {
     expect(records[0]?.uniqueKey).toBe("ok-1");
     expect(records[0]?.fieldValues.id?.normalized.length).toBeGreaterThan(0);
   });
+
+  it("regex 非一致や URL 属性欠落時は空文字として扱う", () => {
+    const item = createItemElement({
+      ".id": createLeafElement("b1"),
+      ".title": createLeafElement("番号なしタイトル"),
+      ".link": createLeafElement(""),
+      ".thumb": createLeafElement(""),
+    });
+
+    const records = extractRecordsFromDom({
+      config: sampleServiceConfig,
+      observeRoot: createRoot([item]),
+      pageUrl: samplePageUrl,
+    });
+
+    expect(records).toHaveLength(1);
+    expect(records[0]?.uniqueKey).toBe("b1");
+    expect(records[0]?.fieldValues.link?.raw).toBe("");
+    expect(records[0]?.fieldValues.thumbnail?.raw).toBe("");
+    expect(records[0]?.fieldValues.digits?.raw).toBe("");
+  });
 });

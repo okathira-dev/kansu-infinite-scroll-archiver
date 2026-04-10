@@ -48,6 +48,75 @@ describe("サービス設定バリデーション", () => {
       expect(result.errors.some((error) => error.field.includes("uniqueKeyField"))).toBe(true);
     }
   });
+
+  it("regex 型で有効なパターンを受け入れる", () => {
+    const result = validateServiceConfig({
+      ...validServiceConfig,
+      fieldRules: [
+        {
+          name: "id",
+          selector: ".id",
+          type: "text" as const,
+        },
+        {
+          name: "digits",
+          selector: ".title",
+          type: "regex" as const,
+          regex: "(\\d+)",
+        },
+      ],
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("regex 型で regex が未指定の場合は拒否する", () => {
+    const result = validateServiceConfig({
+      ...validServiceConfig,
+      fieldRules: [
+        {
+          name: "id",
+          selector: ".id",
+          type: "text" as const,
+        },
+        {
+          name: "digits",
+          selector: ".title",
+          type: "regex" as const,
+        },
+      ],
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(
+        result.errors.some((error) => error.field.includes("serviceConfig.fieldRules[1].regex")),
+      ).toBe(true);
+    }
+  });
+
+  it("regex 型で不正なパターンを拒否する", () => {
+    const result = validateServiceConfig({
+      ...validServiceConfig,
+      fieldRules: [
+        {
+          name: "id",
+          selector: ".id",
+          type: "text" as const,
+        },
+        {
+          name: "digits",
+          selector: ".title",
+          type: "regex" as const,
+          regex: "(",
+        },
+      ],
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(
+        result.errors.some((error) => error.field.includes("serviceConfig.fieldRules[1].regex")),
+      ).toBe(true);
+    }
+  });
 });
 
 describe("検索クエリバリデーション", () => {

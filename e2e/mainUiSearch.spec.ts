@@ -55,6 +55,8 @@ test("メインUI: 検索・ソート・ページ移動を実行できる", asyn
         fieldRules: [
           { name: "link", selector: ".link", type: "linkUrl" },
           { name: "title", selector: ".title", type: "text" },
+          { name: "thumbnail", selector: ".thumb", type: "imageUrl" },
+          { name: "digits", selector: ".title", type: "regex", regex: "(\\d+)" },
         ],
         enabled: true,
         updatedAt: new Date().toISOString(),
@@ -78,6 +80,36 @@ test("メインUI: 検索・ソート・ページ移動を実行できる", asyn
   const mainPanel = await waitForMainPanel(page);
   await expect(mainPanel.getPanel()).toBeVisible();
 
+  const configUpdateResponse = await sendRuntimeMessage<RuntimeResponse<{ configId: string }>>(
+    context,
+    extensionId,
+    {
+      type: "configs/save",
+      payload: {
+        id: serviceId,
+        name: "E2E Main UI Fixture Updated",
+        urlPatterns: ["https://example.com/kansu-e2e/*"],
+        observeRootSelector: "#feed",
+        itemSelector: ".item",
+        uniqueKeyField: "link",
+        fieldRules: [
+          { name: "link", selector: ".link", type: "linkUrl" },
+          { name: "title", selector: ".title", type: "text" },
+          { name: "thumbnail", selector: ".thumb", type: "imageUrl" },
+          { name: "digits", selector: ".title", type: "regex", regex: "(\\d+)" },
+        ],
+        enabled: true,
+        updatedAt: new Date().toISOString(),
+      },
+    },
+  );
+  assertSuccess(configUpdateResponse, "設定更新失敗");
+  await expect
+    .poll(async () => await mainPanel.getPanel().locator("#kansu-service-select").textContent(), {
+      timeout: E2E_BACKGROUND_SYNC_TIMEOUT_MS,
+    })
+    .toContain("E2E Main UI Fixture Updated");
+
   await mainPanel.fillKeyword("English headline #2");
   await expect(mainPanel.getPanel().getByText("English headline #2")).toBeVisible();
 
@@ -90,6 +122,10 @@ test("メインUI: 検索・ソート・ページ移動を実行できる", asyn
   await mainPanel.goToNextPage();
   await expect(mainPanel.getPanel().getByText("2 / 2 ページ")).toBeVisible();
   await mainPanel.goToPrevPage();
+  await expect(mainPanel.getPanel().getByText("1 / 2 ページ")).toBeVisible();
+  await page.keyboard.press("Alt+ArrowRight");
+  await expect(mainPanel.getPanel().getByText("2 / 2 ページ")).toBeVisible();
+  await page.keyboard.press("Alt+ArrowLeft");
   await expect(mainPanel.getPanel().getByText("1 / 2 ページ")).toBeVisible();
 
   await mainPanel.clickSortBy("title");

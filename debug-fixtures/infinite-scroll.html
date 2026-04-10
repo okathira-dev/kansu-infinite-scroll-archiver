@@ -29,6 +29,14 @@
         display: inline-block;
         margin-left: 8px;
       }
+
+      .thumb {
+        width: 64px;
+        height: 36px;
+        object-fit: cover;
+        border-radius: 4px;
+        vertical-align: middle;
+      }
     </style>
   </head>
   <body>
@@ -48,10 +56,12 @@
     <div id="feed">
       <article class="item">
         <a class="link" href="/post-1">post-1</a>
+        <img class="thumb" src="https://picsum.photos/seed/kansu-post-1/160/90" alt="thumb-1" />
         <span class="title">日本語タイトル #1</span>
       </article>
       <article class="item">
         <a class="link" href="/post-2">post-2</a>
+        <img class="thumb" src="https://picsum.photos/seed/kansu-post-2/160/90" alt="thumb-2" />
         <span class="title">English headline #2</span>
       </article>
     </div>
@@ -59,6 +69,7 @@
     <script>
       (() => {
         let sequence = 3;
+        const buildThumbUrl = (n) => `https://picsum.photos/seed/kansu-post-${n}/160/90`;
         const titlePatterns = [
           "日本語タイトル",
           "English headline",
@@ -87,6 +98,7 @@
             item.className = "item";
             item.innerHTML = `
               <a class="link" href="/post-${n}">post-${n}</a>
+              <img class="thumb" src="${buildThumbUrl(n)}" alt="thumb-${n}" />
               <span class="title">${buildTitle(n)}</span>
             `;
             fragment.append(item);

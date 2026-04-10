@@ -26,6 +26,8 @@ export const createManualFixtureServiceConfig = (): ServiceConfig => ({
   fieldRules: [
     { name: "link", selector: ".link", type: "linkUrl" },
     { name: "title", selector: ".title", type: "text" },
+    { name: "thumbnail", selector: ".thumb", type: "imageUrl" },
+    { name: "digits", selector: ".title", type: "regex", regex: "(\\d+)" },
   ],
   enabled: true,
   updatedAt: new Date().toISOString(),

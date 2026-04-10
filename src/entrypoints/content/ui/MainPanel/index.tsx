@@ -19,6 +19,8 @@ import { PaginationControls } from "../PaginationControls";
 import { RecordTable } from "../RecordTable";
 import { SearchBar } from "../SearchBar";
 
+const CONFIGS_UPDATED_EVENT_NAME = "kansu:configs-updated";
+
 interface MainPanelProps {
   onRequestClose: () => void;
   /** Shadow 内の要素。Select の Portal 先にし、ホストページではなく拡張UIのスタイルを当てる。 */
@@ -88,6 +90,15 @@ export function MainPanel({ onRequestClose, selectPortalContainer = null }: Main
 
   useEffect(() => {
     void fetchConfigs();
+  }, [fetchConfigs]);
+
+  useEffect(() => {
+    const handleConfigsUpdated = () => {
+      void fetchConfigs();
+      toast.info("設定変更を再取得しました");
+    };
+    window.addEventListener(CONFIGS_UPDATED_EVENT_NAME, handleConfigsUpdated);
+    return () => window.removeEventListener(CONFIGS_UPDATED_EVENT_NAME, handleConfigsUpdated);
   }, [fetchConfigs]);
 
   useEffect(() => {

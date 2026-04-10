@@ -5,6 +5,7 @@ import { expect, sendRuntimeMessage, test } from "./fixtures";
 
 const FIXTURE_URL = "https://example.com/kansu-e2e/infinite-scroll";
 const FIXTURE_FILE = path.resolve("./debug-fixtures/infinite-scroll.html");
+const buildThumbUrl = (n: number) => `https://picsum.photos/seed/post-${n}/160/90`;
 
 interface ResponseError {
   code: string;
@@ -43,7 +44,7 @@ const buildSearchRequest = (serviceId: string) => ({
   payload: {
     serviceId,
     keyword: "",
-    targetFieldNames: ["title", "link"],
+    targetFieldNames: ["title", "link", "thumbnail", "digits"],
     sortBy: "title",
     sortOrder: "asc" as const,
     page: 1,
@@ -79,6 +80,8 @@ test("無限スクロール抽出: 初回抽出とDOM追加後の再抽出", asy
       fieldRules: [
         { name: "link", selector: ".link", type: "linkUrl" },
         { name: "title", selector: ".title", type: "text" },
+        { name: "thumbnail", selector: ".thumb", type: "imageUrl" },
+        { name: "digits", selector: ".title", type: "regex", regex: "(\\d+)" },
       ],
       enabled: true,
       updatedAt: new Date().toISOString(),
@@ -153,10 +156,16 @@ test("無限スクロール抽出: 初回抽出とDOM追加後の再抽出", asy
     buildSearchRequest(serviceId),
   );
   assertSuccess(finalResponse, "最終確認の検索失敗");
-  expect(
-    finalResponse.data.records.some((record) => record.uniqueKey === "https://example.com/post-3"),
-  ).toBe(true);
-  expect(
-    finalResponse.data.records.some((record) => record.uniqueKey === "https://example.com/post-13"),
-  ).toBe(true);
+  const post3 = finalResponse.data.records.find(
+    (record) => record.uniqueKey === "https://example.com/post-3",
+  );
+  const post13 = finalResponse.data.records.find(
+    (record) => record.uniqueKey === "https://example.com/post-13",
+  );
+  expect(post3?.fieldValues.link?.raw).toBe("https://example.com/post-3");
+  expect(post3?.fieldValues.thumbnail?.raw).toBe(buildThumbUrl(3));
+  expect(post3?.fieldValues.digits?.raw).toBe("3");
+  expect(post13?.fieldValues.link?.raw).toBe("https://example.com/post-13");
+  expect(post13?.fieldValues.thumbnail?.raw).toBe(buildThumbUrl(13));
+  expect(post13?.fieldValues.digits?.raw).toBe("13");
 });

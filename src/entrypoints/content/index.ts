@@ -1,11 +1,13 @@
 import { createElement } from "react";
 import ReactDOM from "react-dom/client";
 import { createShadowRootUi } from "wxt/utils/content-script-ui/shadow-root";
+import { isConfigsUpdatedMessage } from "@/lib/messages/systemEvents";
 import { MainPanel } from "./ui/MainPanel";
 import "./ui/style.css";
 import { startContentEngine } from "./engine";
 
 const TOGGLE_MAIN_UI_MESSAGE_TYPE = "kansu/toggleMainUi";
+const CONFIGS_UPDATED_EVENT_NAME = "kansu:configs-updated";
 
 const isToggleMainUiMessage = (
   value: unknown,
@@ -24,6 +26,10 @@ export default defineContentScript({
     let toggleMainUi: (() => void) | null = null;
 
     const messageListener = (message: unknown) => {
+      if (isConfigsUpdatedMessage(message)) {
+        window.dispatchEvent(new CustomEvent(CONFIGS_UPDATED_EVENT_NAME));
+        return Promise.resolve({ ok: true, propagated: true });
+      }
       if (!isToggleMainUiMessage(message)) {
         return undefined;
       }

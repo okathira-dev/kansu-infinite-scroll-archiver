@@ -148,6 +148,8 @@ chrome.runtime.sendMessage(
       fieldRules: [
         { name: "id", selector: ".id", type: "text" },
         { name: "title", selector: ".title", type: "text" },
+        { name: "thumbnail", selector: ".thumb", type: "imageUrl" },
+        { name: "digits", selector: ".title", type: "regex", regex: "(\\d+)" },
       ],
       enabled: true,
       updatedAt: new Date().toISOString(),
@@ -255,6 +257,8 @@ chrome.runtime.sendMessage(
       fieldRules: [
         { name: "link", selector: ".link", type: "linkUrl" },
         { name: "title", selector: ".title", type: "text" },
+        { name: "thumbnail", selector: ".thumb", type: "imageUrl" },
+        { name: "digits", selector: ".title", type: "regex", regex: "(\\d+)" },
       ],
       enabled: true,
       updatedAt: new Date().toISOString(),
@@ -283,6 +287,37 @@ chrome.runtime.sendMessage(
 - **開発者**は、下記「IndexedDB（Dexie）の確認」のとおり DevTools で `records` に行が増えるか確認する。初回は上記の手動 `configs/save` で少なくとも 1 件書き込んでおくと DB が作成されやすい。
 - **拡張**は、無限スクロールで DOM が連続追加されても、抽出処理を **最大でも遅延間隔ごと**にまとめて実行する。**開発者**はページでスクロールしながら、即時に毎ノードで `bulkUpsert` が飛ばないことを確認する。
 - **開発者**は、抽出ロジック・URL 一致・バッチの回帰を `pnpm test` の `src/entrypoints/content/*.test.ts` で確認する。
+
+### 性能計測（NFR-01 / NFR-02）
+
+Phase 6 では開発時の計測ログを `globalThis.__KANSU_DEV_PERF_METRICS__` に蓄積する。
+
+- `search-response`: `records/search` の応答反映まで（`src/lib/stores/searchStore.ts`）
+- `content-extraction`: 抽出〜保存要求まで（`src/entrypoints/content/engine.ts`）
+
+手動で p95 を確認したいときは、Content script コンテキストのコンソールで次を実行する。
+
+```js
+const metrics = globalThis.__KANSU_DEV_PERF_METRICS__ ?? [];
+const pickP95 = (name) => {
+  const values = metrics
+    .filter((metric) => metric.name === name)
+    .map((metric) => metric.durationMs)
+    .sort((a, b) => a - b);
+  if (values.length === 0) {
+    return null;
+  }
+  const index = Math.min(values.length - 1, Math.floor(values.length * 0.95));
+  return values[index];
+};
+console.log({
+  searchP95: pickP95("search-response"),
+  extractionP95: pickP95("content-extraction"),
+  totalSamples: metrics.length,
+});
+```
+
+`Add 1000 items` を複数回実行して 5,000 件程度まで増やし、`searchP95`（目標 300ms）と `extractionP95` の推移を確認する。
 
 ## IndexedDB（Dexie）の確認
 

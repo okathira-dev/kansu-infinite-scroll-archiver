@@ -3,8 +3,39 @@ import {
   createManualFixtureServiceConfig,
   manualFixtureServiceId,
 } from "@/lib/dev/fixtureServiceConfig";
-import { createErrorResponse, MessageRouter } from "@/lib/messages";
+import { CONFIGS_UPDATED_MESSAGE_TYPE, createErrorResponse, MessageRouter } from "@/lib/messages";
 import { RecordRepository, ServiceConfigRepository } from "@/lib/repositories";
+
+const CONFIG_MUTATING_MESSAGE_TYPES = new Set(["configs/save", "configs/delete", "data/import"]);
+
+const getMessageType = (message: unknown): string | null => {
+  if (typeof message !== "object" || message === null || !("type" in message)) {
+    return null;
+  }
+  return typeof message.type === "string" ? message.type : null;
+};
+
+const notifyConfigsUpdated = async (): Promise<void> => {
+  try {
+    const tabs = await browser.tabs.query({});
+    await Promise.all(
+      tabs
+        .map((tab) => tab.id)
+        .filter((id): id is number => typeof id === "number")
+        .map(async (tabId) => {
+          try {
+            await browser.tabs.sendMessage(tabId, {
+              type: CONFIGS_UPDATED_MESSAGE_TYPE,
+            });
+          } catch {
+            // Content Script 未注入のタブは想定内のため無視する。
+          }
+        }),
+    );
+  } catch (error) {
+    console.warn("Kansu: 設定更新通知のブロードキャストに失敗しました", error);
+  }
+};
 
 /**
  * Service Worker（MV3）のエントリ。
@@ -38,9 +69,18 @@ export default defineBackground(() => {
   }
 
   browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+    const messageType = getMessageType(message);
+    const shouldNotifyConfigUpdate =
+      messageType !== null && CONFIG_MUTATING_MESSAGE_TYPES.has(messageType);
+
     void router
       .handleRaw(message)
-      .then((response) => sendResponse(response))
+      .then((response) => {
+        sendResponse(response);
+        if (response.ok && shouldNotifyConfigUpdate) {
+          void notifyConfigsUpdated();
+        }
+      })
       .catch((error: unknown) => {
         sendResponse(
           createErrorResponse("INTERNAL_ERROR", "unexpected runtime error", {

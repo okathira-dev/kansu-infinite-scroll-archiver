@@ -5,7 +5,10 @@
 
 ## 現在のタスク
 
-Phase 4 の細かい UI 修正と Phase 6（品質強化・リリース準備）の着手項目を整理する。
+Phase 6 の品質強化は一通り反映済み。**残りは次の2本柱**。
+
+1. **UI 確認・修正** … Popup / Options / メインUI の見た目・操作性・a11y の最終確認と細かい調整。
+2. **リリース準備** … `docs/implementation_plan.md` Phase 6 にある Web Store 説明文・プライバシー整備、リリースチェックリスト、提出用メタ情報草案など。
 
 ## 進捗状況
 
@@ -62,6 +65,14 @@ Phase 4 の細かい UI 修正と Phase 6（品質強化・リリース準備）
 - [x] Options（`serviceConfigStore` / `App`）にサービス単位 JSON エクスポート・インポート導線を実装
 - [x] `validation` / `router` / `options` / E2E テストを Phase 5 要件（round-trip・不正 schemaVersion・JSON I/O）へ拡充
 - [x] `pnpm check` / `pnpm test` / `pnpm e2e` を通過（E2E 初回の Popup テストタイムアウトは再実行で解消）
+- [x] Phase 6: fixture を `text` / `linkUrl` / `imageUrl` / `regex` の 4 パターンで統一（`debug-fixtures/infinite-scroll.html`、`fixtureServiceConfig`、E2E 設定）
+- [x] Phase 6: `validation.test` / `recordExtractor.test` に regex・URL 欠損などの境界ケースを追加
+- [x] Phase 6: 設定更新時に Background から Content Script へ通知し、Main UI が再取得する伝播経路を実装
+- [x] Phase 6: 開発時計測を追加（検索応答、抽出〜保存）。`globalThis.__KANSU_DEV_PERF_METRICS__` に蓄積して p95 を確認可能化
+- [x] Phase 6: `FR-33` のキーボード操作（Alt + ← / →）を E2E で明示検証
+- [x] Phase 6: 権限最小化レビューを実施し、現時点は `host_permissions` を追加せず `matches: ["<all_urls>"]` 維持（互換性優先）
+- [x] Phase 6: `docs/wxt-dev-debug.md` を fixture 4 パターンと性能計測手順に同期
+- [x] Phase 6 任意項目の採否を整理（Popup トースト統一・import スキーマ移行は保留、検索E2E/debounce回帰は継続強化）
 
 ## 過去タスク（完了）
 
@@ -108,6 +119,6 @@ Phase 4 の細かい UI 修正と Phase 6（品質強化・リリース準備）
 - `docs/implementation_plan.md` と `docs/implementation_guide.md` は要件・設計の普遍的記述に留め、実装の進み具合や「いまどこまで終わったか」は本 Scratchpad とコードで追う（計画書に実装状況を書かない方針）。
 - Phase 2 として、Dexie スキーマ・Repository 層・MessageRouter 差し替え・Background 注入・関連テスト追加を完了した。
 - Phase 3 として、Content Script の抽出エンジン（URL一致、抽出器、MutationObserverバッチ、bulkUpsert送信、ユニットテスト）を実装し、`ExtractedRecord.fieldValues`（`raw` / `normalized`）・`fieldRules` / `targetFieldNames`・`wanakana` 正規化まで完了した。
-- 次アクション: Phase 4 の細かい UI 修正タスクを再開し、Phase 6（品質強化とリリース準備）に着手する。
+- Phase 6 の品質強化を先行実施し、リリース準備は後続トラックに分離していた。**いま残っているのは UI 確認・修正とリリース準備**（上記「現在のタスク」参照）。
 - 旧 `implementation_guide` の 2.2/2.3/2.4 で重要だった記述の欠落を再点検し、現行版へ追記した（`src` 配置とWXTファイルベース構成、各エントリポイント責務の詳細、共有モジュール、データフロー、開発運用ポリシー）。
 - 依存関係を最新化済み。更新手順は [README.md](README.md) の「依存関係の更新」を参照。

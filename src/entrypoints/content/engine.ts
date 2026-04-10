@@ -1,3 +1,4 @@
+import { recordDevPerformanceMetric } from "@/lib/dev/performanceMetrics";
 import type { ResponseMessage } from "@/lib/messages";
 import type { ExtractedRecord, ServiceConfig } from "@/lib/types";
 import { MutationBatchProcessor } from "./mutationBatchProcessor";
@@ -87,11 +88,25 @@ export const startContentEngine = async (): Promise<void> => {
   }
 
   const flushExtraction = async () => {
+    const extractionStartAt = performance.now();
     const records = extractRecordsFromDom({ config, observeRoot, pageUrl: currentUrl });
+    const extractedAt = performance.now();
     if (records.length === 0) {
+      recordDevPerformanceMetric("content-extraction", extractedAt - extractionStartAt, {
+        serviceId: config.id,
+        records: 0,
+        upsertDurationMs: 0,
+      });
       return;
     }
     await sendBulkUpsert(records);
+    const flushFinishedAt = performance.now();
+    recordDevPerformanceMetric("content-extraction", flushFinishedAt - extractionStartAt, {
+      serviceId: config.id,
+      records: records.length,
+      extractDurationMs: extractedAt - extractionStartAt,
+      upsertDurationMs: flushFinishedAt - extractedAt,
+    });
   };
 
   await flushExtraction();

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { recordDevPerformanceMetric } from "@/lib/dev/performanceMetrics";
 import type { ResponseMessage } from "@/lib/messages";
 import type { SearchQuery, SearchResult, SortOrder } from "@/lib/types";
 
@@ -114,6 +115,7 @@ export const useSearchStore = create<SearchStoreState>((set, get) => ({
     }
 
     const requestId = ++searchRequestSequence;
+    const startedAt = performance.now();
     set({ loading: true, error: null });
     try {
       const response = await browser.runtime.sendMessage({
@@ -125,12 +127,23 @@ export const useSearchStore = create<SearchStoreState>((set, get) => ({
       }
       const typedResponse = response as ResponseMessage<SearchResult>;
       if (!typedResponse.ok) {
+        recordDevPerformanceMetric("search-response", performance.now() - startedAt, {
+          ok: false,
+          serviceId: query.serviceId,
+          reason: typedResponse.error.code,
+        });
         set({
           loading: false,
           error: typedResponse.error.message,
         });
         return false;
       }
+      recordDevPerformanceMetric("search-response", performance.now() - startedAt, {
+        ok: true,
+        serviceId: query.serviceId,
+        keywordLength: query.keyword.length,
+        total: typedResponse.data.total,
+      });
       set({
         loading: false,
         error: null,
@@ -141,6 +154,11 @@ export const useSearchStore = create<SearchStoreState>((set, get) => ({
       if (requestId !== searchRequestSequence) {
         return false;
       }
+      recordDevPerformanceMetric("search-response", performance.now() - startedAt, {
+        ok: false,
+        serviceId: query.serviceId,
+        reason: error instanceof Error ? error.message : "unknown runtime error",
+      });
       set({
         loading: false,
         error: error instanceof Error ? error.message : "unknown runtime error",
