@@ -1,0 +1,34 @@
+# ref: https://docs.github.com/ja/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions#enable-auto-merge-on-a-pull-request
+#
+# メジャーアップデート以外のDependabot PRがCIに通っていれば自動マージする
+#
+# リポジトリ側の前提（未設定だと自動マージが有効にならない／マージされない）:
+# - Settings → General → Pull Requests: Allow auto-merge
+# - Settings → Actions → General: Workflow permissions が Read and write（組織方針含む）
+# - main のブランチ保護: 必須チェックに CI が含まれること／必須レビューがある場合は別途自動承認など
+name: Dependabot auto-merge
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    steps:
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@21025c705c08248db411dc16f3619e6b5f9ea21a
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge for Dependabot PRs
+        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
