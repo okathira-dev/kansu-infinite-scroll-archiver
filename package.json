@@ -11,12 +11,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/okathira/kansu-infinite-scroll-archiver.git"
+    "url": "git+https://github.com/okathira-dev/kansu-infinite-scroll-archiver.git"
   },
   "bugs": {
-    "url": "https://github.com/okathira/kansu-infinite-scroll-archiver/issues"
+    "url": "https://github.com/okathira-dev/kansu-infinite-scroll-archiver/issues"
   },
-  "homepage": "https://github.com/okathira/kansu-infinite-scroll-archiver#readme",
+  "homepage": "https://github.com/okathira-dev/kansu-infinite-scroll-archiver#readme",
   "scripts": {
     "dev": "cross-env KANSU_DEV_OPEN_FIXTURE=1 concurrently -k -n fixture,ext \"pnpm debug:fixture\" \"pnpm dev:extension\"",
     "dev:firefox": "cross-env KANSU_DEV_OPEN_FIXTURE=1 concurrently -k -n fixture,ext \"pnpm debug:fixture\" \"pnpm dev:extension:firefox\"",

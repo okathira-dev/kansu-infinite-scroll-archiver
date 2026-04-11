@@ -108,7 +108,7 @@ pnpm zip
 | 詳細説明 | TBD |
 | カテゴリ | TBD（例: 生産性ツール） |
 | 言語 | TBD |
-| 公式サイト / サポート URL | TBD（例: GitHub リポジトリの URL） |
+| 公式サイト / サポート URL | 本リポジトリを指す場合は `https://github.com/okathira-dev/kansu-infinite-scroll-archiver`（Issues や README への導線として利用可）。別サイトを公式とする場合はその URL。 |
 | 連絡用メール | TBD |
 | スクリーンショット（1280×800 または 640×400 推奨など） | [best_listing](https://developer.chrome.com/docs/webstore/best_listing) を参照し枚数・サイズを満たす |
 | プライバシーポリシー URL | TBD（公開ページの URL。ホスティングはオーナー判断） |
