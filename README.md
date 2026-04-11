@@ -59,15 +59,14 @@ pnpm dev
 
 ## サプライチェーン対策
 
-- GitHub Actions の外部 `uses:` はタグではなくフル SHA で固定する（コメントに `pin: vX (...)` を併記）。
+- GitHub Actions の外部 `uses:` はタグではなくフル SHA で固定する
 - 依存インストール時の検疫として `pnpm-workspace.yaml` の `minimumReleaseAge: 4320`（3日）を有効化している。
 - Dependabot は `.github/dependabot.yml` で `npm` と `github-actions` の両方に `cooldown: 3 days` を設定している。
 - CI の依存取得は `.github/actions/setup-node-pnpm` 内で Takumi Guard（匿名モード）を有効化してから `pnpm install` を実行する。
 
 ### Actions の更新ルール
 
-- `uses: owner/repo@<40桁SHA>` で固定する。
-- コメントには追跡しやすいよう `# pin: v6 (v6.0.2)` の形式でタグ系統と実バージョンを残す。
+- `uses: owner/repo@<40桁SHA>` のみで指定する。リリース名は各リポジトリ上でコミット SHA から辿る。
 
 ## ディレクトリ構成（抜粋）
 
