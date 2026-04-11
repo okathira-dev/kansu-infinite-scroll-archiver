@@ -5,10 +5,11 @@
 
 ## 現在のタスク
 
-Phase 6 の品質強化は一通り反映済み。**残りは次の2本柱**。
+Phase 6 の品質強化は一通り反映済み。Chrome Web Store 向けの**手順・チェックリスト・メタ草案**は [docs/chrome-web-store-release.md](docs/chrome-web-store-release.md) に集約し、**ここで一区切り**。
 
-1. **UI 確認・修正** … Popup / Options / メインUI の見た目・操作性・a11y の最終確認と細かい調整。
-2. **リリース準備** … `docs/implementation_plan.md` Phase 6 にある Web Store 説明文・プライバシー整備、リリースチェックリスト、提出用メタ情報草案など。
+**次（別PR）**: `package.json` の version を **0.1.0** に上げ、手順書どおり **手動でストア提出**（ビルド・ZIP・アップロード）を試す。そのPRで **リスティング情報を詰める**（説明・スクリーンショット・Privacy 宣言・サポート連絡先など）。
+
+併行してよいもの：**UI 確認・修正**（Popup / Options / メインUI の見た目・操作性・a11y）。必要なら上記リリースPRとは分けてもよい。
 
 ## 進捗状況
 
@@ -73,6 +74,7 @@ Phase 6 の品質強化は一通り反映済み。**残りは次の2本柱**。
 - [x] Phase 6: 権限最小化レビューを実施し、現時点は `host_permissions` を追加せず `matches: ["<all_urls>"]` 維持（互換性優先）
 - [x] Phase 6: `docs/wxt-dev-debug.md` を fixture 4 パターンと性能計測手順に同期
 - [x] Phase 6 任意項目の採否を整理（Popup トースト統一・import スキーマ移行は保留、検索E2E/debounce回帰は継続強化）
+- [x] `docs/chrome-web-store-release.md` 追加（CWS 提出手順・チェックリスト・メタ草案・プライバシーたたき台・公式リンク）。Scratchpad から参照
 
 ## 過去タスク（完了）
 
@@ -119,6 +121,6 @@ Phase 6 の品質強化は一通り反映済み。**残りは次の2本柱**。
 - `docs/implementation_plan.md` と `docs/implementation_guide.md` は要件・設計の普遍的記述に留め、実装の進み具合や「いまどこまで終わったか」は本 Scratchpad とコードで追う（計画書に実装状況を書かない方針）。
 - Phase 2 として、Dexie スキーマ・Repository 層・MessageRouter 差し替え・Background 注入・関連テスト追加を完了した。
 - Phase 3 として、Content Script の抽出エンジン（URL一致、抽出器、MutationObserverバッチ、bulkUpsert送信、ユニットテスト）を実装し、`ExtractedRecord.fieldValues`（`raw` / `normalized`）・`fieldRules` / `targetFieldNames`・`wanakana` 正規化まで完了した。
-- Phase 6 の品質強化を先行実施し、リリース準備は後続トラックに分離していた。**いま残っているのは UI 確認・修正とリリース準備**（上記「現在のタスク」参照）。
+- Phase 6 の品質強化を先行実施し、リリース準備は後続トラックに分離していた。ストア提出の手順・草案は `docs/chrome-web-store-release.md` まで完了。**次は別PRで 0.1.0 の手動リリース**し、そのPRでリスティングを詰める（上記「現在のタスク」参照）。UI 最終調整は併行可。
 - 旧 `implementation_guide` の 2.2/2.3/2.4 で重要だった記述の欠落を再点検し、現行版へ追記した（`src` 配置とWXTファイルベース構成、各エントリポイント責務の詳細、共有モジュール、データフロー、開発運用ポリシー）。
 - 依存関係を最新化済み。更新手順は [README.md](README.md) の「依存関係の更新」を参照。
