@@ -1,8 +1,8 @@
 {
   "name": "kansu-infinite-scroll-archiver",
-  "description": "Browser extension (Kansu): extract infinite-scroll pages into IndexedDB for search and organization.",
+  "description": "Webページの無限スクロールや自動で表示が更新される欄から好きな項目を抽出し、ブラウザで保存・検索できます。好きなページで好きな保存対象を設定できます。データは実行デバイスにのみ保存し、設定と内容のインポート・エクスポートにも対応しています。",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.3",
   "license": "MIT",
   "type": "module",
   "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319",
@@ -11,12 +11,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/okathira/kansu-infinite-scroll-archiver.git"
+    "url": "git+https://github.com/okathira-dev/kansu-infinite-scroll-archiver.git"
   },
   "bugs": {
-    "url": "https://github.com/okathira/kansu-infinite-scroll-archiver/issues"
+    "url": "https://github.com/okathira-dev/kansu-infinite-scroll-archiver/issues"
   },
-  "homepage": "https://github.com/okathira/kansu-infinite-scroll-archiver#readme",
+  "homepage": "https://github.com/okathira-dev/kansu-infinite-scroll-archiver#readme",
   "scripts": {
     "dev": "cross-env KANSU_DEV_OPEN_FIXTURE=1 concurrently -k -n fixture,ext \"pnpm debug:fixture\" \"pnpm dev:extension\"",
     "dev:firefox": "cross-env KANSU_DEV_OPEN_FIXTURE=1 concurrently -k -n fixture,ext \"pnpm debug:fixture\" \"pnpm dev:extension:firefox\"",
