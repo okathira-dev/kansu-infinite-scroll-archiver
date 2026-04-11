@@ -78,6 +78,7 @@ pnpm dev
 
 ## ドキュメント
 
+- [プライバシーポリシー](store/privacy-policy.md)（Chrome Web Store 提出時は [GitHub 上の表示 URL](https://github.com/okathira-dev/kansu-infinite-scroll-archiver/blob/main/store/privacy-policy.md) をポリシー URL に指定可能）
 - [要件定義](docs/requirements.md)
 - [実装計画](docs/implementation_plan.md)
 - [実装ガイド](docs/implementation_guide.md)

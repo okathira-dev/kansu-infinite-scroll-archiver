@@ -23,7 +23,7 @@
 
 ## Chrome Web Store 掲載用素材（`store/`）
 
-リポジトリ直下の [`store/`](../store/) に、ダッシュボードの **Store Listing** 向け素材を集約しています（スクリーンショット PNG、ストア用アイコン、長文説明の転記元テキストなど）。ZIP 成果物（`.output/`）とは別物であり、**人間がストア画面にアップロード・転記する**前提です。
+リポジトリ直下の [`store/`](../store/) に、ダッシュボードの **Store Listing** 向け素材と、**Privacy タブ用のプライバシーポリシー**（[`privacy-policy.md`](../store/privacy-policy.md)）を集約しています（スクリーンショット PNG、ストア用アイコン、長文説明の転記元テキストなど）。ZIP 成果物（`.output/`）とは別物であり、**人間がストア画面にアップロード・転記する**前提です。
 
 実装計画（Phase 6）では、**v1（初回の本番相当リリース）**のタイミングで、製品版の UI・文言・要件と矛盾しないよう画像・文案を差し替える想定です。詳細は [implementation_plan.md](implementation_plan.md) の「3.7. Phase 6」を参照してください。
 
@@ -101,7 +101,7 @@ pnpm zip
 - [ ] アイコンが揃っているか（ビルド出力 `icon/` を確認）
 - [ ] 権限が最小限であることの説明を、ストアの Privacy / 説明文で矛盾なく書けるか（上記「本リポジトリの権限・挙動」を参照）
 - [ ] 主要シナリオの手動確認（Options で設定 → 対象 URL で抽出 → メイン UI で検索 → インポート/エクスポート など）
-- [ ] スクリーンショット・掲載文案・サポート連絡先・（必要なら）プライバシーポリシー URL が揃っている
+- [ ] スクリーンショット・掲載文案・サポート連絡先・プライバシーポリシー URL（[privacy-policy.md を GitHub で開く URL](https://github.com/okathira-dev/kansu-infinite-scroll-archiver/blob/main/store/privacy-policy.md)）が揃っている
 - [ ] Store の詳細説明は [store/chrome-web-store-store-listing-long-ja.txt](../store/chrome-web-store-store-listing-long-ja.txt) から転記し、文字数上限と [requirements.md](requirements.md) との矛盾がないか確認した
 - [ ] `store/` のスクリーンショット・アイコンが、提出時点の画面・解像度要件を満たしている（v1 前はたたき台でも可。計画どおり v1 で差し替える場合はその旨を把握している）
 
@@ -123,9 +123,17 @@ pnpm zip
 
 manifest の `description` とストアの長文説明は**別フィールド**ですが、初回は**日本語で矛盾のない事実**（権限・ローカル保存・非送信）を両方に書くと審査・利用者の理解が取りやすいです。ストア側で画面別の訴求や手順を補足してください。
 
+## プライバシーポリシー（ストア提出用 URL）
+
+Chrome Web Store の **Privacy → プライバシー ポリシーの URL** には、次の **GitHub 上の本ファイル**（HTTPS）を指定できる。
+
+- [プライバシーポリシー（GitHub 表示）](https://github.com/okathira-dev/kansu-infinite-scroll-archiver/blob/main/store/privacy-policy.md)
+
+リポジトリ内の正本は [`store/privacy-policy.md`](../store/privacy-policy.md)。既定ブランチ名が `main` でない場合は URL のブランチ名を読み替える。
+
 ## プライバシー方針文のたたき台（技術事実ベース）
 
-以下は **実装・要件に基づく説明用ドラフト**であり、**法的なプライバシーポリシーとしての十分性は保証しません**。公開文書として使う場合はオーナー側で法務・ポリシーを確認してください。
+以下は **実装・要件に基づく説明用ドラフト**であり、**法的なプライバシーポリシーとしての十分性は保証しません**。公開文書として使う場合はオーナー側で法務・ポリシーを確認してください。ストア提出用の本文は上記 [`store/privacy-policy.md`](../store/privacy-policy.md) を正とする。
 
 - 本拡張は、ユーザーが指定したウェブページ上の**表示済みの内容**を、ユーザーが定義したルールに基づき読み取り、**ユーザー端末内の IndexedDB に保存**します。
 - **収集した情報を開発者のサーバーへ送信したり、第三者と共有したりする行為は行いません**（要件 NFR-20）。
