@@ -91,29 +91,30 @@ pnpm zip
 - [ ] `pnpm check` / `pnpm test` / `pnpm e2e` が通過している
 - [ ] `pnpm zip` で ZIP を生成し、パスとファイルサイズを確認した
 - [ ] `package.json` の `version`（および必要なら表示用 `name`）が意図どおりか（WXT manifest 設定を含む）
-- [ ] `.output/chrome-mv3/manifest.json` で `description` が 132 文字以内か
+- [ ] `.output/chrome-mv3/manifest.json` で `description` が 132 文字以内か（初回は日本語文案どおりか）
 - [ ] アイコンが揃っているか（ビルド出力 `icon/` を確認）
 - [ ] 権限が最小限であることの説明を、ストアの Privacy / 説明文で矛盾なく書けるか（上記「本リポジトリの権限・挙動」を参照）
 - [ ] 主要シナリオの手動確認（Options で設定 → 対象 URL で抽出 → メイン UI で検索 → インポート/エクスポート など）
 - [ ] スクリーンショット・掲載文案・サポート連絡先・（必要なら）プライバシーポリシー URL が揃っている
+- [ ] Store の詳細説明は [chrome-web-store-store-listing-long-ja.txt](chrome-web-store-store-listing-long-ja.txt) から転記し、文字数上限と [requirements.md](requirements.md) との矛盾がないか確認した
 
 ## 提出用メタ情報草案（テンプレート）
 
-**オーナーがストア画面に転記・推敲してください。** 英語掲載の場合は別途翻訳が必要です。
+**オーナーがストア画面に転記・推敲してください。**
+
+**初回リリースの方針**: 利用者・掲載の主言語は**日本語**とする。manifest の `description` と Store Listing の短い説明・詳細説明は**日本語を正本**とし、英語版のストア掲載や manifest の英語化は後続リリースで検討する。
 
 | 項目 | 草案 / メモ |
 | ---- | ----------- |
-| 拡張の短い名前（ストア表示） | TBD（例: Kansu） |
-| 短い説明（ストア） | TBD |
-| 詳細説明 | TBD |
-| カテゴリ | TBD（例: 生産性ツール） |
-| 言語 | TBD |
+| 拡張の名前 | package.json の `name` |
+| manifest の `description` | package.json の `description` |
+| 詳細説明 | [chrome-web-store-store-listing-long-ja.txt](chrome-web-store-store-listing-long-ja.txt) |
+| カテゴリ | ツール |
+| 言語 | **日本語**（初回。英語 UI や英語ストアは後続で検討） |
 | 公式サイト / サポート URL | 本リポジトリを指す場合は `https://github.com/okathira-dev/kansu-infinite-scroll-archiver`（Issues や README への導線として利用可）。別サイトを公式とする場合はその URL。 |
-| 連絡用メール | TBD |
-| スクリーンショット（1280×800 または 640×400 推奨など） | [best_listing](https://developer.chrome.com/docs/webstore/best_listing) を参照し枚数・サイズを満たす |
-| プライバシーポリシー URL | TBD（公開ページの URL。ホスティングはオーナー判断） |
+| スクリーンショット（1280×800 または 640×400 推奨など） | [best_listing](https://developer.chrome.com/docs/webstore/best_listing) を参照し枚数・サイズを満たす。 |
 
-manifest の `description`（英語のままの可能性あり）とストアの長文説明は**別物**です。ストア側で訴求を補完してください。
+manifest の `description` とストアの長文説明は**別フィールド**ですが、初回は**日本語で矛盾のない事実**（権限・ローカル保存・非送信）を両方に書くと審査・利用者の理解が取りやすいです。ストア側で画面別の訴求や手順を補足してください。
 
 ## プライバシー方針文のたたき台（技術事実ベース）
 
