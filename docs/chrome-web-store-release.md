@@ -21,6 +21,12 @@
 - Google Chrome（拡張の手動検証用）
 - Chrome Web Store 開発者登録済みの Google アカウント（未登録なら上記「開発者登録」から実施）
 
+## Chrome Web Store 掲載用素材（`store/`）
+
+リポジトリ直下の [`store/`](../store/) に、ダッシュボードの **Store Listing** 向け素材を集約しています（スクリーンショット PNG、ストア用アイコン、長文説明の転記元テキストなど）。ZIP 成果物（`.output/`）とは別物であり、**人間がストア画面にアップロード・転記する**前提です。
+
+実装計画（Phase 6）では、**v1（初回の本番相当リリース）**のタイミングで、製品版の UI・文言・要件と矛盾しないよう画像・文案を差し替える想定です。詳細は [implementation_plan.md](implementation_plan.md) の「3.7. Phase 6」を参照してください。
+
 ## 提出前のローカル検証（コマンドは開発者が実行）
 
 リポジトリルートで、次の順に実行してください。
@@ -96,7 +102,8 @@ pnpm zip
 - [ ] 権限が最小限であることの説明を、ストアの Privacy / 説明文で矛盾なく書けるか（上記「本リポジトリの権限・挙動」を参照）
 - [ ] 主要シナリオの手動確認（Options で設定 → 対象 URL で抽出 → メイン UI で検索 → インポート/エクスポート など）
 - [ ] スクリーンショット・掲載文案・サポート連絡先・（必要なら）プライバシーポリシー URL が揃っている
-- [ ] Store の詳細説明は [chrome-web-store-store-listing-long-ja.txt](chrome-web-store-store-listing-long-ja.txt) から転記し、文字数上限と [requirements.md](requirements.md) との矛盾がないか確認した
+- [ ] Store の詳細説明は [store/chrome-web-store-store-listing-long-ja.txt](../store/chrome-web-store-store-listing-long-ja.txt) から転記し、文字数上限と [requirements.md](requirements.md) との矛盾がないか確認した
+- [ ] `store/` のスクリーンショット・アイコンが、提出時点の画面・解像度要件を満たしている（v1 前はたたき台でも可。計画どおり v1 で差し替える場合はその旨を把握している）
 
 ## 提出用メタ情報草案（テンプレート）
 
@@ -108,7 +115,7 @@ pnpm zip
 | ---- | ----------- |
 | 拡張の名前 | package.json の `name` |
 | manifest の `description` | package.json の `description` |
-| 詳細説明 | [chrome-web-store-store-listing-long-ja.txt](chrome-web-store-store-listing-long-ja.txt) |
+| 詳細説明 | [store/chrome-web-store-store-listing-long-ja.txt](../store/chrome-web-store-store-listing-long-ja.txt) |
 | カテゴリ | ツール |
 | 言語 | **日本語**（初回。英語 UI や英語ストアは後続で検討） |
 | 公式サイト / サポート URL | 本リポジトリを指す場合は `https://github.com/okathira-dev/kansu-infinite-scroll-archiver`（Issues や README への導線として利用可）。別サイトを公式とする場合はその URL。 |
