@@ -19,12 +19,13 @@ describe("useSearchStore", () => {
     vi.restoreAllMocks();
   });
 
-  it("targetFieldNames が空のとき結果をクリアする", async () => {
+  it("targetFieldNames が空のとき結果をクリアし loading を false にする", async () => {
     const sendMessage = vi.spyOn(browser.runtime, "sendMessage");
     useSearchStore.getState().setTargetFieldNames([]);
     await useSearchStore.getState().search();
     expect(useSearchStore.getState().result.total).toBe(0);
     expect(useSearchStore.getState().result.records).toHaveLength(0);
+    expect(useSearchStore.getState().loading).toBe(false);
     expect(sendMessage).not.toHaveBeenCalled();
   });
 
@@ -73,5 +74,51 @@ describe("useSearchStore", () => {
 
     expect(useSearchStore.getState().result.total).toBe(1);
     expect(useSearchStore.getState().result.records[0]?.uniqueKey).toBe("newer");
+  });
+
+  it("進行中の検索の後に条件不備で検索すると、遅延した古い応答は結果を上書きしない", async () => {
+    let resolveSlow: ((value: unknown) => void) | undefined;
+    const slowPromise = new Promise((resolve) => {
+      resolveSlow = resolve;
+    });
+
+    const minimalRecord = (uniqueKey: string) => ({
+      serviceId: "svc-1",
+      uniqueKey,
+      extractedAt: "2020-01-01T00:00:00.000Z",
+      fieldValues: {
+        title: { raw: "t", normalized: "t" },
+      },
+    });
+
+    let callCount = 0;
+    vi.spyOn(browser.runtime, "sendMessage").mockImplementation(() => {
+      callCount += 1;
+      if (callCount === 1) {
+        return slowPromise;
+      }
+      return Promise.resolve({
+        ok: true,
+        data: { records: [minimalRecord("second")], total: 1 },
+      });
+    });
+
+    const search = useSearchStore.getState().search;
+    const firstSearch = search();
+
+    useSearchStore.getState().setTargetFieldNames([]);
+    await search();
+
+    expect(useSearchStore.getState().result.total).toBe(0);
+    expect(useSearchStore.getState().loading).toBe(false);
+
+    resolveSlow?.({
+      ok: true,
+      data: { records: [minimalRecord("stale")], total: 99 },
+    });
+    await firstSearch;
+
+    expect(useSearchStore.getState().result.total).toBe(0);
+    expect(useSearchStore.getState().result.records).toHaveLength(0);
   });
 });

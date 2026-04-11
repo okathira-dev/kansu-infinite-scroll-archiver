@@ -107,9 +107,11 @@ export const useSearchStore = create<SearchStoreState>((set, get) => ({
       query.sortBy.trim().length === 0 ||
       query.targetFieldNames.length === 0
     ) {
+      searchRequestSequence += 1;
       set({
         result: defaultResult,
         error: null,
+        loading: false,
       });
       return false;
     }
