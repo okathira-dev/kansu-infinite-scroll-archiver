@@ -53,7 +53,7 @@ export async function openOptionsPage(page: Page, extensionId: string) {
     clickExportServiceData: async () => {
       await page.click("#export-service-data");
     },
-    setImportJsonFile: async (params: { name: string; mimeType: string; buffer: Uint8Array }) => {
+    setImportJsonFile: async (params: { name: string; mimeType: string; buffer: Buffer }) => {
       await page.setInputFiles("#import-json-file", params);
     },
     clickImportServiceData: async () => {
