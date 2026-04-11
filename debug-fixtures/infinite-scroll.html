@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kansu E2E Fixture</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 24px;
+      }
+
+      #controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+
+      .item {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        padding: 8px;
+      }
+
+      .title {
+        display: inline-block;
+        margin-left: 8px;
+      }
+
+      .thumb {
+        width: 64px;
+        height: 36px;
+        object-fit: cover;
+        border-radius: 4px;
+        vertical-align: middle;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Kansu infinite-scroll fixture</h1>
+    <p>
+      このページは E2E と手動デバッグで共通利用する固定サンプルです。<code>#add-item</code>
+      で 1 件、<code>#add-items-10</code> などで一括追加できます。
+    </p>
+
+    <div id="controls">
+      <button id="add-item" type="button">Add item</button>
+      <button id="add-items-10" type="button">Add 10 items</button>
+      <button id="add-items-100" type="button">Add 100 items</button>
+      <button id="add-items-1000" type="button">Add 1000 items</button>
+    </div>
+
+    <div id="feed">
+      <article class="item">
+        <a class="link" href="/post-1">post-1</a>
+        <img class="thumb" src="https://picsum.photos/seed/post-1/160/90" alt="thumb-1" />
+        <span class="title">日本語タイトル #1</span>
+      </article>
+      <article class="item">
+        <a class="link" href="/post-2">post-2</a>
+        <img class="thumb" src="https://picsum.photos/seed/post-2/160/90" alt="thumb-2" />
+        <span class="title">English headline #2</span>
+      </article>
+    </div>
+
+    <script>
+      (() => {
+        let sequence = 3;
+        const buildThumbUrl = (n) => `https://picsum.photos/seed/post-${n}/160/90`;
+        const titlePatterns = [
+          "日本語タイトル",
+          "English headline",
+          "日本語 and English",
+          "カタカナとKatakana",
+          "HELLO 世界",
+          "１２３ fullwidth テスト",
+        ];
+        const feed = document.querySelector("#feed");
+        const addButton = document.querySelector("#add-item");
+        const add10 = document.querySelector("#add-items-10");
+        const add100 = document.querySelector("#add-items-100");
+        const add1000 = document.querySelector("#add-items-1000");
+
+        const buildTitle = (n) => `${titlePatterns[(n - 1) % titlePatterns.length]} #${n}`;
+
+        const appendItems = (count) => {
+          if (!feed || count < 1) {
+            return;
+          }
+          const fragment = document.createDocumentFragment();
+          for (let i = 0; i < count; i += 1) {
+            const n = sequence;
+            sequence += 1;
+            const item = document.createElement("article");
+            item.className = "item";
+            item.innerHTML = `
+              <a class="link" href="/post-${n}">post-${n}</a>
+              <img class="thumb" src="${buildThumbUrl(n)}" alt="thumb-${n}" />
+              <span class="title">${buildTitle(n)}</span>
+            `;
+            fragment.append(item);
+          }
+          feed.append(fragment);
+        };
+
+        if (addButton) {
+          addButton.addEventListener("click", () => appendItems(1));
+        }
+        if (add10) {
+          add10.addEventListener("click", () => appendItems(10));
+        }
+        if (add100) {
+          add100.addEventListener("click", () => appendItems(100));
+        }
+        if (add1000) {
+          add1000.addEventListener("click", () => appendItems(1000));
+        }
+      })();
+    </script>
+  </body>
+</html>

@@ -30,8 +30,21 @@ pnpm dev
 - `pnpm check`: Biome の format/lint/check を実行
 - `pnpm compile`: TypeScript の型チェック
 - `pnpm test`: Vitest のユニットテストを実行
-- `pnpm e2e`: Playwright の E2E テストを実行
+- `pnpm e2e`: `pnpm build` のあと Playwright の E2E を実行（`.output/chrome-mv3` の取り違え防止）
+- `pnpm e2e:watch`: 同上のあと Playwright UI モード
+- `pnpm e2e:only`: ビルドなしで E2E のみ（直前にビルド済みのとき／CI でアーティファクトを展開したあと）
 - `pnpm lint-md`: Markdown の lint を実行
+- `pnpm storybook`: Storybook（UI カタログ）を起動
+- `pnpm build-storybook`: Storybook の静的ビルドを生成
+
+拡張本体の動作確認は `pnpm dev`、デザイン確認は `pnpm storybook` を使い分ける。
+
+### 開発時デバッグの注意点（要点）
+
+- `runtime.sendMessage` の手動テストは、Service Worker ではなく Popup / Content / Options 側のコンソールから送る（SW コンソールからは受信先不在エラーになることがある）。
+- IndexedDB（`kansu-archive`）の確認は Popup/Options 側の DevTools の `Application > IndexedDB` を優先する（SW 側では `No IndexedDB detected` と表示される場合がある）。
+- Service Worker の DevTools は、受信ログ・例外確認・ライフサイクル挙動の確認用途として使う。
+- 詳細手順は [WXT 開発モードのデバッグ・動作確認](docs/wxt-dev-debug.md) を参照。
 
 ## 依存関係の更新
 
@@ -46,22 +59,21 @@ pnpm dev
 
 ## サプライチェーン対策
 
-- GitHub Actions の外部 `uses:` はタグではなくフル SHA で固定する（コメントに `pin: vX (...)` を併記）。
+- GitHub Actions の外部 `uses:` はタグではなくフル SHA で固定する
 - 依存インストール時の検疫として `pnpm-workspace.yaml` の `minimumReleaseAge: 4320`（3日）を有効化している。
 - Dependabot は `.github/dependabot.yml` で `npm` と `github-actions` の両方に `cooldown: 3 days` を設定している。
 - CI の依存取得は `.github/actions/setup-node-pnpm` 内で Takumi Guard（匿名モード）を有効化してから `pnpm install` を実行する。
 
 ### Actions の更新ルール
 
-- `uses: owner/repo@<40桁SHA>` で固定する。
-- コメントには追跡しやすいよう `# pin: v6 (v6.0.2)` の形式でタグ系統と実バージョンを残す。
+- `uses: owner/repo@<40桁SHA>` のみで指定する。リリース名は各リポジトリ上でコミット SHA から辿る。
 
 ## ディレクトリ構成（抜粋）
 
 - `src/entrypoints/`: WXT エントリーポイント
 - `src/lib/`: 共有ロジック・ユーティリティ
 - `src/components/ui/`: 再利用 UI コンポーネント
-- `docs/`: 要件・実装計画・実装ガイド
+- `docs/`: 要件・実装計画・実装ガイド・ストレージ設計
 - `e2e/`: Playwright の E2E テスト
 
 ## ドキュメント
@@ -69,6 +81,8 @@ pnpm dev
 - [要件定義](docs/requirements.md)
 - [実装計画](docs/implementation_plan.md)
 - [実装ガイド](docs/implementation_guide.md)
+- [WXT 開発モードのデバッグ・動作確認](docs/wxt-dev-debug.md)
+- [ストレージと DB 設計](docs/storage-and-db-design.md)
 
 ## 開発時の参照順
 

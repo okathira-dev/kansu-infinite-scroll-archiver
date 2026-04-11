@@ -17,11 +17,16 @@
 - import/export は原則 `named` を使い、`default` は必要な場合に限定する。
 - 依頼範囲に集中し、無関係なリファクタを混在させない。
 
-## Cursor ルールと Serena メモリの役割（重複を避けるため）
+## エージェント向け規約（正本は Cursor ルール）
 
-- **Cursor ルール**（`.cursor/rules/*.mdc`）: Cursor がエージェントへ常時、またはファイル glob 一致時に注入する。Serena MCP を使わない会話でも効くため、ワークフロー全体（例: `global.mdc`）はここに置く。
-- **Serena メモリ**（`.serena/memories/*.md`）: MCP の `list_memories` / `read_memory` で必要に応じて読む長期知識。会話開始時に全件が自動でコンテキストへ入るわけではない。
-- **結論**: Serena を Cursor で使う場合でも、運用ルールは `.cursor/rules`、長期知識は `.serena/memories` に分離して管理する。
+- **本文は載せない**（二重管理と `read_memory` 時の無駄なトークンを避ける）。
+- 言語・コロケーション・ドキュメント参照の詳細はリポジトリの `.cursor/rules/kansu-agent-conventions.mdc`（`alwaysApply: true`）を正本とする。Serena 利用時に確認したければ **当該 `.mdc` をファイル読取で開く**（メモリに同文を複製しない）。
+
+## Cursor ルールと Serena メモリの役割
+
+- **Cursor ルール**（`.cursor/rules/*.mdc`）: `alwaysApply: true` は**毎リクエスト**コンテキストに載るためトークン消費が増える。プロジェクト全体に効かせたい最小限だけ `alwaysApply` にし、それ以外は `globs` や手動 `@ルール` で絞るのが一般的（Cursor コミュニティ・解説記事でも「sparingly」とされる）。
+- **Serena メモリ**（`.serena/memories/*.md`）: `read_memory` 等で読んだときだけその分がコンテキストに乗る。自動では全件注入されない。
+- **結論**: 同じ規約の**全文**を両方に書かない。ワークフロー・エージェント規約の本文は `.cursor/rules`、Serena メモリは Biome 版情報・教訓・オンボーディング用など、ルールに無い補足に留める。
 
 ## 更新方針（Serena メモリ）
 
@@ -35,3 +40,4 @@
 ## ドキュメント
 - Markdown は markdownlint-cli2 でチェック（`pnpm lint-md`）
 - **開発用ドキュメントに日付をメモしない**。経緯や順序が必要ならリストや本文で明示する（`docs/`、`Scratchpad.md`、本メモリ群、README、`.cursor` の説明など）。
+- **plan / guide は普遍的記述のみ、進捗は Scratchpad**、手順文の主語明示、WXT の `content.ts` と `content/index.ts` 併存禁止 … などセッションで固定した方針の**正本は** `.cursor/rules/kansu-agent-conventions.mdc` の「ドキュメントの役割分担」「WXT エントリ」を参照（本文の二重掲載はしない）。

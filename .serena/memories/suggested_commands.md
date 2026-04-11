@@ -7,8 +7,10 @@
 - 初回のみ E2E でブラウザが必要な場合: `pnpm exec playwright install`（または CI と同様の依存に合わせる）
 
 ## 実行・ビルド
-- `pnpm dev` — WXT 開発モード（Chrome 既定）
-- `pnpm dev:firefox` — Firefox
+- `pnpm dev` — fixture + Chrome 拡張（`FIXTURE_PORT` でポート指定、未設定は 41731）
+- `pnpm dev:firefox` — 同上で Firefox
+- `pnpm dev:extension` — 拡張のみ（Chrome）
+- `pnpm dev:extension:firefox` — 拡張のみ（Firefox）
 - `pnpm build` / `pnpm build:firefox` — 本番ビルド
 - `pnpm zip` / `pnpm zip:firefox` — 拡張 ZIP 出力
 
@@ -27,8 +29,9 @@
 ## テスト
 - `pnpm test` — Vitest 一回実行
 - `pnpm test:watch` — ウォッチ
-- `pnpm e2e` — Playwright
-- `pnpm e2e:watch` — Playwright UI
+- `pnpm e2e` — `pnpm build` 後に Playwright（`.output/chrome-mv3` 未生成の取り違え防止）
+- `pnpm e2e:watch` — 同上のあと Playwright UI
+- `pnpm e2e:only` — ビルドなしで Playwright のみ（CI・直前ビルド済み向け）
 
 ## Git など（Windows）
 - `git status`, `git diff` — 変更確認

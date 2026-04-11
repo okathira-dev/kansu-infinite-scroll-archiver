@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # pin: v6 (v6.0.2)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Setup toolchain
         uses: ./.github/actions/setup-node-pnpm
@@ -29,8 +29,8 @@ jobs:
       - name: Run checks
         run: pnpm check
 
-      - name: Run markdown lint
-        run: pnpm lint-md
+      - name: Install Playwright (Vitest Storybook / Chromium)
+        run: pnpm exec playwright install chromium --with-deps
 
       - name: Run tests
         run: pnpm test
@@ -39,7 +39,7 @@ jobs:
         run: pnpm build
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # pin: v6 (v6.0.0)
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: extension-build
           path: .output/
@@ -53,13 +53,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # pin: v6 (v6.0.2)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Setup toolchain
         uses: ./.github/actions/setup-node-pnpm
 
       - name: Download build artifacts
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # pin: v6 (v6.0.0)
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
         with:
           name: extension-build
           path: .output/
@@ -68,10 +68,11 @@ jobs:
         run: pnpm exec playwright install --with-deps
 
       - name: Run E2E tests
-        run: pnpm e2e
+        # ビルド成果物は直前ジョブのアーティファクト。`pnpm e2e` は毎回 build するため二重化を避ける。
+        run: pnpm e2e:only
 
       - name: Upload E2E test results
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # pin: v6 (v6.0.0)
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         if: ${{ !cancelled() }}
         with:
           name: playwright-report

@@ -25,6 +25,7 @@ alwaysApply: true
 
 - [repository.mdc](mdc:.cursor/rules/repository.mdc): リポジトリ構造と参照ドキュメント。
 - [coding-rules.mdc](mdc:.cursor/rules/coding-rules.mdc): 実装時のコード規約。
+- [kansu-agent-conventions.mdc](mdc:.cursor/rules/kansu-agent-conventions.mdc): 言語（日本語）・コロケーション・ドキュメント参照（常時適用）。
 - [biome.mdc](mdc:.cursor/rules/biome.mdc): Lint/Format の実行方針。
 
 ## ドキュメント運用

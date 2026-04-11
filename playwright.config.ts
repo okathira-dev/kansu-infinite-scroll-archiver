@@ -1,4 +1,5 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig } from "@playwright/test";
+import { E2E_STEP_TIMEOUT_MS } from "./e2e/constants";
 
 /**
  * Read environment variables from file.
@@ -13,6 +14,13 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "./e2e",
+  /**
+   * アサーション待ちは最大 3s 以下。`waitForSelector` / `expect.poll` は `e2e/constants` と揃える。
+   * `click` / `fill` には `actionTimeout` を載せない（Radix Dialog 等のフォーカス安定待ちが長引きうるため）。
+   */
+  expect: {
+    timeout: E2E_STEP_TIMEOUT_MS,
+  },
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -32,21 +40,11 @@ export default defineConfig({
     trace: "on-first-retry",
   },
 
-  /* Configure projects for major browsers */
+  /* 拡張 E2E は Chromium 固定で実行する */
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
-    },
-
-    {
-      name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
-    },
-
-    {
-      name: "webkit",
-      use: { ...devices["Desktop Safari"] },
+      use: {},
     },
 
     /* Test against mobile viewports. */

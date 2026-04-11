@@ -2,7 +2,10 @@
 
 ## 1. このドキュメントの目的
 
-本ドキュメントは、`docs/requirements.md` の要件（`FR-*`, `NFR-*`）を実装レベルに落とし込むための技術仕様です。  
+本ドキュメントは、
+[requirements.md の「4. 機能要件（MVP）」](requirements.md#4-機能要件mvp) と
+[「5. 非機能要件」](requirements.md#5-非機能要件)
+の要件（`FR-*`, `NFR-*`）を実装レベルに落とし込むための技術仕様です。  
 実装時に迷いやすい以下を明確化します。
 
 - Manifest V3前提の実行モデル
@@ -10,11 +13,26 @@
 - Content Script/Background間のメッセージ契約
 - 抽出、検索、ソート、インポート/エクスポートの実装方針
 
+### 1.1. 位置づけと読み方（重要）
+
+- **[implementation_plan.md の「1. 基本方針」](implementation_plan.md#1-基本方針)** を補足する、やや抽象的なイメージと技術方針の束として読む。図や箇条書きは理解の助けであり、**リポジトリの唯一の正本（source of truth）ではない**。
+- **実装・改修の最終判断**は、優先順位が高い順に
+  [requirements.md の要件](requirements.md#4-機能要件mvp)、
+  既存ソース、テスト、メッセージ型・バリデーション等の契約に従う。本書とコードや要件が食い違う場合は、**本書が古いか簡略化されている可能性**を疑う。
+- 詳細な永続化スキーマの意図は
+  [storage-and-db-design.md の「設計意図」](storage-and-db-design.md#設計意図)
+  も参照する（本書の DB 節は概要に留まる場合がある）。
+
+**本書だけを過信して実装に当てはめるのは避ける。** 足りない具体性はコード探索とテストで補う。
+
 ## 2. 設計原則
 
 ### 2.1. MV3前提のイベント駆動
 
-- Service Workerは停止/再開されるため、グローバル変数を信頼しない（`NFR-10`）
+- Service Workerは停止/再開されるため、グローバル変数を信頼しない（`NFR-10`）。
+  挙動は
+  [Chrome Extensions: service worker lifecycle](https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/lifecycle)
+  を参照。
 - 復元可能な状態はIndexedDB/`chrome.storage`へ保存する
 - 処理は再入可能・冪等（同一メッセージの再処理に耐える）にする
 
@@ -25,7 +43,10 @@
 
 ### 2.3. 高頻度DOM変更への耐性
 
-- `MutationObserver` コールバックでは重い処理を直接実行しない（`NFR-03`）
+- `MutationObserver` コールバックでは重い処理を直接実行しない（`NFR-03`）。
+  API は
+  [MDN: MutationObserver](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver)
+  を参照。
 - 変更通知をキュー化して、抽出処理はバッチで実行する（`FR-13`）
 
 ## 3. 技術スタック
@@ -37,7 +58,7 @@
 | 状態管理 | Zustand | UI状態とフォーム状態 |
 | 永続化 | Dexie (IndexedDB) | 設定・抽出データ保存 |
 | 品質 | Biome + MarkdownLint | lint/format/doc規約 |
-| テスト | Vitest + Playwright（Phase 4 以降に React Testing Library を追加予定） | 単体/統合/コンポーネント（予定）/E2E |
+| テスト | Vitest + Playwright（UI コンポーネントの網羅に Testing Library 等を併用しうる） | 単体/統合/コンポーネント/E2E |
 
 ## 4. アーキテクチャ
 
@@ -63,21 +84,20 @@ flowchart LR
 
 - プロジェクトのソースコードは `src` 配下に集約する
 - WXTのファイルベース構成に従い、エントリーポイントを責務単位で分離する
-  - `src/entrypoints/content*`: ページ注入と抽出ロジック
-  - `src/entrypoints/background*`: メッセージ受信と永続化
+  - `src/entrypoints/content/` … Content Script（エントリは `index.ts`。補助モジュールは同ディレクトリにコロケート。WXT では `content.ts` と `content/index.ts` を**併存させない**）
+  - `src/entrypoints/background.ts` … Background（Service Worker）
   - `src/entrypoints/popup/*`: ブラウザアクションUI
-  - `src/entrypoints/options/*`: 設定管理UI
+  - `src/entrypoints/options/*`: 設定管理UI（WXT の Options エントリ）
 - 参照: <https://wxt.dev/guide/essentials/project-structure.html#adding-a-src-directory>
 
 ### 4.2. 各エントリーポイントの責務
 
 - **Content Script**
   - ページ内でのデータ操作の主担当
-  - URL一致判定
+  - URL 一致判定と抽出パイプライン（監視・パース・Background への送信）
   - メインUIの注入と管理（検索、検索対象項目選択、ソート、ページネーション、表示件数変更）
-  - 抽出処理（監視・パース・送信）
-  - 保存済みデータの表示（検索/ソート条件を受け取り、Background経由で取得）
-  - メインUI表示（検索、ソート、ページング）
+  - 保存済みデータの一覧表示（検索・ソート条件を受け取り、Background 経由で取得した結果の再描画）
+  - Popup からのメインUI表示トグルとの連携
 - **Background Service Worker**
   - メッセージルーティング
   - IndexedDBへの保存/検索
@@ -89,7 +109,7 @@ flowchart LR
   - Optionsへの導線
 - **Options**
   - サービス設定CRUD
-  - アプリ全体のグローバル設定管理
+  - グローバル設定（`appSettings`）は IndexedDB にテーブルとして拡張余地を確保し、UI と読み書きメッセージは後続フェーズで追加する
   - データ管理（サービス単位のインポート/エクスポートを基本とし、全体操作への拡張余地を確保）
 
 ### 4.3. 共有モジュール
@@ -114,9 +134,13 @@ flowchart LR
 
 #### 設定フロー
 
-1. Options UIでサービス設定やグローバル設定を更新する
-2. Options UIがBackgroundへ保存要求を送る
-3. BackgroundがIndexedDBへ永続化し、必要に応じてContent Scriptへ反映通知する
+1. Options UI でサービス設定を更新する（グローバル設定 UI は後続フェーズ）
+2. Options UI が Background へ保存要求を送る
+3. Background が IndexedDB へ永続化する。Content Script へ設定変更を伝える方式（`runtime` メッセージ、タブの再読み込み、エントリの再実行など）は実装方針として選択する
+
+**Options の保存・削除失敗通知**: 保存・削除 API が失敗したとき、ストアの `error` と画面の `toast` を二重に出さない。失敗理由の即時通知はハンドラ側のトーストに寄せ、一覧取得（`fetchConfigs`）失敗などは従来どおりストアの `error` を UI が表示してよい。
+
+**メイン UI と Options の同時利用**: メイン UI が開いたまま Options で設定を変えた場合、いつ `configs/list` 相当の再取得を行うかは仕様として固定していない。再マウント・明示メッセージ・ページ再読み込みのいずれかで整合を取る余地がある（リリース前に方針を決める）。
 
 ## 5. データモデル
 
@@ -139,24 +163,46 @@ export interface ServiceConfig {
   observeRootSelector: string;
   itemSelector: string;
   uniqueKeyField: string;
-  fields: FieldRule[];
+  fieldRules: FieldRule[];
   enabled: boolean;
   updatedAt: string;
+}
+
+export interface RecordFieldValue {
+  raw: string;
+  normalized: string;
 }
 
 export interface ExtractedRecord {
   serviceId: string;
   uniqueKey: string;
   extractedAt: string;
-  data: Record<string, string>;
-  normalizedSearchText: string;
+  fieldValues: Record<string, RecordFieldValue>;
+}
+
+export interface SearchQuery {
+  serviceId: string;
+  keyword: string;
+  /** 検索照合に使うフィールド名（`fieldValues[name].normalized` のみ） */
+  targetFieldNames: string[];
+  sortBy: string;
+  sortOrder: "asc" | "desc";
+  page: number;
+  pageSize: number;
 }
 ```
 
 ### 5.2. IndexedDBスキーマ方針
 
-動的にオブジェクトストアを増やす設計は、IndexedDBバージョン管理を複雑化しやすいため採用しません。  
+動的にオブジェクトストアを増やす設計は、IndexedDBバージョン管理を複雑化しやすいため採用しません
+（
+[MDN: IDBDatabase.createObjectStore()](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/createObjectStore)、
+[MDN: IDBOpenDBRequest upgradeneeded](https://developer.mozilla.org/en-US/docs/Web/API/IDBOpenDBRequest/upgradeneeded_event)
+）。  
 固定テーブル + 複合キーで管理します（`FR-20`, `NFR-12`）。
+詳細な意図は
+[storage-and-db-design.md の「固定ストアとバージョン管理」](storage-and-db-design.md#固定ストアとバージョン管理)
+を参照。
 
 ```ts
 db.version(1).stores({
@@ -167,7 +213,10 @@ db.version(1).stores({
 ```
 
 - 重複防止: `records` の主キーを `"[serviceId+uniqueKey]"` にする
-- 保存性能: 複数件保存は `bulkPut` + transaction を使う（`NFR-04`）
+- 保存性能: 複数件保存は `bulkPut` + transaction を使う（`NFR-04`）。
+  `bulkPut` の挙動は
+  [Dexie: Table.bulkPut()](https://dexie.org/docs/Table/Table.bulkPut())
+  を参照。
 - 注意: `bulkPut` をtransaction外で使うと部分成功が残る可能性があるため、原則transactionで囲む
 
 ### 5.3. データ構造の関係（概念）
@@ -176,17 +225,17 @@ db.version(1).stores({
 erDiagram
     SERVICE_CONFIG ||--o{ FIELD_RULE : has
     SERVICE_CONFIG ||--o{ RECORD : owns
-    RECORD ||--|| RECORD_DATA : contains
+    RECORD ||--o{ RECORD_FIELD_VALUE : "fieldValues"
 ```
 
 - `SERVICE_CONFIG`: サービスごとの抽出設定（URL、セレクタ、主キー定義）
-- `FIELD_RULE`: 各フィールドの抽出ルール（text/link/image/regex）
-- `RECORD`: 抽出結果メタ情報（`serviceId`, `uniqueKey`, `extractedAt`）
-- `RECORD_DATA`: 実データ本体（title/link/thumbnail等）
+- `FIELD_RULE`: 各フィールドの抽出ルール（text/link/image/regex）。設定上の配列キーは `fieldRules`
+- `RECORD`: 抽出結果 1 件（`serviceId`, `uniqueKey`, `extractedAt` とフィールド値のマップ）
+- `RECORD_FIELD_VALUE`: フィールド名ごとの `raw`（表示用）と `normalized`（検索用）。永続化上は `ExtractedRecord.fieldValues` のエントリとして格納
 
 ## 6. メッセージ契約
 
-### 6.1. メッセージ型（例）
+### 6.1. メッセージ型（契約）
 
 ```ts
 export type RequestMessage =
@@ -202,11 +251,19 @@ export type ResponseMessage<T = unknown> =
   | { ok: false; error: { code: string; message: string; details?: unknown } };
 ```
 
+- 実装ファイル:
+  - `src/lib/messages/contracts.ts`（request/response 契約）
+  - `src/lib/messages/parser.ts`（メッセージ payload 検証）
+  - `src/lib/types/validation.ts`（`ServiceConfig`・検索条件・import/export の型ガード）
+
 ### 6.2. ハンドラ実装ルール
 
-- `onMessage` で非同期応答する場合、互換性のため `return true` + `sendResponse` を基本にする
+- `onMessage` で非同期応答する場合、互換性のため `return true` + `sendResponse` を基本にする（
+  [Chrome Extensions: messaging](https://developer.chrome.com/docs/extensions/develop/concepts/messaging)
+  ）。
 - Promise返却による応答は利用可能な環境が広がっているが、互換性差を吸収する実装を優先する
 - 返却値は必ずシリアライズ可能なJSONに限定する
+- 検証失敗時は `VALIDATION_ERROR` を返し、`details` に検証エラー配列（`field`, `message`）を含める
 
 ## 7. 抽出エンジン設計（Content Script）
 
@@ -229,7 +286,7 @@ export type ResponseMessage<T = unknown> =
 1. `itemSelector` で候補要素を取得
 2. 各 `FieldRule` を評価し値を抽出
 3. `uniqueKeyField` から主キーを生成
-4. 検索用 `normalizedSearchText` を生成
+4. `fieldValues[fieldName] = { raw, normalized }` を生成
 5. `records/bulkUpsert` をBackgroundへ送信
 
 ## 8. 検索・ソート・ページネーション
@@ -237,12 +294,19 @@ export type ResponseMessage<T = unknown> =
 ### 8.1. 文字列正規化
 
 - 検索語/対象文字列ともに `String.prototype.normalize("NFKC")` を適用
-- かな差吸収のため、ひらがな/カタカナを同一表現へfoldするユーティリティを適用
-- 正規化は保存時にも計算しておき、検索時コストを下げる（`FR-21`, `NFR-01`）
+  （
+  [MDN: String.prototype.normalize()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize)
+  ）。
+- かな差吸収のため `wanakana.toHiragana` を適用し、`passRomaji: true` / `convertLongVowelMark: false` を固定して英字の過変換と長音の過展開を避ける
+- 正規化は保存時に `fieldValues.*.normalized` へ事前計算し、検索時は `targetFieldNames` の対象だけ照合する（`FR-21`, `NFR-01`）
+- 辞書同梱は行わず、自動読み変換（漢字→かな）は対象外とする
 
 ### 8.2. ソート
 
 - 文字列比較は `Intl.Collator("ja", { numeric: true, sensitivity: "base" })` を再利用
+  （
+  [MDN: Intl.Collator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Collator)
+  ）。
 - 不変性維持のため `toSorted()`（またはコピー後sort）を利用する
 
 ### 8.3. ページング
@@ -250,6 +314,12 @@ export type ResponseMessage<T = unknown> =
 - DB取得時に `offset`/`limit` を適用
 - 検索条件変更時はページを先頭に戻す
 - 1ページ件数は設定可能（`FR-23`）
+
+### 8.4. メイン UI の検索と契約の分界
+
+- **Background 経路**: `validateSearchQuery` により、`targetFieldNames` が空の `SearchQuery` は不正として拒否する（メッセージ契約上も空配列は許容しない）。
+- **Content / メイン UI**: 上記に至る前に、クエリが検索不能な状態（`serviceId`・`sortBy` が空、`targetFieldNames` が空など）では `records/search` を送らず、クライアント側ストアで検索結果を空に戻す。UI の「対象フィールドなし」と API 検証の役割を分ける。
+- **インクリメンタル検索の競合**: 入力デバウンス等で複数の `sendMessage` が重なる場合、古い応答が新しい結果を上書きしないよう、ストア側でリクエスト世代などの打ち消しを行う。
 
 ## 9. インポート/エクスポート
 
@@ -272,12 +342,22 @@ export type ResponseMessage<T = unknown> =
 - 主キー衝突時はupsertで統一（`FR-42`）
 - 1サービス単位でtransaction実行し、途中失敗時はロールバック
 
+### 9.3. ランタイム検証の実装方針（将来含む）
+
+- 外部ファイル由来の JSON は、パース直後を `unknown`（または同等のトップレベル未検証型）として扱い、検証レイヤで構造を確定させる。検証を省略した型アサーション（`as ImportPayload` 等）は避ける。
+- 手書きの段階的検証でも、上記の流れを満たせば要件上は十分あり得る。スキーマが増えるほど、**Zod**（エコシステム・慣例）や **Valibot**（バンドル最適化しやすい構成が取りやすい）などへの寄せを検討する。
+- スキーマライブラリを入れる場合の推奨パターン:
+  - `schemaVersion` ごとに別スキーマを定義し、`safeParse` / 同等 API で分岐する。
+  - ライブラリ固有のエラー表現を、既存の検証エラー配列（例: `field`, `message`）へ変換してから `VALIDATION_ERROR` の `details` に載せる。
+- ダウンロード時のファイル名サニタイズは、型検証とは別の関心（パス区切り文字の混入防止など）として扱う。
+
 ## 10. セキュリティ・権限設計
 
 - 権限は用途ベースで最小化（`storage`, `scripting`, 必要最小限のhost許可）
 - 外部通信を行わない構成を原則とする（`NFR-20`）
 - インポートJSONはサイズ上限・構造検証を行う（`NFR-23`）
 - CSP違反となる動的コード実行（`eval` 等）を行わない
+- **Content Script の注入範囲**: 実装では `matches` を広く取りうるが、`NFR-21`（最小権限）に照らし、リリース前に対象 URL と `host_permissions` を再評価する（実装計画 Phase 6 の権限見直しと一体で扱う）。
 
 ## 11. テスト戦略
 
@@ -290,14 +370,28 @@ export type ResponseMessage<T = unknown> =
 
 ### 11.2. E2E（Playwright）
 
-- 拡張はpersistent contextで起動
+- 拡張はpersistent contextで起動（
+  [Playwright: Chrome extensions](https://playwright.dev/docs/chrome-extensions)
+  ）。
 - MV3 Service Worker取得（`context.serviceWorkers()`）をfixture化
 - Popup→Options→Content Scriptの主要導線を自動化
 - CI上でも再現できるシナリオのみを必須ケースにする
 
-### 11.3. コンポーネント（予定）
+### 11.3. コンポーネント
 
-- `implementation_plan.md` の Phase 4 に合わせ、フォーム・一覧・通知などは **Vitest + React Testing Library** で補う想定。導入時は依存に `@testing-library/react` 等を追加する。
+- フォーム・一覧・通知などの UI は、**Vitest + React Testing Library** で補う選択肢がある。導入時は依存に `@testing-library/react` 等を追加する。
+
+### 11.4. 主要 UI 要件とテストの対応（参照用）
+
+| 要件 | 実装の主な所在 | 主なテスト |
+| --- | --- | --- |
+| `FR-21` | `RecordRepository.search` / 正規化 / メイン UI `SearchBar` / `searchStore` | 単体（正規化・リポジトリ・`searchStore`）、E2E `mainUiSearch` |
+| `FR-22` | リポジトリソート / メイン UI | 単体、E2E `mainUiSearch` |
+| `FR-23` | ページネーション UI / リポジトリ | 単体、E2E `mainUiSearch` |
+| `FR-30` | Popup / Content のメイン UI トグル | E2E `popup.spec.ts` |
+| `FR-31` | Options の CRUD | E2E `optionsCrud.spec.ts` |
+| `FR-32` | `sonner` 等のトースト（メイン UI・Options） | コンポーネント・手動確認 |
+| `FR-33` | メイン UI のキーボードショートカット（例: Alt+矢印） | 単体 E2E は任意。利用者向け説明の有無は製品方針で決める |
 
 ## 12. 運用・計測
 
@@ -316,7 +410,7 @@ export type ResponseMessage<T = unknown> =
 - `FR-01`〜`FR-03`: 4章, 5章, 6章
 - `FR-10`〜`FR-13`: 7章
 - `FR-20`〜`FR-23`: 5章, 8章
-- `FR-30`〜`FR-33`: 4章, 11章
+- `FR-30`〜`FR-33`: 4章, 8章（8.4）, 11章（11.4 の表）
 - `FR-40`〜`FR-42`: 9章
 - `NFR-01`〜`NFR-04`: 5章, 7章, 8章
 - `NFR-10`〜`NFR-12`: 2章, 6章
