@@ -79,7 +79,7 @@ afterEach(() => {
 });
 
 describe("Options App", () => {
-  it("新規設定ボタンでフォームダイアログを開ける", async () => {
+  it("新規設定ボタンで編集ダイアログを開ける", async () => {
     const user = userEvent.setup();
     render(<App />);
 
