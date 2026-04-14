@@ -28,7 +28,20 @@ export async function openOptionsPage(page: Page, extensionId: string) {
       await page.fill("input[aria-label='field-name-1']", params.fieldName);
       await page.fill("input[aria-label='field-selector-1']", params.fieldSelector);
       await page.click("#config-unique-key");
-      await page.getByRole("option", { name: params.uniqueKeyField }).click();
+      await page.waitForSelector("[data-slot='select-content']:visible", {
+        timeout: E2E_STEP_TIMEOUT_MS,
+      });
+      await page.evaluate((uniqueKeyField) => {
+        const options = Array.from(
+          document.querySelectorAll<HTMLElement>("[data-slot='select-item']"),
+        );
+        const visibleOption = options.find((option) => {
+          const rect = option.getBoundingClientRect();
+          const text = option.textContent ?? "";
+          return rect.width > 0 && rect.height > 0 && text.includes(uniqueKeyField);
+        });
+        visibleOption?.click();
+      }, params.uniqueKeyField);
     },
     clickSave: async () => {
       await page.click("#save-config");

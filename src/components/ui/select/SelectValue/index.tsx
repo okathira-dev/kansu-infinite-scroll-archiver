@@ -1,9 +1,8 @@
 "use client";
 
-import { Select as SelectPrimitive } from "radix-ui";
-import type * as React from "react";
+import { Select as SelectPrimitive } from "@base-ui/react/select";
 
-function SelectValue({ ...props }: React.ComponentProps<typeof SelectPrimitive.Value>) {
+function SelectValue({ ...props }: SelectPrimitive.Value.Props) {
   return <SelectPrimitive.Value data-slot="select-value" {...props} />;
 }
 

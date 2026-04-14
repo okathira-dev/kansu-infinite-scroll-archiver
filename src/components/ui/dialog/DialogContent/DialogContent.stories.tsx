@@ -8,6 +8,7 @@ const meta = {
   },
   args: {
     showCloseButton: true,
+    disablePortal: false,
     disableOutsideDismiss: false,
     children: "本文テキスト。showCloseButton や className を Controls から変えられます。",
   },
@@ -47,6 +48,27 @@ export const DisableOutsideDismiss: Story = {
           <DialogDescription>
             オーバーレイをクリックしても閉じません。閉じる操作は × ボタンや Esc キー（Radix
             既定）を利用してください。
+          </DialogDescription>
+          {children}
+        </DialogContent>
+      </Dialog>
+    );
+  },
+};
+
+/** `disablePortal`: Overlay と Content を呼び出し位置に直接描画する。 */
+export const DisablePortal: Story = {
+  args: {
+    disablePortal: true,
+  },
+  render: (args) => {
+    const { children, ...contentProps } = args;
+    return (
+      <Dialog defaultOpen>
+        <DialogContent {...contentProps}>
+          <DialogTitle>Portal を使わない描画</DialogTitle>
+          <DialogDescription>
+            Portal を使わず、呼び出し位置へインライン描画して挙動を確認します。
           </DialogDescription>
           {children}
         </DialogContent>

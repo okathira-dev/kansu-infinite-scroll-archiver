@@ -20,9 +20,13 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: (args) => {
     const [value, setValue] = useState("createdAt");
+    const items = [
+      { value: "createdAt", label: "作成日" },
+      { value: "title", label: "タイトル" },
+    ];
 
     return (
-      <Select value={value} onValueChange={setValue}>
+      <Select value={value} items={items} onValueChange={setValue}>
         <SelectTrigger {...args}>
           <SelectValue placeholder="項目を選択" />
         </SelectTrigger>

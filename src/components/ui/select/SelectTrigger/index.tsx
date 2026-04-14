@@ -1,12 +1,11 @@
 "use client";
 
+import { Select as SelectPrimitive } from "@base-ui/react/select";
 import { ChevronDownIcon } from "lucide-react";
-import { Select as SelectPrimitive } from "radix-ui";
-import type * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-type SelectTriggerProps = React.ComponentProps<typeof SelectPrimitive.Trigger> & {
+type SelectTriggerProps = SelectPrimitive.Trigger.Props & {
   size?: "sm" | "default";
 };
 
@@ -22,9 +21,7 @@ function SelectTrigger({ className, size = "default", children, ...props }: Sele
       {...props}
     >
       {children}
-      <SelectPrimitive.Icon asChild>
-        <ChevronDownIcon className="size-4 opacity-50" />
-      </SelectPrimitive.Icon>
+      <ChevronDownIcon className="size-4 opacity-50" />
     </SelectPrimitive.Trigger>
   );
 }

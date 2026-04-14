@@ -1,10 +1,26 @@
 "use client";
 
-import { Select as SelectPrimitive } from "radix-ui";
-import type * as React from "react";
+import { Select as SelectPrimitive } from "@base-ui/react/select";
 
-function Select({ ...props }: React.ComponentProps<typeof SelectPrimitive.Root>) {
-  return <SelectPrimitive.Root data-slot="select" {...props} />;
+type SelectProps = Omit<SelectPrimitive.Root.Props<string>, "onValueChange"> & {
+  onValueChange?: (value: string) => void;
+};
+
+function Select({ modal = false, onValueChange, ...props }: SelectProps) {
+  return (
+    <SelectPrimitive.Root<string>
+      data-slot="select"
+      modal={modal}
+      onValueChange={(value) => {
+        if (typeof value !== "string") {
+          return;
+        }
+        onValueChange?.(value);
+      }}
+      {...props}
+    />
+  );
 }
 
+export type { SelectProps };
 export { Select };

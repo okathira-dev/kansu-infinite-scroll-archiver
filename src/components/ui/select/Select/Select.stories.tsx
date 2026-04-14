@@ -20,10 +20,16 @@ export const Default: Story = {
   render: () => {
     const [args, updateArgs] = useArgs<typeof meta.args>();
     const value = args?.value ?? "createdAt";
+    const items = [
+      { value: "createdAt", label: "作成日" },
+      { value: "title", label: "タイトル" },
+      { value: "author", label: "作成者" },
+    ];
 
     return (
       <Select
         value={value}
+        items={items}
         onValueChange={(v) => {
           updateArgs({ value: v });
         }}

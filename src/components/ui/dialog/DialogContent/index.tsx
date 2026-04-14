@@ -13,6 +13,11 @@ type DialogContentProps = React.ComponentProps<typeof DialogPrimitive.Content> &
   /** Radix `Portal` の `container`。content script の Shadow 内へオーバーレイを出すときに指定。 */
   portalContainer?: HTMLElement | null;
   /**
+   * `true` のとき `DialogPrimitive.Portal` を使わず、呼び出し位置へインライン描画する。
+   * Portal に起因する副作用を避けたい画面で利用する。
+   */
+  disablePortal?: boolean;
+  /**
    * `true` のとき、Radix `Dialog.Content` の `onInteractOutside` で `preventDefault()` し、
    * 外側でのポインタ・フォーカス等に起因する**既定の閉じ**を行わない（× や明示的な閉じ操作は従来どおり）。
    * @see https://www.radix-ui.com/primitives/docs/components/dialog （Content の `onInteractOutside`）
@@ -25,6 +30,7 @@ function DialogContent({
   children,
   showCloseButton = true,
   portalContainer,
+  disablePortal = false,
   disableOutsideDismiss = false,
   onInteractOutside,
   ...props
@@ -38,8 +44,8 @@ function DialogContent({
     }
   };
 
-  return (
-    <DialogPortal data-slot="dialog-portal" container={portalContainer ?? undefined}>
+  const contentNode = (
+    <>
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
@@ -63,6 +69,16 @@ function DialogContent({
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Content>
+    </>
+  );
+
+  if (disablePortal) {
+    return contentNode;
+  }
+
+  return (
+    <DialogPortal data-slot="dialog-portal" container={portalContainer ?? undefined}>
+      {contentNode}
     </DialogPortal>
   );
 }

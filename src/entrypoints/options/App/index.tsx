@@ -20,6 +20,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectPortalContainerProvider,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -69,7 +70,7 @@ const createDefaultEditorState = (): ConfigEditorState => ({
   urlPatternsText: "",
   observeRootSelector: "",
   itemSelector: "",
-  uniqueKeyField: "",
+  uniqueKeyField: "title",
   enabled: true,
   fieldRules: [
     {
@@ -104,7 +105,12 @@ const toServiceConfig = (editor: ConfigEditorState): ServiceConfig => ({
     .filter((line) => line.length > 0),
   observeRootSelector: editor.observeRootSelector.trim(),
   itemSelector: editor.itemSelector.trim(),
-  uniqueKeyField: editor.uniqueKeyField.trim(),
+  uniqueKeyField:
+    editor.uniqueKeyField.trim().length > 0
+      ? editor.uniqueKeyField.trim()
+      : (editor.fieldRules
+          .map((fieldRule) => fieldRule.name.trim())
+          .find((fieldName) => fieldName.length > 0) ?? ""),
   fieldRules: editor.fieldRules.map((fieldRule) => ({
     name: fieldRule.name.trim(),
     selector: fieldRule.selector.trim(),
@@ -134,6 +140,9 @@ function App() {
   const [selectedExportServiceId, setSelectedExportServiceId] = useState("");
   const [importFile, setImportFile] = useState<File | null>(null);
   const importFileInputRef = useRef<HTMLInputElement | null>(null);
+  /** 編集ダイアログ内 Select の Portal 先（body だと Dialog オーバーレイの下に隠れる）。 */
+  const [configEditorSelectPortalRoot, setConfigEditorSelectPortalRoot] =
+    useState<HTMLElement | null>(null);
 
   useEffect(() => {
     void fetchConfigs();
@@ -392,6 +401,10 @@ function App() {
                         <Label htmlFor="export-service-id">サービス</Label>
                         <Select
                           value={selectedExportServiceId}
+                          items={sortedConfigs.map((config) => ({
+                            value: config.id,
+                            label: `${config.name} (${config.id})`,
+                          }))}
                           onValueChange={setSelectedExportServiceId}
                         >
                           <SelectTrigger id="export-service-id" className="w-full">
@@ -476,255 +489,265 @@ function App() {
           className="flex h-[min(92dvh,calc(100dvh-2rem))] max-h-[min(92dvh,calc(100dvh-2rem))] w-[calc(100vw-2rem)] max-w-7xl flex-col gap-0 overflow-hidden p-0 sm:max-w-7xl"
           disableOutsideDismiss
         >
-          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-6">
-            <DialogHeader>
-              <DialogTitle>
-                {editingConfigId ? "サービス設定を編集" : "サービス設定を追加"}
-              </DialogTitle>
-              <DialogDescription>
-                抽出対象DOMのセレクタとフィールド抽出ルールを入力してください。
-              </DialogDescription>
-            </DialogHeader>
-            <div className="min-h-0 flex-1 overflow-y-auto">
-              <div className="grid gap-4 pb-2">
-                <div className="grid gap-2">
-                  <Label htmlFor="config-name">表示名</Label>
-                  <Input
-                    id="config-name"
-                    value={editor.name}
-                    onChange={(event) =>
-                      setEditor((previous) => ({
-                        ...previous,
-                        name: event.target.value,
-                      }))
-                    }
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="config-id">ID</Label>
-                  <Input
-                    id="config-id"
-                    value={editor.id}
-                    onChange={(event) =>
-                      setEditor((previous) => ({
-                        ...previous,
-                        id: event.target.value,
-                      }))
-                    }
-                    placeholder="未入力時は自動採番"
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="config-url-patterns">URL パターン（1行1件）</Label>
-                  <Textarea
-                    id="config-url-patterns"
-                    value={editor.urlPatternsText}
-                    onChange={(event) =>
-                      setEditor((previous) => ({
-                        ...previous,
-                        urlPatternsText: event.target.value,
-                      }))
-                    }
-                    rows={3}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <SelectPortalContainerProvider value={configEditorSelectPortalRoot}>
+            <div
+              ref={setConfigEditorSelectPortalRoot}
+              className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-6"
+            >
+              <DialogHeader>
+                <DialogTitle>
+                  {editingConfigId ? "サービス設定を編集" : "サービス設定を追加"}
+                </DialogTitle>
+                <DialogDescription>
+                  抽出対象DOMのセレクタとフィールド抽出ルールを入力してください。
+                </DialogDescription>
+              </DialogHeader>
+              <div className="min-h-0 flex-1 overflow-y-auto">
+                <div className="grid gap-4 pb-2">
                   <div className="grid gap-2">
-                    <Label htmlFor="config-observe-root">observeRootSelector</Label>
+                    <Label htmlFor="config-name">表示名</Label>
                     <Input
-                      id="config-observe-root"
-                      value={editor.observeRootSelector}
+                      id="config-name"
+                      value={editor.name}
                       onChange={(event) =>
                         setEditor((previous) => ({
                           ...previous,
-                          observeRootSelector: event.target.value,
+                          name: event.target.value,
                         }))
                       }
                     />
                   </div>
+
                   <div className="grid gap-2">
-                    <Label htmlFor="config-item-selector">itemSelector</Label>
+                    <Label htmlFor="config-id">ID</Label>
                     <Input
-                      id="config-item-selector"
-                      value={editor.itemSelector}
+                      id="config-id"
+                      value={editor.id}
                       onChange={(event) =>
                         setEditor((previous) => ({
                           ...previous,
-                          itemSelector: event.target.value,
+                          id: event.target.value,
                         }))
                       }
+                      placeholder="未入力時は自動採番"
                     />
                   </div>
-                </div>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="config-unique-key">uniqueKeyField</Label>
-                  <Select
-                    value={editor.uniqueKeyField}
-                    onValueChange={(value) =>
-                      setEditor((previous) => ({
-                        ...previous,
-                        uniqueKeyField: value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger id="config-unique-key" className="w-full">
-                      <SelectValue placeholder="主キーにするフィールドを選択" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {editor.fieldRules
-                        .map((fieldRule) => fieldRule.name.trim())
-                        .filter(
-                          (name, index, names) => name.length > 0 && names.indexOf(name) === index,
-                        )
-                        .map((fieldName) => (
-                          <SelectItem key={fieldName} value={fieldName}>
-                            {fieldName}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Switch
-                    id="config-enabled"
-                    checked={editor.enabled}
-                    onCheckedChange={(checked) =>
-                      setEditor((previous) => ({
-                        ...previous,
-                        enabled: checked,
-                      }))
-                    }
-                  />
-                  <Label htmlFor="config-enabled">有効化</Label>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-medium">fieldRules</h3>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() =>
+                  <div className="grid gap-2">
+                    <Label htmlFor="config-url-patterns">URL パターン（1行1件）</Label>
+                    <Textarea
+                      id="config-url-patterns"
+                      value={editor.urlPatternsText}
+                      onChange={(event) =>
                         setEditor((previous) => ({
                           ...previous,
-                          fieldRules: [
-                            ...previous.fieldRules,
-                            {
-                              uid: createUid(),
-                              name: "",
-                              selector: "",
-                              type: "text",
-                            },
-                          ],
+                          urlPatternsText: event.target.value,
+                        }))
+                      }
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div className="grid gap-2">
+                      <Label htmlFor="config-observe-root">observeRootSelector</Label>
+                      <Input
+                        id="config-observe-root"
+                        value={editor.observeRootSelector}
+                        onChange={(event) =>
+                          setEditor((previous) => ({
+                            ...previous,
+                            observeRootSelector: event.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="config-item-selector">itemSelector</Label>
+                      <Input
+                        id="config-item-selector"
+                        value={editor.itemSelector}
+                        onChange={(event) =>
+                          setEditor((previous) => ({
+                            ...previous,
+                            itemSelector: event.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="config-unique-key">uniqueKeyField</Label>
+                    <Select
+                      value={editor.uniqueKeyField}
+                      onValueChange={(value) =>
+                        setEditor((previous) => ({
+                          ...previous,
+                          uniqueKeyField: value,
                         }))
                       }
                     >
-                      フィールドを追加
-                    </Button>
+                      <SelectTrigger id="config-unique-key" className="w-full">
+                        <SelectValue placeholder="主キーにするフィールドを選択" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {editor.fieldRules
+                          .map((fieldRule) => fieldRule.name.trim())
+                          .filter(
+                            (name, index, names) =>
+                              name.length > 0 && names.indexOf(name) === index,
+                          )
+                          .map((fieldName) => (
+                            <SelectItem key={fieldName} value={fieldName}>
+                              {fieldName}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
-                  {editor.fieldRules.map((fieldRule, index) => (
-                    <Card key={fieldRule.uid}>
-                      <CardContent className="grid gap-2 pt-6">
-                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                          <Input
-                            aria-label={`field-name-${index + 1}`}
-                            placeholder="name"
-                            value={fieldRule.name}
-                            onChange={(event) =>
-                              updateFieldRule(fieldRule.uid, (item) => ({
-                                ...item,
-                                name: event.target.value,
-                              }))
-                            }
-                          />
-                          <Input
-                            aria-label={`field-selector-${index + 1}`}
-                            placeholder="selector"
-                            value={fieldRule.selector}
-                            onChange={(event) =>
-                              updateFieldRule(fieldRule.uid, (item) => ({
-                                ...item,
-                                selector: event.target.value,
-                              }))
-                            }
-                          />
-                          <Select
-                            value={fieldRule.type}
-                            onValueChange={(value: FieldType) =>
-                              updateFieldRule(fieldRule.uid, (item) => ({
-                                ...item,
-                                type: value,
-                                regex: value === "regex" ? (item.regex ?? "") : undefined,
-                              }))
-                            }
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {FIELD_TYPE_OPTIONS.map((typeOption) => (
-                                <SelectItem key={typeOption} value={typeOption}>
-                                  {typeOption}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="config-enabled"
+                      checked={editor.enabled}
+                      onCheckedChange={(checked) =>
+                        setEditor((previous) => ({
+                          ...previous,
+                          enabled: checked,
+                        }))
+                      }
+                    />
+                    <Label htmlFor="config-enabled">有効化</Label>
+                  </div>
 
-                        {fieldRule.type === "regex" && (
-                          <Input
-                            aria-label={`field-regex-${index + 1}`}
-                            placeholder="regex pattern"
-                            value={fieldRule.regex ?? ""}
-                            onChange={(event) =>
-                              updateFieldRule(fieldRule.uid, (item) => ({
-                                ...item,
-                                regex: event.target.value,
-                              }))
-                            }
-                          />
-                        )}
+                  <Separator />
 
-                        <div className="flex justify-end">
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            onClick={() =>
-                              setEditor((previous) => ({
-                                ...previous,
-                                fieldRules: previous.fieldRules.filter(
-                                  (item) => item.uid !== fieldRule.uid,
-                                ),
-                              }))
-                            }
-                            disabled={editor.fieldRules.length <= 1}
-                          >
-                            このフィールドを削除
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-medium">fieldRules</h3>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          setEditor((previous) => ({
+                            ...previous,
+                            fieldRules: [
+                              ...previous.fieldRules,
+                              {
+                                uid: createUid(),
+                                name: "",
+                                selector: "",
+                                type: "text",
+                              },
+                            ],
+                          }))
+                        }
+                      >
+                        フィールドを追加
+                      </Button>
+                    </div>
+
+                    {editor.fieldRules.map((fieldRule, index) => (
+                      <Card key={fieldRule.uid}>
+                        <CardContent className="grid gap-2 pt-6">
+                          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                            <Input
+                              aria-label={`field-name-${index + 1}`}
+                              placeholder="name"
+                              value={fieldRule.name}
+                              onChange={(event) =>
+                                updateFieldRule(fieldRule.uid, (item) => ({
+                                  ...item,
+                                  name: event.target.value,
+                                }))
+                              }
+                            />
+                            <Input
+                              aria-label={`field-selector-${index + 1}`}
+                              placeholder="selector"
+                              value={fieldRule.selector}
+                              onChange={(event) =>
+                                updateFieldRule(fieldRule.uid, (item) => ({
+                                  ...item,
+                                  selector: event.target.value,
+                                }))
+                              }
+                            />
+                            <Select
+                              value={fieldRule.type}
+                              onValueChange={(value) => {
+                                if (!FIELD_TYPE_OPTIONS.includes(value as FieldType)) {
+                                  return;
+                                }
+                                const nextType = value as FieldType;
+                                updateFieldRule(fieldRule.uid, (item) => ({
+                                  ...item,
+                                  type: nextType,
+                                  regex: nextType === "regex" ? (item.regex ?? "") : undefined,
+                                }));
+                              }}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {FIELD_TYPE_OPTIONS.map((typeOption) => (
+                                  <SelectItem key={typeOption} value={typeOption}>
+                                    {typeOption}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {fieldRule.type === "regex" && (
+                            <Input
+                              aria-label={`field-regex-${index + 1}`}
+                              placeholder="regex pattern"
+                              value={fieldRule.regex ?? ""}
+                              onChange={(event) =>
+                                updateFieldRule(fieldRule.uid, (item) => ({
+                                  ...item,
+                                  regex: event.target.value,
+                                }))
+                              }
+                            />
+                          )}
+
+                          <div className="flex justify-end">
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              onClick={() =>
+                                setEditor((previous) => ({
+                                  ...previous,
+                                  fieldRules: previous.fieldRules.filter(
+                                    (item) => item.uid !== fieldRule.uid,
+                                  ),
+                                }))
+                              }
+                              disabled={editor.fieldRules.length <= 1}
+                            >
+                              このフィールドを削除
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
               </div>
+              <DialogFooter className="mt-auto shrink-0 border-t border-border pt-4">
+                <Button type="button" variant="outline" onClick={closeEditor}>
+                  キャンセル
+                </Button>
+                <Button id="save-config" type="button" onClick={handleSaveConfig}>
+                  保存
+                </Button>
+              </DialogFooter>
             </div>
-            <DialogFooter className="mt-auto shrink-0 border-t border-border pt-4">
-              <Button type="button" variant="outline" onClick={closeEditor}>
-                キャンセル
-              </Button>
-              <Button id="save-config" type="button" onClick={handleSaveConfig}>
-                保存
-              </Button>
-            </DialogFooter>
-          </div>
+          </SelectPortalContainerProvider>
         </DialogContent>
       </Dialog>
 
