@@ -5,7 +5,7 @@
 
 ## 技術スタック（ルート `package.json` の依存に従う。バージョンは都度そこを参照）
 - **拡張**: WXT 0.20.x + React 19 + TypeScript 5.8
-- **UI**: Tailwind CSS 4, Radix Slot / shadcn 系コンポーネント（`src/components/ui`）, Lucide, Zustand, Dexie（IndexedDB）
+- **UI**: Tailwind CSS 4, Radix Slot / shadcn 系コンポーネント（`src/components/ui`）。**Select は `src/components/ui/select` で Base UI（`@base-ui/react/select`）に置き換え済み**（Dialog / Tabs 等は引き続き `radix-ui`）。Lucide, Zustand, Dexie（IndexedDB）
 - **品質**: Biome 2（format/lint/check）, markdownlint-cli2, Vitest 3, Playwright, Husky + lint-staged
 - **パッケージマネージャー**: pnpm（`pnpm-lock.yaml`）
 

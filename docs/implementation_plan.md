@@ -155,6 +155,7 @@
   - 緩和: サービス設定バリデーションと失敗時通知、ルール更新導線を整備
 - **大量データ時の検索遅延**
   - 緩和: 正規化フィールド事前計算、インデックス最適化、ページング必須化
-- **Content Script の Radix Select とホストページのレイアウト**
-  - メニュー表示時に Radix がフォーカス管理用としてホストの `document.body` に `data-radix-focus-guard` を挿入する。サイトの CSS／レイアウト次第では見かけ上の空間が生じ、開閉のたびにページがガクつくことがある。`SelectContent` の Portal 先を Shadow 内にしても、この挙動はホスト `body` 側に残る。
-  - 緩和の検討軸: ガード要素向けのホスト CSS（効き方はサイト依存）、公式 API・挙動の利用可否、ネイティブ `<select>` への切替、パッチ／フォーク。実装の追跡は content メイン UI ソース内の TODO コメントを起点にする。
+- **Content Script のオーバーレイ UI とホストページのレイアウト**
+  - **Select UI**（`src/components/ui/select`）は **Radix Select から Base UI（`@base-ui/react/select`）へ置き換え済み**であり、Options・content script・Storybook など利用箇所を問わず同一実装を参照する。したがって Radix Select のようにホストの `document.body` へ `data-radix-focus-guard` を挿入する挙動は **Select 由来では発生しない**。一方、**Radix の Dialog / Tabs** 等をホストと同文脈で使う画面（例: Options の設定編集）では、従来どおり `body` 側の副作用があり得る。
+  - content script のメイン UI では、`SelectPortalContainerProvider` により Select の Portal 先を Shadow 内に寄せ、スタイルとホスト DOM の分離を図る。ホスト CSS との干渉はサイト依存で評価する。
+  - 緩和の検討軸: ホスト向け CSS の上書き可否、ライブラリの Portal／モーダル API、代替 UI。実装の追跡は content / options の UI ソース、Storybook、および Radix を使う画面の E2E・手動確認を起点にする。

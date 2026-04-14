@@ -80,6 +80,11 @@ test("メインUI: 検索・ソート・ページ移動を実行できる", asyn
   const mainPanel = await waitForMainPanel(page);
   await expect(mainPanel.getPanel()).toBeVisible();
 
+  await page.click("#kansu-service-select");
+  await expect(page.locator("[data-slot='select-content']:visible")).toHaveCount(1);
+  await page.keyboard.press("Escape");
+  await expect(page.locator("[data-slot='select-content']:visible")).toHaveCount(0);
+
   const configUpdateResponse = await sendRuntimeMessage<RuntimeResponse<{ configId: string }>>(
     context,
     extensionId,

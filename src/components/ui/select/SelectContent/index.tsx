@@ -1,63 +1,95 @@
 "use client";
 
-import { Select as SelectPrimitive } from "radix-ui";
+import { Select as SelectPrimitive } from "@base-ui/react/select";
 import type * as React from "react";
 
 import { cn } from "@/lib/utils";
-import { SelectScrollDownButton } from "../SelectScrollDownButton";
-import { SelectScrollUpButton } from "../SelectScrollUpButton";
+import { useSelectPortalContainer } from "../SelectPortalContainerContext";
 
-type SelectContentProps = React.ComponentProps<typeof SelectPrimitive.Content> & {
-  /**
-   * Radix `Portal` の `container`。未指定時は従来どおり（主に `document.body`）。
-   * content script では Shadow 内のスタイルを当てるため、拡張UIルート配下の `HTMLElement` を渡す。
-   */
-  portalContainer?: HTMLElement | null;
-  /** 内蔵の上スクロールボタンへ渡す props（Storybook や上書き用）。 */
-  scrollUpButtonProps?: React.ComponentProps<typeof SelectScrollUpButton>;
-  /** 内蔵の下スクロールボタンへ渡す props（Storybook や上書き用）。 */
-  scrollDownButtonProps?: React.ComponentProps<typeof SelectScrollDownButton>;
-};
+type SelectContentProps = SelectPrimitive.Popup.Props &
+  Pick<
+    SelectPrimitive.Positioner.Props,
+    "align" | "alignOffset" | "side" | "sideOffset" | "alignItemWithTrigger"
+  > & {
+    position?: "item-aligned" | "popper";
+    disablePortal?: boolean;
+    /**
+     * Base UI `Portal` の `container`。未指定時は `SelectPortalContainerProvider` の値、
+     * それもなければライブラリ既定（主に `document.body`）。
+     */
+    portalContainer?:
+      | HTMLElement
+      | ShadowRoot
+      | React.RefObject<HTMLElement | ShadowRoot | null>
+      | null;
+  };
+
+function resolvePortalContainerProp(
+  value: SelectContentProps["portalContainer"],
+): HTMLElement | ShadowRoot | undefined {
+  if (value == null) {
+    return undefined;
+  }
+  if (typeof value === "object" && "current" in value) {
+    return value.current ?? undefined;
+  }
+  return value;
+}
 
 function SelectContent({
   className,
   children,
   position = "item-aligned",
+  side = "bottom",
+  sideOffset = 4,
   align = "center",
+  alignOffset = 0,
+  alignItemWithTrigger,
+  disablePortal = false,
   portalContainer,
-  scrollUpButtonProps,
-  scrollDownButtonProps,
-  ...props
+  ...popupProps
 }: SelectContentProps) {
+  const contextPortalContainer = useSelectPortalContainer();
+  const resolvedPortalContainer =
+    resolvePortalContainerProp(portalContainer) ?? contextPortalContainer ?? undefined;
+
   const content = (
-    <SelectPrimitive.Content
-      data-slot="select-content"
+    <SelectPrimitive.Positioner
+      data-slot="select-positioner"
+      side={side}
+      sideOffset={sideOffset}
+      align={align}
+      alignOffset={alignOffset}
+      alignItemWithTrigger={alignItemWithTrigger ?? position === "item-aligned"}
       className={cn(
-        "relative z-50 max-h-(--radix-select-content-available-height) min-w-32 origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-md data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+        "z-50 outline-none data-open:animate-in data-open:fade-in-0 data-open:duration-200 data-open:ease-out data-closed:animate-out data-closed:fade-out-0",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
-        className,
       )}
-      position={position}
-      align={align}
-      {...props}
     >
-      <SelectScrollUpButton {...scrollUpButtonProps} />
-      <SelectPrimitive.Viewport
+      <SelectPrimitive.Popup
+        data-slot="select-content"
         className={cn(
-          "p-1",
-          position === "popper" &&
-            "h-(--radix-select-trigger-height) w-full min-w-(--radix-select-trigger-width) scroll-my-1",
+          "min-h-0 min-w-32 overflow-hidden overflow-x-hidden rounded-md border bg-popover text-popover-foreground shadow-md outline-none",
+          position === "popper" && "w-full min-w-(--anchor-width) origin-(--transform-origin)",
+          position === "item-aligned" && "origin-(--transform-origin)",
+          className,
         )}
+        {...(popupProps as SelectPrimitive.Popup.Props)}
       >
-        {children}
-      </SelectPrimitive.Viewport>
-      <SelectScrollDownButton {...scrollDownButtonProps} />
-    </SelectPrimitive.Content>
+        <SelectPrimitive.List className="max-h-(--available-height) min-h-0 overflow-y-auto overscroll-y-contain p-1">
+          {children}
+        </SelectPrimitive.List>
+      </SelectPrimitive.Popup>
+    </SelectPrimitive.Positioner>
   );
 
+  if (disablePortal) {
+    return content;
+  }
+
   return (
-    <SelectPrimitive.Portal container={portalContainer ?? undefined}>
+    <SelectPrimitive.Portal container={resolvedPortalContainer ?? undefined}>
       {content}
     </SelectPrimitive.Portal>
   );

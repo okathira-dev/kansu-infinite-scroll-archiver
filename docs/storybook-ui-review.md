@@ -55,7 +55,7 @@
 - **L1:** `total === 0` でも「1 / 1 ページ」表示で文言の納得感に余地（[PaginationControls.tsx](../src/entrypoints/content/ui/PaginationControls.tsx)）。
 - **L2:** 検索入力の `autoFocus` がオーバーレイでホストのフォーカスを奪う可能性（[SearchBar.tsx](../src/entrypoints/content/ui/SearchBar.tsx)）。
 - **L3:** Options「アプリ設定」タブはプレースホルダーのみ（[options/App.tsx](../src/entrypoints/options/App.tsx)）。
-- **L4:** Radix focus guard によるホストページのガクつき（既知リスク、MainPanel 内コメント参照）。
+- **L4:** Radix のモーダル／フォーカストラップがホスト `body` に与える副作用（Options の Dialog 等）。**Select UI（`src/components/ui/select`）は Base UI に一本化されているため**、その経路での Radix body 副作用は想定しない。
 - **L5:** トーストに技術エラー文字列を連結（MainPanel / Options の `toast.error`）。
 - **L6:** Storybook `layout: centered` + 固定幅で極窄幅の折り返し検証が弱い（[preview.tsx](../.storybook/preview.tsx) および各 Story）。
 - **L7:** Storybook キャンバスで MainPanel の「表示件数」付近が見切れやすい（ブラウザ実機確認）。
@@ -85,7 +85,7 @@
 - **Label / WithInput:** `htmlFor` / `id` の関連付けが明確。
 - **Switch / Default・Small:** `Label` + `id`。
 - **SearchBar（実装）:** キーワードに `Label`、フィールドトグルに `aria-pressed`。
-- **Radix 系（Dialog / Tabs / Select）:** キーボード操作の基盤はライブラリに依存しつつ期待どおり使える前提。
+- **UI ライブラリの分担:** Dialog / Tabs 等は Radix（`radix-ui`）。**Select は共通コンポーネントとして Base UI（`@base-ui/react/select`）に置き換え済み**で、キーボード操作の基盤は各ライブラリに依存しつつ期待どおり使える前提。
 
 ### 4.2 要改善・注意
 
