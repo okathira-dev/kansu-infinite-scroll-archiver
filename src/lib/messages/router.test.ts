@@ -219,6 +219,100 @@ describe("メッセージルータ", () => {
     await closeAndDeleteDb(db);
   });
 
+  it("サービス別保存件数を返せる", async () => {
+    const { db, router } = createTestRouter();
+
+    await router.handleRaw({
+      type: "configs/save",
+      payload: serviceConfigPayload,
+    });
+    await router.handleRaw({
+      type: "records/bulkUpsert",
+      payload: {
+        records: [
+          {
+            serviceId: "service-1",
+            uniqueKey: "r1",
+            extractedAt: new Date().toISOString(),
+            fieldValues: {
+              id: { raw: "r1", normalized: "r1" },
+              title: { raw: "Title 1", normalized: "title 1" },
+            },
+          },
+          {
+            serviceId: "service-1",
+            uniqueKey: "r2",
+            extractedAt: new Date().toISOString(),
+            fieldValues: {
+              id: { raw: "r2", normalized: "r2" },
+              title: { raw: "Title 2", normalized: "title 2" },
+            },
+          },
+        ],
+      },
+    });
+
+    const countResponse = await router.handleRaw({
+      type: "records/countByServiceId",
+      payload: { serviceId: "service-1" },
+    });
+    expect(countResponse.ok).toBe(true);
+    if (countResponse.ok) {
+      expect(countResponse.data).toEqual({ count: 2 });
+    }
+    await closeAndDeleteDb(db);
+  });
+
+  it("records/countsByService でサービス別件数をまとめて返せる", async () => {
+    const { db, router } = createTestRouter();
+
+    await router.handleRaw({
+      type: "records/bulkUpsert",
+      payload: {
+        records: [
+          {
+            serviceId: "svc-a",
+            uniqueKey: "a1",
+            extractedAt: new Date().toISOString(),
+            fieldValues: {
+              id: { raw: "a1", normalized: "a1" },
+              title: { raw: "T1", normalized: "t1" },
+            },
+          },
+          {
+            serviceId: "svc-a",
+            uniqueKey: "a2",
+            extractedAt: new Date().toISOString(),
+            fieldValues: {
+              id: { raw: "a2", normalized: "a2" },
+              title: { raw: "T2", normalized: "t2" },
+            },
+          },
+          {
+            serviceId: "svc-b",
+            uniqueKey: "b1",
+            extractedAt: new Date().toISOString(),
+            fieldValues: {
+              id: { raw: "b1", normalized: "b1" },
+              title: { raw: "T3", normalized: "t3" },
+            },
+          },
+        ],
+      },
+    });
+
+    const summaryResponse = await router.handleRaw({
+      type: "records/countsByService",
+    });
+    expect(summaryResponse.ok).toBe(true);
+    if (summaryResponse.ok) {
+      expect(summaryResponse.data).toEqual({
+        countsByServiceId: { "svc-a": 2, "svc-b": 1 },
+      });
+    }
+    await closeAndDeleteDb(db);
+  });
+
   it("サービス単位エクスポートを処理できる", async () => {
     const { db, router } = createTestRouter();
 

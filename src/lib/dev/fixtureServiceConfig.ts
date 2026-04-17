@@ -1,4 +1,4 @@
-import type { ServiceConfig } from "@/lib/types";
+import { resolveServiceNotificationSettings, type ServiceConfig } from "@/lib/types";
 
 /**
  * 開発デバッグ専用の fixture 設定。
@@ -30,5 +30,6 @@ export const createManualFixtureServiceConfig = (): ServiceConfig => ({
     { name: "digits", selector: ".title", type: "regex", regex: "(\\d+)" },
   ],
   enabled: true,
+  notificationSettings: resolveServiceNotificationSettings(undefined),
   updatedAt: new Date().toISOString(),
 });

@@ -11,7 +11,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Toaster } from "@/components/ui/sonner";
 import { useSearchStore, useServiceConfigStore } from "@/lib/stores";
 import type { SearchQuery, ServiceConfig } from "@/lib/types";
 import { matchesAnyUrlPattern } from "../../urlPatternMatcher";
@@ -177,7 +176,6 @@ export function MainPanel({ onRequestClose }: MainPanelProps) {
 
   return (
     <div id="kansu-main-panel">
-      <Toaster richColors closeButton />
       <Card>
         <CardHeader className="gap-2">
           <div className="flex items-center justify-between gap-2">

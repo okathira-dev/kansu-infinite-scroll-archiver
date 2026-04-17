@@ -1,7 +1,7 @@
 /**
  * Options 画面本体。アプリ設定タブの JSON インポート/エクスポートはファイル I/O をクライアントで行い、IndexedDB 更新は Background へ委譲する（Phase 5）。
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,10 +25,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Toaster } from "@/components/ui/sonner";
 import { Switch } from "@/components/ui/switch";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { Toaster } from "@/components/ui/toast";
 import {
   createExportFileName,
   downloadJsonText,
@@ -36,9 +44,15 @@ import {
   parseImportJsonText,
   stringifyExportPayload,
 } from "@/lib/import-export";
+import type { ResponseMessage } from "@/lib/messages";
+import {
+  type ExtensionStorageEstimate,
+  formatStorageBytesLabel,
+  getExtensionStorageEstimate,
+} from "@/lib/storage/extensionStorageEstimate";
 import { useServiceConfigStore } from "@/lib/stores";
-import type { FieldRule, FieldType, ServiceConfig } from "@/lib/types";
-import { validateServiceConfig } from "@/lib/types";
+import type { FieldRule, FieldType, ServiceConfig, ServiceNotificationSettings } from "@/lib/types";
+import { resolveServiceNotificationSettings, validateServiceConfig } from "@/lib/types";
 
 interface EditableFieldRule extends FieldRule {
   uid: string;
@@ -52,6 +66,7 @@ interface ConfigEditorState {
   itemSelector: string;
   uniqueKeyField: string;
   enabled: boolean;
+  notificationSettings: ServiceNotificationSettings;
   fieldRules: EditableFieldRule[];
 }
 
@@ -72,6 +87,7 @@ const createDefaultEditorState = (): ConfigEditorState => ({
   itemSelector: "",
   uniqueKeyField: "title",
   enabled: true,
+  notificationSettings: resolveServiceNotificationSettings(undefined),
   fieldRules: [
     {
       uid: createUid(),
@@ -90,6 +106,7 @@ const toEditorState = (config: ServiceConfig): ConfigEditorState => ({
   itemSelector: config.itemSelector,
   uniqueKeyField: config.uniqueKeyField,
   enabled: config.enabled,
+  notificationSettings: resolveServiceNotificationSettings(config.notificationSettings),
   fieldRules: config.fieldRules.map((fieldRule) => ({
     ...fieldRule,
     uid: createUid(),
@@ -118,6 +135,7 @@ const toServiceConfig = (editor: ConfigEditorState): ServiceConfig => ({
     regex: fieldRule.type === "regex" ? fieldRule.regex?.trim() : undefined,
   })),
   enabled: editor.enabled,
+  notificationSettings: resolveServiceNotificationSettings(editor.notificationSettings),
   updatedAt: new Date().toISOString(),
 });
 
@@ -143,10 +161,45 @@ function App() {
   /** 編集ダイアログ内 Select の Portal 先（body だと Dialog オーバーレイの下に隠れる）。 */
   const [configEditorSelectPortalRoot, setConfigEditorSelectPortalRoot] =
     useState<HTMLElement | null>(null);
+  const [mainTab, setMainTab] = useState("services");
+  const [storageEstimate, setStorageEstimate] = useState<ExtensionStorageEstimate | null>(null);
+  const [countsByServiceId, setCountsByServiceId] = useState<Record<string, number> | null>(null);
+  const [storageLoading, setStorageLoading] = useState(false);
+  const [storageError, setStorageError] = useState<string | null>(null);
 
   useEffect(() => {
     void fetchConfigs();
   }, [fetchConfigs]);
+
+  const loadStorageOverview = useCallback(async () => {
+    setStorageLoading(true);
+    setStorageError(null);
+    try {
+      const [estimate, response] = await Promise.all([
+        getExtensionStorageEstimate(),
+        browser.runtime.sendMessage({ type: "records/countsByService" }),
+      ]);
+      setStorageEstimate(estimate);
+      const typed = response as ResponseMessage<{ countsByServiceId: Record<string, number> }>;
+      if (!typed.ok) {
+        setStorageError(typed.error.message);
+        setCountsByServiceId(null);
+        return;
+      }
+      setCountsByServiceId(typed.data.countsByServiceId);
+    } catch (error) {
+      setStorageError(error instanceof Error ? error.message : "unknown error");
+      setCountsByServiceId(null);
+    } finally {
+      setStorageLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (mainTab === "storage") {
+      void loadStorageOverview();
+    }
+  }, [mainTab, loadStorageOverview]);
 
   useEffect(() => {
     if (error) {
@@ -161,6 +214,16 @@ function App() {
       }),
     [configs],
   );
+
+  const orphanRecordServiceIds = useMemo(() => {
+    if (!countsByServiceId) {
+      return [];
+    }
+    const configIds = new Set(configs.map((config) => config.id));
+    return Object.keys(countsByServiceId)
+      .filter((serviceId) => !configIds.has(serviceId))
+      .sort((a, b) => a.localeCompare(b, "ja", { numeric: true, sensitivity: "base" }));
+  }, [countsByServiceId, configs]);
 
   // エクスポート対象セレクト: 一覧が変わったら先頭へフォールバック（削除後の空 ID を防ぐ）
   useEffect(() => {
@@ -303,13 +366,14 @@ function App() {
         <header className="space-y-1">
           <h1 className="text-2xl font-semibold">Kansu 設定</h1>
           <p className="text-sm text-muted-foreground">
-            サービス設定の追加・編集・削除と、アプリ設定を管理します。
+            サービス設定・データ管理・ストレージの目安をまとめて管理します。
           </p>
         </header>
 
-        <Tabs defaultValue="services">
+        <Tabs value={mainTab} onValueChange={setMainTab}>
           <TabsList>
             <TabsTrigger value="services">サービス設定</TabsTrigger>
+            <TabsTrigger value="storage">ストレージ</TabsTrigger>
             <TabsTrigger value="global">アプリ設定</TabsTrigger>
           </TabsList>
 
@@ -379,6 +443,131 @@ function App() {
                 </Card>
               ))}
             </div>
+          </TabsContent>
+
+          <TabsContent value="storage" className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-sm text-muted-foreground">
+                ブラウザが報告するストレージ使用量の目安と、サービス別の保存件数です。
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={storageLoading}
+                onClick={() => {
+                  void loadStorageOverview();
+                }}
+              >
+                再読み込み
+              </Button>
+            </div>
+
+            {storageLoading && <p className="text-sm text-muted-foreground">読み込み中...</p>}
+            {storageError && (
+              <p className="text-sm text-destructive" role="alert">
+                取得に失敗しました: {storageError}
+              </p>
+            )}
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">IndexedDB の使用量（目安）</CardTitle>
+                <CardDescription>
+                  値は実装依存の近似です。オリジン全体の合計に近く、サービス別のバイト数は取得できません。
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                <div className="flex flex-wrap justify-between gap-2 border-b border-border py-2">
+                  <span className="text-muted-foreground">オリジン全体の使用量</span>
+                  <span className="font-medium tabular-nums">
+                    {formatStorageBytesLabel(storageEstimate?.usageBytes ?? null)}
+                  </span>
+                </div>
+                <div className="flex flex-wrap justify-between gap-2 border-b border-border py-2">
+                  <span className="text-muted-foreground">IndexedDB（内訳が取れる環境のみ）</span>
+                  <span className="font-medium tabular-nums">
+                    {formatStorageBytesLabel(storageEstimate?.indexedDbBytes ?? null)}
+                  </span>
+                </div>
+                <div className="flex flex-wrap justify-between gap-2 py-2">
+                  <span className="text-muted-foreground">ストレージクォータ（目安）</span>
+                  <span className="font-medium tabular-nums">
+                    {formatStorageBytesLabel(storageEstimate?.quotaBytes ?? null)}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">サービス別の保存件数</CardTitle>
+                <CardDescription>
+                  登録済みサービスごとのレコード件数（IndexedDB 上の実数）です。
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {sortedConfigs.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">サービス設定がありません。</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>表示名</TableHead>
+                        <TableHead>サービス ID</TableHead>
+                        <TableHead className="text-right">保存件数</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {sortedConfigs.map((config) => (
+                        <TableRow key={config.id}>
+                          <TableCell className="font-medium">{config.name}</TableCell>
+                          <TableCell>
+                            <code className="text-xs">{config.id}</code>
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {countsByServiceId !== null ? (countsByServiceId[config.id] ?? 0) : "—"}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+
+            {orphanRecordServiceIds.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">設定にないサービス ID のレコード</CardTitle>
+                  <CardDescription>
+                    設定を削除したあとも IndexedDB に残っている場合に表示されます。
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>サービス ID</TableHead>
+                        <TableHead className="text-right">保存件数</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {orphanRecordServiceIds.map((serviceId) => (
+                        <TableRow key={serviceId}>
+                          <TableCell>
+                            <code className="text-xs">{serviceId}</code>
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {countsByServiceId?.[serviceId] ?? 0}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="global">
@@ -619,6 +808,95 @@ function App() {
                       }
                     />
                     <Label htmlFor="config-enabled">有効化</Label>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium">通知設定</h3>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          id="config-badge-monitoring"
+                          checked={editor.notificationSettings.badge.showMonitoringIndicator}
+                          onCheckedChange={(checked) =>
+                            setEditor((previous) => ({
+                              ...previous,
+                              notificationSettings: {
+                                ...previous.notificationSettings,
+                                badge: {
+                                  ...previous.notificationSettings.badge,
+                                  showMonitoringIndicator: checked,
+                                },
+                              },
+                            }))
+                          }
+                        />
+                        <Label htmlFor="config-badge-monitoring">
+                          監視中の ON インジケータを表示
+                        </Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          id="config-badge-total"
+                          checked={editor.notificationSettings.badge.showTotalSavedCount}
+                          onCheckedChange={(checked) =>
+                            setEditor((previous) => ({
+                              ...previous,
+                              notificationSettings: {
+                                ...previous.notificationSettings,
+                                badge: {
+                                  ...previous.notificationSettings.badge,
+                                  showTotalSavedCount: checked,
+                                },
+                              },
+                            }))
+                          }
+                        />
+                        <Label htmlFor="config-badge-total">保存合計件数をバッジ表示</Label>
+                      </div>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          id="config-toast-enabled"
+                          checked={editor.notificationSettings.toast.enabled}
+                          onCheckedChange={(checked) =>
+                            setEditor((previous) => ({
+                              ...previous,
+                              notificationSettings: {
+                                ...previous.notificationSettings,
+                                toast: {
+                                  ...previous.notificationSettings.toast,
+                                  enabled: checked,
+                                },
+                              },
+                            }))
+                          }
+                        />
+                        <Label htmlFor="config-toast-enabled">保存時トーストを表示</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          id="config-toast-increment"
+                          checked={editor.notificationSettings.toast.showIncrementCount}
+                          onCheckedChange={(checked) =>
+                            setEditor((previous) => ({
+                              ...previous,
+                              notificationSettings: {
+                                ...previous.notificationSettings,
+                                toast: {
+                                  ...previous.notificationSettings.toast,
+                                  showIncrementCount: checked,
+                                },
+                              },
+                            }))
+                          }
+                          disabled={!editor.notificationSettings.toast.enabled}
+                        />
+                        <Label htmlFor="config-toast-increment">+N件 を表示</Label>
+                      </div>
+                    </div>
                   </div>
 
                   <Separator />

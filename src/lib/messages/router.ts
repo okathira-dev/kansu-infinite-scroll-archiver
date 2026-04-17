@@ -79,6 +79,12 @@ export class MessageRouter {
         return this.handleConfigDelete(message.payload);
       case "records/bulkUpsert":
         return this.handleBulkUpsert(message.payload.records);
+      case "records/countByServiceId":
+        return this.handleRecordCountByServiceId(message.payload.serviceId);
+      case "records/countsByService":
+        return createSuccessResponse({
+          countsByServiceId: await this.recordRepository.countAllByServiceId(),
+        });
       case "records/search":
         return this.handleSearch(message.payload);
       case "data/export":
@@ -115,6 +121,11 @@ export class MessageRouter {
   private async handleBulkUpsert(records: ImportPayload["records"]): Promise<ResponseMessage> {
     const result = await this.recordRepository.bulkUpsert(records);
     return createSuccessResponse(result);
+  }
+
+  private async handleRecordCountByServiceId(serviceId: string): Promise<ResponseMessage> {
+    const count = await this.recordRepository.countByServiceId(serviceId);
+    return createSuccessResponse({ count });
   }
 
   private async handleSearch(

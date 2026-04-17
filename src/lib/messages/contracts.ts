@@ -8,6 +8,8 @@ import type { ExportPayload, ImportPayload, SearchQuery, ServiceConfig } from "@
 export type RequestMessage =
   | { type: "records/bulkUpsert"; payload: { records: ExportPayload["records"] } }
   | { type: "records/search"; payload: SearchQuery }
+  | { type: "records/countByServiceId"; payload: { serviceId: string } }
+  | { type: "records/countsByService" }
   | { type: "configs/list" }
   | { type: "configs/save"; payload: ServiceConfig }
   | { type: "configs/delete"; payload: { id: string; deleteRecords?: boolean } }

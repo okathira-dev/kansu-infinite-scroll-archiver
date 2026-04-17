@@ -19,6 +19,16 @@ const samplePayload: ExportPayload = {
     uniqueKeyField: "id",
     fieldRules: [{ name: "id", selector: ".id", type: "text" }],
     enabled: true,
+    notificationSettings: {
+      badge: {
+        showMonitoringIndicator: true,
+        showTotalSavedCount: true,
+      },
+      toast: {
+        enabled: true,
+        showIncrementCount: true,
+      },
+    },
     updatedAt: "2026-04-09T00:00:00.000Z",
   },
   records: [

@@ -1,4 +1,15 @@
+/*
+ * Content UI は WXT の Shadow DOM 内にマウントされる（`createShadowRootUi`）。
+ * ページの document / ホストの <head> に入ったスタイルはシャドウツリーに継承されないため、
+ * ここでバンドルして shadow 内の <style> として注入する必要がある。
+ *
+ * 次のような依存は Storybook / Options ではグローバル CSS で見えても、content だけ未適用になりやすい:
+ * - Tailwind（ユーティリティ・`@theme` 由来の変数）
+ * - コンポーネント付属の CSS（例: sonner のトースト配置・見た目）
+ * 新しい UI ライブラリを shadow 内で使うときは、必要ならこのファイルに `@import` を足す。
+ */
 @import "@/assets/tailwind.css";
+@import "sonner/dist/styles.css";
 
 #kansu-main-panel {
   position: fixed;

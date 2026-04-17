@@ -10,6 +10,7 @@ import {
   validateConfigDeletePayload,
   validateExportPayload,
   validateImportPayload,
+  validateRecordCountByServicePayload,
   validateSearchQuery,
   validateServiceConfig,
 } from "@/lib/types";
@@ -92,6 +93,21 @@ export const parseRequestMessage = (input: unknown): ValidationResult<RequestMes
       }
       return { ok: true, data: { type: "records/search", payload: result.data } };
     }
+    case "records/countByServiceId": {
+      const result = validateRecordCountByServicePayload(input.payload);
+      if (!result.ok) {
+        return {
+          ok: false,
+          errors: result.errors.map((error) => ({
+            field: `message.payload.${error.field}`,
+            message: error.message,
+          })),
+        };
+      }
+      return { ok: true, data: { type: "records/countByServiceId", payload: result.data } };
+    }
+    case "records/countsByService":
+      return { ok: true, data: { type: "records/countsByService" } };
     case "data/export": {
       const result = validateExportPayload(input.payload);
       if (!result.ok) {

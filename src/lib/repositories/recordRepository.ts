@@ -68,6 +68,25 @@ export class RecordRepository {
     return this.db.records.where("serviceId").equals(serviceId).toArray();
   }
 
+  /** サービス ID に紐づく保存済みレコード件数（IndexedDB 上の実数）。 */
+  async countByServiceId(serviceId: string): Promise<number> {
+    return this.db.records.where("serviceId").equals(serviceId).count();
+  }
+
+  /**
+   * 全レコードを走査し、サービス ID ごとの件数を集計する（設定画面の一覧用）。
+   *
+   * 件数が多いと時間がかかるが、メッセージ 1 回でまとめて取得できる。
+   */
+  async countAllByServiceId(): Promise<Record<string, number>> {
+    const counts: Record<string, number> = {};
+    await this.db.records.each((record) => {
+      const id = record.serviceId;
+      counts[id] = (counts[id] ?? 0) + 1;
+    });
+    return counts;
+  }
+
   async deleteByServiceId(serviceId: string): Promise<number> {
     return this.db.records.where("serviceId").equals(serviceId).delete();
   }

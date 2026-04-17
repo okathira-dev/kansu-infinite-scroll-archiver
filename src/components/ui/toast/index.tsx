@@ -8,6 +8,7 @@ import {
 import type { CSSProperties } from "react";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 
+/** 汎用トースト UI（`sonner` のラッパー）。 */
 const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
