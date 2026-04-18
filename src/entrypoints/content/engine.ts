@@ -187,6 +187,7 @@ export const startContentEngine = async (): Promise<void> => {
       const totalSaved = await fetchRecordCountByServiceId(config.id);
       const detail: SaveSummaryEventDetail = {
         serviceId: config.id,
+        serviceName: config.name,
         processed: summary.processed,
         created: summary.created,
         updated: summary.updated,

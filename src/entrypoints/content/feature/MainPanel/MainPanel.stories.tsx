@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useSearchStore, useServiceConfigStore } from "@/lib/stores";
 import { resetMockBrowserState } from "../../../../../.storybook/mockBrowser";
-import "../style.css";
+import "../../ui/style.css";
 import { MainPanel } from "./index";
 
 const resetStores = () => {
@@ -53,4 +53,5 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** store と browser mock を含む feature 統合ストーリー。 */
 export const Default: Story = {};

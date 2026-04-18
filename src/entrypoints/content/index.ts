@@ -3,8 +3,8 @@ import ReactDOM from "react-dom/client";
 import { createShadowRootUi } from "wxt/utils/content-script-ui/shadow-root";
 import { SelectPortalContainerProvider } from "@/components/ui/select";
 import { isConfigsUpdatedMessage } from "@/lib/messages/systemEvents";
-import { ArchiveSaveToastLayer } from "./ui/ArchiveSaveToast";
-import { MainPanel } from "./ui/MainPanel";
+import { ArchiveSaveToast } from "./feature/ArchiveSaveToast";
+import { MainPanel } from "./feature/MainPanel";
 /** Shadow DOM 用のスタイル束。理由・追記方針は `./ui/style.css` 先頭コメント参照。 */
 import "./ui/style.css";
 import { startContentEngine } from "./engine";
@@ -55,7 +55,7 @@ export default defineContentScript({
         const reactHost = document.createElement("div");
         container.append(reactHost);
         const root = ReactDOM.createRoot(reactHost);
-        root.render(createElement(ArchiveSaveToastLayer));
+        root.render(createElement(ArchiveSaveToast));
         return { root };
       },
       onRemove: (mounted) => {

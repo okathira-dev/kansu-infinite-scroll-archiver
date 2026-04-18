@@ -1,54 +1,46 @@
-import { useEffect } from "react";
-import { toast } from "sonner";
-import { Toaster } from "@/components/ui/toast";
-import { SAVE_SUMMARY_EVENT_NAME, type SaveSummaryEventDetail } from "@/lib/messages/systemEvents";
+import { Toaster } from "@/components/ui/Toaster";
 
-/** `CustomEvent` の detail が保存サマリかどうかを判定する。 */
-export const isArchiveSaveToastDetail = (value: unknown): value is SaveSummaryEventDetail =>
-  typeof value === "object" &&
-  value !== null &&
-  "serviceId" in value &&
-  typeof value.serviceId === "string" &&
-  "processed" in value &&
-  typeof value.processed === "number" &&
-  "totalSaved" in value &&
-  typeof value.totalSaved === "number" &&
-  "notificationSettings" in value &&
-  typeof value.notificationSettings === "object" &&
-  value.notificationSettings !== null;
+/** 保存通知を描画する View モジュールの入力。 */
+export interface ArchiveSaveToastViewProps {
+  serviceName: string;
+  totalSaved: number;
+  showIncrementCount: boolean;
+  processed: number;
+  created: number;
+  updated: number;
+}
 
-/** 保存サマリを UI 設定に従ってトースト表示する。 */
-export const showArchiveSaveToast = (detail: SaveSummaryEventDetail): void => {
-  if (!detail.notificationSettings.toast.enabled) {
-    return;
-  }
-
-  const extraDetails: string[] = [];
-  if (detail.notificationSettings.toast.showIncrementCount) {
-    extraDetails.push(`+${detail.processed}件`);
-  }
-  const description = [`合計 ${detail.totalSaved} 件`, ...extraDetails].join(" / ");
-  toast.success("アーカイブを保存しました", { description });
+/** 保存通知のタイトルを組み立てる。 */
+export const buildArchiveSaveToastTitle = (serviceName: string): string => {
+  const trimmedName = serviceName.trim();
+  return trimmedName.length > 0
+    ? `「${trimmedName}」のアーカイブを保存しました`
+    : "アーカイブを保存しました";
 };
 
-/**
- * Content Script で保存サマリイベントを購読し、件数トーストを表示するレイヤー。
- *
- * `SAVE_SUMMARY_EVENT_NAME` を購読するドメイン知識は content 側に閉じる。
- */
-export function ArchiveSaveToastLayer() {
-  useEffect(() => {
-    const handleSaveSummary = (event: Event) => {
-      const detail = (event as CustomEvent<unknown>).detail;
-      if (!isArchiveSaveToastDetail(detail)) {
-        return;
-      }
-      showArchiveSaveToast(detail);
-    };
-    window.addEventListener(SAVE_SUMMARY_EVENT_NAME, handleSaveSummary as EventListener);
-    return () =>
-      window.removeEventListener(SAVE_SUMMARY_EVENT_NAME, handleSaveSummary as EventListener);
-  }, []);
+/** 保存通知の説明文を組み立てる。 */
+export const buildArchiveSaveToastDescription = ({
+  totalSaved,
+  showIncrementCount,
+  created,
+  updated,
+  processed,
+}: ArchiveSaveToastViewProps): string => {
+  const totalLine = `保存済み合計 ${totalSaved} 件`;
+  if (!showIncrementCount) {
+    return totalLine;
+  }
+  return `${totalLine}\n新規 ${created} 件・更新 ${updated} 件（処理 ${processed} 件）`;
+};
 
+/** 保存サマリの表示本文を描画する View。 */
+export function ArchiveSaveToastView(props: ArchiveSaveToastViewProps) {
+  return (
+    <div className="text-sm whitespace-pre-line">{buildArchiveSaveToastDescription(props)}</div>
+  );
+}
+
+/** 保存通知用の Toaster を描画する View。 */
+export function ArchiveSaveToastViewport() {
   return <Toaster richColors closeButton />;
 }

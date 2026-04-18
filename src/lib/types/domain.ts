@@ -31,7 +31,7 @@ export interface ServiceBadgeNotificationSettings {
 export interface ServiceToastNotificationSettings {
   /** 保存時トーストを表示する。 */
   enabled: boolean;
-  /** 今回保存分（`+N件`）を表示する。 */
+  /** 今回の内訳（新規件数・更新件数・処理件数）をトーストに表示する。 */
   showIncrementCount: boolean;
 }
 

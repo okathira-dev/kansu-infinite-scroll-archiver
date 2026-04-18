@@ -18,23 +18,25 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  render: () => {
-    const [args, updateArgs] = useArgs<typeof meta.args>();
+const renderWithUseArgs = () => {
+  const [args, updateArgs] = useArgs<typeof meta.args>();
 
-    return (
-      <div className="w-[560px] rounded-md border bg-card p-4">
-        <PaginationControls
-          page={args?.page ?? 2}
-          pageSize={args?.pageSize ?? 10}
-          total={args?.total ?? 55}
-          onPageChange={(p) => {
-            updateArgs({ page: p });
-          }}
-        />
-      </div>
-    );
-  },
+  return (
+    <div className="w-[560px] rounded-md border bg-card p-4">
+      <PaginationControls
+        page={args?.page ?? 2}
+        pageSize={args?.pageSize ?? 10}
+        total={args?.total ?? 55}
+        onPageChange={(p) => {
+          updateArgs({ page: p });
+        }}
+      />
+    </div>
+  );
+};
+
+export const Default: Story = {
+  render: renderWithUseArgs,
 };
 
 export const FirstPage: Story = {
@@ -42,16 +44,7 @@ export const FirstPage: Story = {
     page: 1,
     total: 55,
   },
-  render: (args) => (
-    <div className="w-[560px] rounded-md border bg-card p-4">
-      <PaginationControls
-        page={args.page}
-        pageSize={args.pageSize}
-        total={args.total}
-        onPageChange={args.onPageChange}
-      />
-    </div>
-  ),
+  render: renderWithUseArgs,
 };
 
 export const Empty: Story = {
@@ -59,14 +52,5 @@ export const Empty: Story = {
     page: 1,
     total: 0,
   },
-  render: (args) => (
-    <div className="w-[560px] rounded-md border bg-card p-4">
-      <PaginationControls
-        page={args.page}
-        pageSize={args.pageSize}
-        total={args.total}
-        onPageChange={args.onPageChange}
-      />
-    </div>
-  ),
+  render: renderWithUseArgs,
 };

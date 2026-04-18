@@ -2,8 +2,6 @@
  * Options 画面本体。アプリ設定タブの JSON インポート/エクスポートはファイル I/O をクライアントで行い、IndexedDB 更新は Background へ委譲する（Phase 5）。
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -26,17 +24,9 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { notifyError, notifySuccess, Toaster } from "@/components/ui/Toaster";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Toaster } from "@/components/ui/toast";
 import {
   createExportFileName,
   downloadJsonText,
@@ -47,12 +37,14 @@ import {
 import type { ResponseMessage } from "@/lib/messages";
 import {
   type ExtensionStorageEstimate,
-  formatStorageBytesLabel,
   getExtensionStorageEstimate,
 } from "@/lib/storage/extensionStorageEstimate";
 import { useServiceConfigStore } from "@/lib/stores";
 import type { FieldRule, FieldType, ServiceConfig, ServiceNotificationSettings } from "@/lib/types";
 import { resolveServiceNotificationSettings, validateServiceConfig } from "@/lib/types";
+import { DataTransferSectionView } from "../ui/DataTransferSectionView";
+import { ServiceConfigsSectionView } from "../ui/ServiceConfigsSectionView";
+import { StorageOverviewSectionView } from "../ui/StorageOverviewSectionView";
 
 interface EditableFieldRule extends FieldRule {
   uid: string;
@@ -203,7 +195,7 @@ function App() {
 
   useEffect(() => {
     if (error) {
-      toast.error(`設定操作に失敗しました: ${error}`);
+      notifyError(`設定操作に失敗しました: ${error}`);
     }
   }, [error]);
 
@@ -276,17 +268,17 @@ function App() {
     const validation = validateServiceConfig(config);
     if (!validation.ok) {
       const firstError = validation.errors[0];
-      toast.error(`入力エラー: ${firstError?.field ?? "unknown"} ${firstError?.message ?? ""}`);
+      notifyError(`入力エラー: ${firstError?.field ?? "unknown"} ${firstError?.message ?? ""}`);
       return;
     }
 
     const response = await saveConfig(validation.data);
     if (!response.ok) {
-      toast.error("設定の保存に失敗しました");
+      notifyError("設定の保存に失敗しました");
       return;
     }
 
-    toast.success(editingConfigId ? "設定を更新しました" : "設定を追加しました");
+    notifySuccess(editingConfigId ? "設定を更新しました" : "設定を追加しました");
     setIsEditorOpen(false);
     setEditingConfigId(null);
     setEditor(createDefaultEditorState());
@@ -298,10 +290,10 @@ function App() {
     }
     const response = await deleteConfig(deleteDialogConfigId, deleteRecords);
     if (!response.ok) {
-      toast.error("設定の削除に失敗しました");
+      notifyError("設定の削除に失敗しました");
       return;
     }
-    toast.success(
+    notifySuccess(
       deleteRecords
         ? `設定を削除しました（関連レコード ${response.deletedRecords} 件を削除）`
         : "設定を削除しました",
@@ -313,13 +305,13 @@ function App() {
   /** `data/export` → ローカル JSON ダウンロード（`FR-40`）。 */
   const handleExportServiceData = async () => {
     if (selectedExportServiceId.length === 0) {
-      toast.error("エクスポート対象のサービスを選択してください。");
+      notifyError("エクスポート対象のサービスを選択してください。");
       return;
     }
 
     const response = await exportServiceData(selectedExportServiceId);
     if (!response.ok) {
-      toast.error(response.errorMessage);
+      notifyError(response.errorMessage);
       return;
     }
 
@@ -327,30 +319,30 @@ function App() {
     const jsonText = stringifyExportPayload(payload);
     const fileName = createExportFileName(payload.service.id, payload.meta.exportedAt);
     downloadJsonText(fileName, jsonText);
-    toast.success(`JSON をエクスポートしました（${payload.records.length} 件）。`);
+    notifySuccess(`JSON をエクスポートしました（${payload.records.length} 件）。`);
   };
 
   /** ファイルを `parseImportJsonText` で検証してから `data/import`（`FR-41`/`FR-42`）。 */
   const handleImportServiceData = async () => {
     if (!importFile) {
-      toast.error("インポートする JSON ファイルを選択してください。");
+      notifyError("インポートする JSON ファイルを選択してください。");
       return;
     }
 
     const fileText = await importFile.text();
     const parsedImport = parseImportJsonText(fileText);
     if (!parsedImport.ok) {
-      toast.error(getValidationIssueMessage(parsedImport.errors));
+      notifyError(getValidationIssueMessage(parsedImport.errors));
       return;
     }
 
     const response = await importServiceData(parsedImport.data);
     if (!response.ok) {
-      toast.error(response.errorMessage);
+      notifyError(response.errorMessage);
       return;
     }
 
-    toast.success(
+    notifySuccess(
       `インポートしました（処理: ${response.data.imported} / 新規: ${response.data.created} / 更新: ${response.data.updated}）。`,
     );
     setImportFile(null);
@@ -378,287 +370,46 @@ function App() {
           </TabsList>
 
           <TabsContent value="services" className="space-y-4">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                登録済みサービス:{" "}
-                <span className="font-medium text-foreground">{sortedConfigs.length}</span>
-              </p>
-              <Button id="new-config" type="button" onClick={handleNewConfig}>
-                新しいサービス設定を追加
-              </Button>
-            </div>
-
-            <Separator />
-
-            {loading && <p className="text-sm text-muted-foreground">読み込み中...</p>}
-            {!loading && sortedConfigs.length === 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">設定がありません</CardTitle>
-                  <CardDescription>
-                    「新しいサービス設定を追加」から最初の設定を作成してください。
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            )}
-
-            <div className="grid gap-3">
-              {sortedConfigs.map((config) => (
-                <Card key={config.id}>
-                  <CardHeader className="gap-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <CardTitle className="text-base">{config.name}</CardTitle>
-                      <Badge variant={config.enabled ? "default" : "secondary"}>
-                        {config.enabled ? "有効" : "無効"}
-                      </Badge>
-                    </div>
-                    <CardDescription>
-                      ID: <code>{config.id}</code>
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <p className="text-sm text-muted-foreground">
-                      URLパターン: {config.urlPatterns.join(", ")}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      フィールド数: {config.fieldRules.length} / 主キー: {config.uniqueKeyField}
-                    </p>
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => handleEditConfig(config)}
-                      >
-                        編集
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        onClick={() => setDeleteDialogConfigId(config.id)}
-                      >
-                        削除
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <ServiceConfigsSectionView
+              loading={loading}
+              configs={sortedConfigs}
+              onCreateConfig={handleNewConfig}
+              onEditConfig={handleEditConfig}
+              onRequestDeleteConfig={setDeleteDialogConfigId}
+            />
           </TabsContent>
 
           <TabsContent value="storage" className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-sm text-muted-foreground">
-                ブラウザが報告するストレージ使用量の目安と、サービス別の保存件数です。
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={storageLoading}
-                onClick={() => {
-                  void loadStorageOverview();
-                }}
-              >
-                再読み込み
-              </Button>
-            </div>
-
-            {storageLoading && <p className="text-sm text-muted-foreground">読み込み中...</p>}
-            {storageError && (
-              <p className="text-sm text-destructive" role="alert">
-                取得に失敗しました: {storageError}
-              </p>
-            )}
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">IndexedDB の使用量（目安）</CardTitle>
-                <CardDescription>
-                  値は実装依存の近似です。オリジン全体の合計に近く、サービス別のバイト数は取得できません。
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <div className="flex flex-wrap justify-between gap-2 border-b border-border py-2">
-                  <span className="text-muted-foreground">オリジン全体の使用量</span>
-                  <span className="font-medium tabular-nums">
-                    {formatStorageBytesLabel(storageEstimate?.usageBytes ?? null)}
-                  </span>
-                </div>
-                <div className="flex flex-wrap justify-between gap-2 border-b border-border py-2">
-                  <span className="text-muted-foreground">IndexedDB（内訳が取れる環境のみ）</span>
-                  <span className="font-medium tabular-nums">
-                    {formatStorageBytesLabel(storageEstimate?.indexedDbBytes ?? null)}
-                  </span>
-                </div>
-                <div className="flex flex-wrap justify-between gap-2 py-2">
-                  <span className="text-muted-foreground">ストレージクォータ（目安）</span>
-                  <span className="font-medium tabular-nums">
-                    {formatStorageBytesLabel(storageEstimate?.quotaBytes ?? null)}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">サービス別の保存件数</CardTitle>
-                <CardDescription>
-                  登録済みサービスごとのレコード件数（IndexedDB 上の実数）です。
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {sortedConfigs.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">サービス設定がありません。</p>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>表示名</TableHead>
-                        <TableHead>サービス ID</TableHead>
-                        <TableHead className="text-right">保存件数</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {sortedConfigs.map((config) => (
-                        <TableRow key={config.id}>
-                          <TableCell className="font-medium">{config.name}</TableCell>
-                          <TableCell>
-                            <code className="text-xs">{config.id}</code>
-                          </TableCell>
-                          <TableCell className="text-right tabular-nums">
-                            {countsByServiceId !== null ? (countsByServiceId[config.id] ?? 0) : "—"}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
-
-            {orphanRecordServiceIds.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">設定にないサービス ID のレコード</CardTitle>
-                  <CardDescription>
-                    設定を削除したあとも IndexedDB に残っている場合に表示されます。
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>サービス ID</TableHead>
-                        <TableHead className="text-right">保存件数</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {orphanRecordServiceIds.map((serviceId) => (
-                        <TableRow key={serviceId}>
-                          <TableCell>
-                            <code className="text-xs">{serviceId}</code>
-                          </TableCell>
-                          <TableCell className="text-right tabular-nums">
-                            {countsByServiceId?.[serviceId] ?? 0}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            )}
+            <StorageOverviewSectionView
+              storageLoading={storageLoading}
+              storageError={storageError}
+              storageEstimate={storageEstimate}
+              countsByServiceId={countsByServiceId}
+              configs={sortedConfigs}
+              orphanRecordServiceIds={orphanRecordServiceIds}
+              onReload={() => {
+                void loadStorageOverview();
+              }}
+            />
           </TabsContent>
 
           <TabsContent value="global">
             <div className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">データ管理（JSON）</CardTitle>
-                  <CardDescription>
-                    サービス単位で、設定と抽出データをエクスポート・インポートできます。
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <section className="space-y-2">
-                    <h3 className="text-sm font-medium">エクスポート</h3>
-                    <p className="text-sm text-muted-foreground">
-                      対象サービスを選択して JSON をダウンロードします。
-                    </p>
-                    <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-                      <div className="grid gap-2">
-                        <Label htmlFor="export-service-id">サービス</Label>
-                        <Select
-                          value={selectedExportServiceId}
-                          items={sortedConfigs.map((config) => ({
-                            value: config.id,
-                            label: `${config.name} (${config.id})`,
-                          }))}
-                          onValueChange={setSelectedExportServiceId}
-                        >
-                          <SelectTrigger id="export-service-id" className="w-full">
-                            <SelectValue placeholder="エクスポート対象を選択" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {sortedConfigs.map((config) => (
-                              <SelectItem key={config.id} value={config.id}>
-                                {config.name} ({config.id})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <Button
-                        id="export-service-data"
-                        type="button"
-                        onClick={handleExportServiceData}
-                        disabled={sortedConfigs.length === 0 || loading}
-                      >
-                        JSON をエクスポート
-                      </Button>
-                    </div>
-                  </section>
-
-                  <Separator />
-
-                  <section className="space-y-2">
-                    <h3 className="text-sm font-medium">インポート</h3>
-                    <p className="text-sm text-muted-foreground">
-                      `schemaVersion` と必須項目を検証してから反映します。
-                    </p>
-                    <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-                      <div className="grid gap-2">
-                        <Label htmlFor="import-json-file">JSON ファイル</Label>
-                        <Input
-                          ref={importFileInputRef}
-                          id="import-json-file"
-                          type="file"
-                          accept=".json,application/json"
-                          onChange={(event) => {
-                            const file = event.target.files?.[0] ?? null;
-                            setImportFile(file);
-                          }}
-                        />
-                      </div>
-                      <Button
-                        id="import-service-data"
-                        type="button"
-                        onClick={() => {
-                          void handleImportServiceData();
-                        }}
-                        disabled={!importFile || loading}
-                      >
-                        JSON をインポート
-                      </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {importFile
-                        ? `選択中: ${importFile.name}`
-                        : "ファイル未選択（サービス設定 + 抽出データを含む JSON を指定）"}
-                    </p>
-                  </section>
-                </CardContent>
-              </Card>
+              <DataTransferSectionView
+                configs={sortedConfigs}
+                selectedExportServiceId={selectedExportServiceId}
+                importFileName={importFile?.name ?? null}
+                loading={loading}
+                importFileInputRef={importFileInputRef}
+                onSelectExportService={setSelectedExportServiceId}
+                onSelectImportFile={setImportFile}
+                onExport={() => {
+                  void handleExportServiceData();
+                }}
+                onImport={() => {
+                  void handleImportServiceData();
+                }}
+              />
 
               <Card>
                 <CardHeader>
@@ -894,7 +645,9 @@ function App() {
                           }
                           disabled={!editor.notificationSettings.toast.enabled}
                         />
-                        <Label htmlFor="config-toast-increment">+N件 を表示</Label>
+                        <Label htmlFor="config-toast-increment">
+                          今回の内訳（新規・更新）を表示
+                        </Label>
                       </div>
                     </div>
                   </div>

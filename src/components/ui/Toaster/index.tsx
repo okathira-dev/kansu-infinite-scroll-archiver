@@ -5,8 +5,8 @@ import {
   OctagonXIcon,
   TriangleAlertIcon,
 } from "lucide-react";
-import type { CSSProperties } from "react";
-import { Toaster as Sonner, type ToasterProps } from "sonner";
+import type { CSSProperties, ReactNode } from "react";
+import { type ExternalToast, Toaster as Sonner, type ToasterProps, toast } from "sonner";
 
 /** 汎用トースト UI（`sonner` のラッパー）。 */
 const Toaster = ({ ...props }: ToasterProps) => {
@@ -33,5 +33,25 @@ const Toaster = ({ ...props }: ToasterProps) => {
     />
   );
 };
+
+export interface NotifyOptions extends Omit<ExternalToast, "description"> {
+  description?: ReactNode;
+}
+
+/** 成功トーストを表示する。 */
+export const notifySuccess = (message: ReactNode, options?: NotifyOptions) =>
+  toast.success(message, options);
+
+/** 情報トーストを表示する。 */
+export const notifyInfo = (message: ReactNode, options?: NotifyOptions) =>
+  toast.info(message, options);
+
+/** 警告トーストを表示する。 */
+export const notifyWarning = (message: ReactNode, options?: NotifyOptions) =>
+  toast.warning(message, options);
+
+/** エラートーストを表示する。 */
+export const notifyError = (message: ReactNode, options?: NotifyOptions) =>
+  toast.error(message, options);
 
 export { Toaster };

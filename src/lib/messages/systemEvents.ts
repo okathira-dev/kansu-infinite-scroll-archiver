@@ -66,6 +66,8 @@ export const SAVE_SUMMARY_EVENT_NAME = "kansu:save-summary" as const;
 /** 保存サマリイベントの詳細。 */
 export interface SaveSummaryEventDetail {
   serviceId: string;
+  /** 設定 UI に表示しているサービス名（`ServiceConfig.name`）。 */
+  serviceName: string;
   processed: number;
   created: number;
   updated: number;

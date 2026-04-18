@@ -134,7 +134,7 @@ describe("Options App", () => {
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "編集" }));
-    await user.click(screen.getByLabelText("+N件 を表示"));
+    await user.click(screen.getByLabelText("今回の内訳（新規・更新）を表示"));
     await user.click(screen.getByRole("button", { name: "保存" }));
 
     expect(saveConfigMock).toHaveBeenCalledTimes(1);
