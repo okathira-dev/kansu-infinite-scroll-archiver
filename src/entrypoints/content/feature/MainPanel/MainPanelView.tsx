@@ -10,9 +10,9 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import type { SearchQuery, SearchResult, ServiceConfig } from "@/lib/types";
-import { PaginationControls } from "../PaginationControls";
-import { RecordTable } from "../RecordTable";
-import { SearchBar } from "../SearchBar";
+import { PaginationControls } from "../../ui/PaginationControls";
+import { RecordTable } from "../../ui/RecordTable";
+import { SearchBar } from "../../ui/SearchBar";
 
 interface MainPanelViewProps {
   onRequestClose: () => void;

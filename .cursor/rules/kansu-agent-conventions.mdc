@@ -43,16 +43,30 @@ alwaysApply: true
 
 エントリ配下や共有 UI の**分割・命名・境界**は、**Storybook のため**ではなく、**再利用・テスト容易性・関心事の分離**のためとする。プレビュー（Storybook 等）は**検証手段の一つ**であり、フォルダ構成やモジュール分割の目的ではない。
 
+#### ユビキタス言語（推奨呼称）
+
+- **目的**: 会話・JSDoc・レビューで使う語をそろえ、レイヤー名だけで一般論を当てはめる誤解を防ぐ。
+- **用語表（一覧表・プレビュー向け）**: [docs/ubiquitous-language.md](mdc:docs/ubiquitous-language.md) を参照する。ルール側の索引は [ubiquitous-language.mdc](mdc:.cursor/rules/ubiquitous-language.mdc)。
+- **最小の共通理解**:
+  - `src/components/ui` は「共有 UI 基盤（UI プリミティブ）」。
+  - `src/entrypoints/**/ui` は「エントリ専用 UI（props 駆動 UI）」で副作用を持たず、feature 非依存の画面内共通 UI を置く。
+  - feature 所有が明確な View（C/P 分離）は `src/entrypoints/**/feature/<ComponentName>/` に `ComponentName.tsx` / `ComponentNameView.tsx` で同居させる。
+  - `src/entrypoints/**/feature` / `App` は「機能統合（副作用・統合）」で純粋でない統合を担当する。
+  - 外部依存は「境界モジュール（外部 API ラッパー）」に閉じ込め、`entrypoints/**` から直 import しない。
+
 - **レイヤー分けの目的化は禁止**: 「Container/Presentational で揃える」ことがゴールにならない。**関心事ごとにモジュール然とした境界**（表示・イベント・副作用・データ取得）で切る。参考: [React.js UI/Container分離 × Hooks × Composition（コメント含む）](https://zenn.dev/link/comments/3658654ccd70d0)、[コロケーションと見かけ駆動パッケージング](https://qiita.com/honey32/items/dbf3c5a5a71636374567)。
-- **配置**: `atoms/` / `hooks/` など**実装形態だけ**での分類を増やさない。機能・画面に近い場所へコロケートし、必要なら `entrypoints/<name>/feature/` と `entrypoints/<name>/ui/` で**意味のある単位**にまとめる。
-- **コンポーネント実装ファイルの命名**（永続）: **描画コンポーネント本体**は **`<ComponentName>/index.tsx`** を正本とし、**フォルダ名をコンポーネント名に一致**させる。`<ComponentName>.tsx` の単体配置は、新規追加時の既定にしない。
+- **配置**: `atoms/` / `hooks/` など**実装形態だけ**での分類を増やさない。機能・画面に近い場所へコロケートし、必要なら `entrypoints/<name>/feature/` と `entrypoints/<name>/ui/` で**意味のある単位**にまとめる。`entrypoints/**/ui` の全要素を機械的に `feature` へ移さず、feature 所有が明確な View のみを移設対象にする。
+- **コンポーネント実装ファイルの命名**（永続）:
+  - **単一の描画コンポーネント本体**は **`<ComponentName>/index.tsx`** を正本とし、**フォルダ名をコンポーネント名に一致**させる。
+  - **C/P 分離などで同一 feature 配下に複数描画コンポーネントを同居**させる場合は、**`ComponentName.tsx`**（統合）と **`ComponentNameView.tsx`**（表示）を正本とし、`index.ts` は再エクスポート専用にする。
 - **命名ルールの例外（永続）**:
   - **エントリファイル**（WXT/React の起動点）は `main.tsx` を許可する（`index.tsx` へ統一しない）。
-  - **バレル**（re-export 専用）は `index.tsx` を許可する。
+  - **バレル**（re-export 専用）は `index.ts` または `index.tsx` を許可する。
   - **補助モジュール**（`*Context.tsx` / `*Provider.tsx` / hooks / utility など、描画コンポーネント本体ではないもの）は、責務に合わせたファイル名を許可する。
   - **機能モジュール名と主要シンボル名の差**（例: `toast` フォルダと `Toaster`）は許可する。ここでは「機能のまとまり」を優先し、シンボル名の完全一致を必須にしない。
 - **複合 UI の階層**: Tabs のような複合 UI は **さらに 1 階層深く**分割し、`<親>/<サブコンポーネント>/index.tsx` で実装を分離する（例: `tabs/Tabs/index.tsx`, `tabs/TabsContent/index.tsx`）。
-- **`src/entrypoints/**/ui`（entrypoint 専用 UI）**: 外部副作用（runtime / storage / query params / toast 発火）を持たない **props 駆動の UI モジュール**として設計する（表示は props と子要素で決まる）。
+- **`src/entrypoints/**/ui`（entrypoint 専用 UI）**: 外部副作用（runtime / storage / query params / toast 発火）を持たない **props 駆動の UI モジュール**として設計する（表示は props と子要素で決まる）。feature 非依存の画面内共通 UI をここに置く。
+- **feature 所有 View の配置**: C/P 分離で feature 所有が明確な View は `src/entrypoints/**/feature/<ComponentName>/` に統合し、`ComponentName.tsx` と `ComponentNameView.tsx` を同居させる。
 - **分割の目的**: C/P（Container/Presentational）は目的ではなく手段。**分割のための分割は禁止**し、**モジュールの規模・境界を適切に判断したうえで** UI を抽出する。見た目・テスト容易性・再利用・関心事の分離などを**総合**して決める（次項のヒューリスティックはその**補助**）。
 - **単体で確かめたい塊の直感（境界のヒューリスティック）**: 「この単位で見た目やバリエーションを確かめたい」「副作用を薄くした塊として切り出したい」と感じるときは、**その塊がコンポーネント／モジュールとして一単位になりやすい**ことの**強いシグナル**として使ってよい（見ためのまとまり、親からの関心事の分離、レビューやデザイン確認の単位などと重なる。プレビューに Storybook を使う場合も、その直感は同じ）。**断定ではない**。見た目が地味でも **props 契約やロジックのまとまり**で切るべき境界はあり、逆に **単体プレビューを用意しない**内部パーツで十分な細分化もある。
 - **命名（View/統合）**: 統合側（Container/feature）は無標（例: `ArchiveSaveToast`）、表示側（View）は `*View`（例: `ArchiveSaveToastView`）で区別し、利用側に実装詳細を漏らさない。
@@ -69,11 +83,12 @@ alwaysApply: true
 
 ### Storybook
 
-- **コンポーネント配置**: Storybook 対象のコンポーネントは **コンポーネント単位のフォルダ**を作り、`index.tsx`（実装）と `*.stories.tsx`（ストーリー）を同居させる。
+- **コンポーネント配置**: Storybook 対象のコンポーネントは **コンポーネント単位のフォルダ**を作り、実装正本（`index.tsx` または `ComponentName.tsx` / `ComponentNameView.tsx`）と `*.stories.tsx`（ストーリー）を同居させる。
 - **複合 UI の Story 配置**: 複合 UI のストーリーもサブコンポーネントフォルダに同居させる（例: `tabs/Tabs/Tabs.stories.tsx`, `tabs/TabsTrigger/TabsTrigger.stories.tsx`）。この方針は Tabs 以外の複合 UI（`card` / `dialog` / `select` / `table` / `pagination` など）にも適用する。
 - **Story の `title`**: フォルダ構造ベースの自動タイトルを使うため、**`title` は原則書かない**（特別な理由がある場合のみ明示）。
 - **`src/components/ui`（atom 想定）**: Controls で主要 props を触れる **Controls 用ストーリー**（`args` 中心、必要なら `render` は最小）を **必ず用意**する。単体プレビューでは **`aria-label` 等の ARIA で名前を補ってよい**。
 - **`src/entrypoints/**/ui` のストーリー**: 上記 **コンポーネント／モジュール構成** の **`src/entrypoints/**/ui`**（props 駆動・副作用なし）について、**触れる props を Controls で確認できる状態**を原則とする。
+- **feature 所有 View のストーリー**: `src/entrypoints/**/feature/<ComponentName>/` に統合した `*View` は、同フォルダに `*View.stories.tsx` を置く（統合側 `ComponentName.stories.tsx` と同居可）。
 - **Controls と例示の分離**: Controls で可変確認するストーリーと、固定文言・固定挙動を示す例示ストーリーは分ける（1ストーリーに混在させない）。
 - **Story 専用 args の扱い**: 対象コンポーネントの props ではない Story 専用 args が必要な場合は、Story 内にラッパーを置いて `Meta<typeof Wrapper>` を使い、実コンポーネント props と混在させない。
 - **Story の二分**（必須ではないが推奨）:

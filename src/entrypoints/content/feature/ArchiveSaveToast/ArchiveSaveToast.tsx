@@ -5,7 +5,7 @@ import {
   ArchiveSaveToastView,
   ArchiveSaveToastViewport,
   buildArchiveSaveToastTitle,
-} from "../../ui/ArchiveSaveToast";
+} from "./ArchiveSaveToastView";
 import { isSaveSummaryNumericFields } from "./saveSummaryNumericFields";
 
 /** `CustomEvent` の detail が保存サマリかどうかを判定する。 */

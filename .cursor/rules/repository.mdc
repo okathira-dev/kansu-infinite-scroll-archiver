@@ -28,7 +28,7 @@ alwaysApply: false
 - `src/entrypoints/`: WXT エントリ（background / content / popup / options）
 - `src/components/` と `src/components/ui/`: UI コンポーネント
 - `src/lib/`: 共有ロジック・ユーティリティ
-- `docs/`: 要件・実装計画・実装ガイド・ストレージ設計
+- `docs/`: 要件・実装計画・実装ガイド・ストレージ設計・[ユビキタス言語（コンポーネント／モジュール構成）](mdc:docs/ubiquitous-language.md)
 - `store/`: Chrome Web Store 掲載用の素材（スクリーンショット・説明文案など）。手順は [docs/chrome-web-store-release.md](mdc:docs/chrome-web-store-release.md) を参照
 - `src/**/*.test.ts`: ユニットテスト（Vitest）
 - `e2e/`: E2Eテスト（Playwright）

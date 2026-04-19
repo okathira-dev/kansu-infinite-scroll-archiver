@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ExtensionStorageEstimate } from "@/lib/storage/extensionStorageEstimate";
 import type { ServiceConfig } from "@/lib/types";
-import { StorageOverviewSectionView } from "./index";
+import { StorageOverviewSectionView } from "./StorageOverviewSectionView";
 
 const demoConfigs: ServiceConfig[] = [
   {

@@ -42,9 +42,9 @@ import {
 import { useServiceConfigStore } from "@/lib/stores";
 import type { FieldRule, FieldType, ServiceConfig, ServiceNotificationSettings } from "@/lib/types";
 import { resolveServiceNotificationSettings, validateServiceConfig } from "@/lib/types";
-import { DataTransferSectionView } from "../ui/DataTransferSectionView";
-import { ServiceConfigsSectionView } from "../ui/ServiceConfigsSectionView";
-import { StorageOverviewSectionView } from "../ui/StorageOverviewSectionView";
+import { DataTransferSectionView } from "../feature/DataTransferSection";
+import { ServiceConfigsSectionView } from "../feature/ServiceConfigsSection";
+import { StorageOverviewSectionView } from "../feature/StorageOverviewSection";
 
 interface EditableFieldRule extends FieldRule {
   uid: string;

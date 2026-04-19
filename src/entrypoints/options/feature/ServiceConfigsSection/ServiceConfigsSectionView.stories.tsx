@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ServiceConfig } from "@/lib/types";
-import { ServiceConfigsSectionView } from "./index";
+import { ServiceConfigsSectionView } from "./ServiceConfigsSectionView";
 
 const demoConfigs: ServiceConfig[] = [
   {

@@ -2,8 +2,8 @@ import { useEffect, useMemo } from "react";
 import { notifyError, notifyInfo } from "@/components/ui/Toaster";
 import { useSearchStore, useServiceConfigStore } from "@/lib/stores";
 import type { SearchQuery, ServiceConfig } from "@/lib/types";
-import { MainPanelView } from "../../ui/MainPanelView";
 import { matchesAnyUrlPattern } from "../../urlPatternMatcher";
+import { MainPanelView } from "./MainPanelView";
 
 const CONFIGS_UPDATED_EVENT_NAME = "kansu:configs-updated";
 

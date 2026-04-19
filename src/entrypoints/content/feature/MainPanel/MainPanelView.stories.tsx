@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ComponentProps } from "react";
 import { useArgs } from "storybook/preview-api";
 import type { SearchQuery, SearchResult, ServiceConfig } from "@/lib/types";
-import "../style.css";
-import { MainPanelView } from "./index";
+import "../../ui/style.css";
+import { MainPanelView } from "./MainPanelView";
 
 type MainPanelStoryArgs = ComponentProps<typeof MainPanelView>;
 

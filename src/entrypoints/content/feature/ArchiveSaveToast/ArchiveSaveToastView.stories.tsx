@@ -5,7 +5,7 @@ import {
   ArchiveSaveToastView,
   ArchiveSaveToastViewport,
   buildArchiveSaveToastTitle,
-} from "./index";
+} from "./ArchiveSaveToastView";
 
 const meta = {
   component: ArchiveSaveToastView,

@@ -1,0 +1,16 @@
+---
+description: Kansu のコンポーネント／モジュール構成に関するユビキタス言語（索引・エージェント指示）
+alwaysApply: false
+---
+
+# Kansu ユビキタス言語（このファイルの役割）
+
+- **用語表の正本（表・プレビュー向け）**: [docs/ubiquitous-language.md](mdc:docs/ubiquitous-language.md) を開く。Markdown プレビューで一覧表を確認できる。
+- **実装規約の正本**: [kansu-agent-conventions.mdc](mdc:.cursor/rules/kansu-agent-conventions.mdc)（命名・Storybook・境界の詳細）。
+
+この `.mdc` は **Cursor ルールとしての索引**に留め、長い表は `docs/ubiquitous-language.md` に二重掲載しない。
+
+## エージェント向け指示
+
+- コンポーネント境界や `ui` / `feature` の言い回しが必要なときは、先に [docs/ubiquitous-language.md](mdc:docs/ubiquitous-language.md) を読む（またはワークスペースでファイルを開く）。
+- 用語とコードの対応を決めたうえで、実装・命名の詳細は [kansu-agent-conventions.mdc](mdc:.cursor/rules/kansu-agent-conventions.mdc) に従う。

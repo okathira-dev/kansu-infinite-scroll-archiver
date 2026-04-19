@@ -3,7 +3,7 @@ import {
   type ArchiveSaveToastViewProps,
   buildArchiveSaveToastDescription,
   buildArchiveSaveToastTitle,
-} from "./index";
+} from "./ArchiveSaveToastView";
 
 const baseProps = (): ArchiveSaveToastViewProps => ({
   serviceName: "Demo",

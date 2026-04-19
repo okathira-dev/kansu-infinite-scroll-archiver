@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ComponentProps } from "react";
 import { useArgs } from "storybook/preview-api";
 import type { ServiceConfig } from "@/lib/types";
-import { DataTransferSectionView } from "./index";
+import { DataTransferSectionView } from "./DataTransferSectionView";
 
 type DataTransferSectionViewStoryArgs = ComponentProps<typeof DataTransferSectionView>;
 

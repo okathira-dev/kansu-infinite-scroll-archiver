@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ComponentProps } from "react";
 import { useArgs } from "storybook/preview-api";
-import { PopupAppView } from "./index";
+import { PopupAppView } from "./PopupAppView";
 
 type PopupAppViewStoryArgs = ComponentProps<typeof PopupAppView>;
 
