@@ -14,15 +14,10 @@ const meta = {
   parameters: {
     layout: "centered",
   },
-} satisfies Meta<typeof Table>;
-
-export default meta;
-type Story = StoryObj<typeof meta>;
-
-export const Default: Story = {
-  render: () => (
-    <div className="w-[640px]">
-      <Table>
+  args: {
+    className: "w-[640px]",
+    children: (
+      <>
         <TableCaption>抽出レコード一覧</TableCaption>
         <TableHeader>
           <TableRow>
@@ -43,7 +38,14 @@ export const Default: Story = {
             <TableCell>2026-04-04</TableCell>
           </TableRow>
         </TableBody>
-      </Table>
-    </div>
-  ),
+      </>
+    ),
+  },
+} satisfies Meta<typeof Table>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  render: (args) => <Table {...args}>{args.children}</Table>,
 };

@@ -26,7 +26,8 @@ alwaysApply: false
 ## プロジェクト構造
 
 - `src/entrypoints/`: WXT エントリ（background / content / popup / options）
-- `src/components/` と `src/components/ui/`: UI コンポーネント
+- `src/components/ui/`: 共有 UI 基盤（UI プリミティブ）
+- `src/components/`: `ui/` 以外を置く場合は境界モジュール（外部 API ラッパー等）として扱い、役割は [ユビキタス言語](mdc:docs/ubiquitous-language.md) に合わせる
 - `src/lib/`: 共有ロジック・ユーティリティ
 - `docs/`: 要件・実装計画・実装ガイド・ストレージ設計・[ユビキタス言語（コンポーネント／モジュール構成）](mdc:docs/ubiquitous-language.md)
 - `store/`: Chrome Web Store 掲載用の素材（スクリーンショット・説明文案など）。手順は [docs/chrome-web-store-release.md](mdc:docs/chrome-web-store-release.md) を参照

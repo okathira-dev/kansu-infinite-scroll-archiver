@@ -11,6 +11,7 @@ const meta = {
     size: "default" as const,
     className: "w-64",
     "aria-label": "ソート項目",
+    children: <SelectValue placeholder="項目を選択" />,
   },
 } satisfies Meta<typeof SelectTrigger>;
 
@@ -27,9 +28,7 @@ export const Default: Story = {
 
     return (
       <Select value={value} items={items} onValueChange={setValue}>
-        <SelectTrigger {...args}>
-          <SelectValue placeholder="項目を選択" />
-        </SelectTrigger>
+        <SelectTrigger {...args}>{args.children}</SelectTrigger>
         <SelectContent>
           <SelectItem value="createdAt">作成日</SelectItem>
           <SelectItem value="title">タイトル</SelectItem>

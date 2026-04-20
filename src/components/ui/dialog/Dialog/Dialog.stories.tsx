@@ -15,28 +15,31 @@ const meta = {
   parameters: {
     layout: "centered",
   },
+  args: {
+    children: (
+      <>
+        <DialogTrigger asChild>
+          <Button>ダイアログを開く</Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>設定を保存しますか？</DialogTitle>
+            <DialogDescription>
+              保存すると現在の設定で次回以降の検索・抽出が実行されます。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter showCloseButton>
+            <Button>保存</Button>
+          </DialogFooter>
+        </DialogContent>
+      </>
+    ),
+  },
 } satisfies Meta<typeof Dialog>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: (args) => (
-    <Dialog {...args}>
-      <DialogTrigger asChild>
-        <Button>ダイアログを開く</Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>設定を保存しますか？</DialogTitle>
-          <DialogDescription>
-            保存すると現在の設定で次回以降の検索・抽出が実行されます。
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter showCloseButton>
-          <Button>保存</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  ),
+  render: (args) => <Dialog {...args}>{args.children}</Dialog>,
 };

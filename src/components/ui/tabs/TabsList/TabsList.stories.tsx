@@ -6,6 +6,14 @@ const meta = {
   parameters: {
     layout: "centered",
   },
+  args: {
+    children: (
+      <>
+        <TabsTrigger value="general">一般</TabsTrigger>
+        <TabsTrigger value="search">検索</TabsTrigger>
+      </>
+    ),
+  },
 } satisfies Meta<typeof TabsList>;
 
 export default meta;
@@ -14,10 +22,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: (args) => (
     <Tabs defaultValue="general" className="w-[480px]">
-      <TabsList {...args}>
-        <TabsTrigger value="general">一般</TabsTrigger>
-        <TabsTrigger value="search">検索</TabsTrigger>
-      </TabsList>
+      <TabsList {...args}>{args.children}</TabsList>
       <TabsContent value="general" className="rounded-md border p-4 text-sm">
         一般設定の内容です。
       </TabsContent>
@@ -34,10 +39,7 @@ export const Line: Story = {
   },
   render: (args) => (
     <Tabs defaultValue="general" className="w-[480px]" orientation="horizontal">
-      <TabsList {...args}>
-        <TabsTrigger value="general">一般</TabsTrigger>
-        <TabsTrigger value="search">検索</TabsTrigger>
-      </TabsList>
+      <TabsList {...args}>{args.children}</TabsList>
       <TabsContent value="general" className="rounded-md border p-4 text-sm">
         一般設定の内容です。
       </TabsContent>

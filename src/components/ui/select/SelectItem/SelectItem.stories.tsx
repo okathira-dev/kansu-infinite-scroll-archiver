@@ -11,6 +11,7 @@ const meta = {
     value: "main",
     children: "主役の項目",
     disabled: false,
+    className: "",
   },
 } satisfies Meta<typeof SelectItem>;
 
@@ -22,15 +23,9 @@ export const Default: Story = {
   render: () => {
     const [args, updateArgs] = useArgs<typeof meta.args>();
 
-    const itemArgs = {
-      value: args?.value ?? "main",
-      children: args?.children ?? "主役の項目",
-      disabled: args?.disabled ?? false,
-    };
-
     return (
       <Select
-        value={itemArgs.value}
+        value={args.value}
         onValueChange={(v) => {
           updateArgs({ value: v });
         }}
@@ -39,7 +34,7 @@ export const Default: Story = {
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem {...itemArgs} />
+          <SelectItem {...args}>{args.children}</SelectItem>
         </SelectContent>
       </Select>
     );

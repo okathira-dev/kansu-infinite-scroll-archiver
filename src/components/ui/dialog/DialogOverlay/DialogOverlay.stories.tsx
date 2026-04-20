@@ -8,6 +8,9 @@ const meta = {
   parameters: {
     layout: "centered",
   },
+  args: {
+    className: "",
+  },
 } satisfies Meta<typeof DialogOverlay>;
 
 export default meta;

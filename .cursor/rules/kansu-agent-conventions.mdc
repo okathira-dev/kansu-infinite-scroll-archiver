@@ -86,15 +86,19 @@ alwaysApply: true
 - **コンポーネント配置**: Storybook 対象のコンポーネントは **コンポーネント単位のフォルダ**を作り、実装正本（`index.tsx` または `ComponentName.tsx` / `ComponentNameView.tsx`）と `*.stories.tsx`（ストーリー）を同居させる。
 - **複合 UI の Story 配置**: 複合 UI のストーリーもサブコンポーネントフォルダに同居させる（例: `tabs/Tabs/Tabs.stories.tsx`, `tabs/TabsTrigger/TabsTrigger.stories.tsx`）。この方針は Tabs 以外の複合 UI（`card` / `dialog` / `select` / `table` / `pagination` など）にも適用する。
 - **Story の `title`**: フォルダ構造ベースの自動タイトルを使うため、**`title` は原則書かない**（特別な理由がある場合のみ明示）。
-- **`src/components/ui`（atom 想定）**: Controls で主要 props を触れる **Controls 用ストーリー**（`args` 中心、必要なら `render` は最小）を **必ず用意**する。単体プレビューでは **`aria-label` 等の ARIA で名前を補ってよい**。
+- **`src/components/ui`（共有プリミティブ／atom 相当の粒度）**: Controls で主要 props を触れる **Controls 用ストーリー**（`args` 中心、必要なら `render` は最小）を **必ず用意**する。単体プレビューでは **`aria-label` 等の ARIA で名前を補ってよい**。
 - **`src/entrypoints/**/ui` のストーリー**: 上記 **コンポーネント／モジュール構成** の **`src/entrypoints/**/ui`**（props 駆動・副作用なし）について、**触れる props を Controls で確認できる状態**を原則とする。
 - **feature 所有 View のストーリー**: `src/entrypoints/**/feature/<ComponentName>/` に統合した `*View` は、同フォルダに `*View.stories.tsx` を置く（統合側 `ComponentName.stories.tsx` と同居可）。
 - **Controls と例示の分離**: Controls で可変確認するストーリーと、固定文言・固定挙動を示す例示ストーリーは分ける（1ストーリーに混在させない）。
+- **複合コンポーネント子ストーリーの比較要素**: 入れ子前提で、かつ **同種の子を複数並べて使うことが想定される**複合コンポーネント（例: RadioGroup / Select / Tabs）では、子コンポーネントのストーリー内に **Controls で可変確認する主役要素** と **状態比較のために固定表示する補助要素**（未選択タブ、隣接項目など）を並列に置いてよい。主役は `args` 経由で制御し、補助要素は最小限にとどめる。
 - **Story 専用 args の扱い**: 対象コンポーネントの props ではない Story 専用 args が必要な場合は、Story 内にラッパーを置いて `Meta<typeof Wrapper>` を使い、実コンポーネント props と混在させない。
 - **Story の二分**（必須ではないが推奨）:
   - **`ui` の Story**: Controls で主要バリエーションを触れる（`useArgs` で操作とパネルを同期してよい）。
   - **統合 Story**（`feature` / `App`）: モック・decorator・実ストアで**本番に近い経路**を確認する。Controls で全部を触ることは目的にしない。
 - **UI ストーリーの `args`**: `satisfies Meta<typeof Component>` の範囲に収まる props のみを扱い、**Storybook 専用の疑似 props（Meta 以上の独自 args）を追加しない**。
+- **`useArgs` 利用時の既定値**: 既定値は `meta.args` または各ストーリーの `args` に置き、`render` 内で `args?.x ?? ...` / `args.x ?? ...` のフォールバックを追加しない。`render` は `args` を直接参照して同期する。
+- **`children` 中心 props の UI / View Story**: `children` など限定的な props しか持たない場合でも、主役コンポーネントへは **`args` / props 経由で `children` を渡す**。`args.children ?? ...` のフォールバックは使わない。これが成立しない場合は、UI/View 境界や責務（命名・配置）を見直す候補として扱う。
+- **バリアント一覧ストーリーの固定運用**: `variant` / `size` などの**一覧比較（マトリクス表示）**を目的とするストーリーでは、主役を置かず **Controls は使わず固定表示**にする（例: `Badge` の `Variants`、`Button` の `Variants` / `Sizes`）。比較ラベルや表示要素は最小限にとどめる。
 - **複合 UI（Tabs など）**: ストーリーはコンポーネント名のフォルダへ分割し、**サブコンポーネントごとに個別の `.stories.tsx`** を作る。
 - **複合 UI のサブ用ストーリー**: キャンバスは **実利用に近い親子構成**で組み、`meta.component` と `args` は **そのサブコンポーネント**に対応させ、`render` 内では **`{...args}` を当該サブ（またはそれに渡す専用 props）にだけ** 当てる。
 - **UI 以外**（content / options / popup 等、molecules 以上）: **可視の説明テキスト・`Label` との紐付け**など、実画面に近い形で a11y を満たす。

@@ -27,10 +27,10 @@ export const Default: Story = {
     const [args, updateArgs] = useArgs<PopupAppViewStoryArgs>();
     return (
       <PopupAppView
-        status={args?.status ?? "待機中"}
-        isSubmitting={args?.isSubmitting ?? false}
+        status={args.status}
+        isSubmitting={args.isSubmitting}
         onToggleMainUi={() => {
-          if (args?.isSubmitting) {
+          if (args.isSubmitting) {
             return;
           }
           updateArgs({ status: "メインUIの表示切替を送信しました" });

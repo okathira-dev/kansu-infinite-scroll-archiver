@@ -45,10 +45,10 @@ export const Default: Story = {
     const [args, updateArgs] = useArgs<DataTransferSectionViewStoryArgs>();
     return (
       <DataTransferSectionView
-        configs={args?.configs ?? demoConfigs}
-        selectedExportServiceId={args?.selectedExportServiceId ?? "service-demo"}
-        importFileName={args?.importFileName ?? null}
-        loading={args?.loading ?? false}
+        configs={args.configs}
+        selectedExportServiceId={args.selectedExportServiceId}
+        importFileName={args.importFileName}
+        loading={args.loading}
         onSelectExportService={(serviceId) => {
           updateArgs({ selectedExportServiceId: serviceId });
         }}

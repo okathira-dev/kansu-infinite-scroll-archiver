@@ -16,6 +16,11 @@ const meta = {
   },
   args: {
     className: "",
+    children: (
+      <TableRow>
+        <TableCell colSpan={2}>フッター行（合計など）</TableCell>
+      </TableRow>
+    ),
   },
 } satisfies Meta<typeof TableFooter>;
 
@@ -37,11 +42,7 @@ export const Default: Story = {
           <TableCell>データ 2</TableCell>
         </TableRow>
       </TableBody>
-      <TableFooter {...args}>
-        <TableRow>
-          <TableCell colSpan={2}>フッター行（合計など）</TableCell>
-        </TableRow>
-      </TableFooter>
+      <TableFooter {...args}>{args.children}</TableFooter>
     </Table>
   ),
 };

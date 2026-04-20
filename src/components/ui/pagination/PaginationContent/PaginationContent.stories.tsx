@@ -8,16 +8,8 @@ const meta = {
   },
   args: {
     className: "",
-  },
-} satisfies Meta<typeof PaginationContent>;
-
-export default meta;
-type Story = StoryObj<typeof meta>;
-
-export const Default: Story = {
-  render: (args) => (
-    <Pagination>
-      <PaginationContent {...args}>
+    children: (
+      <>
         <PaginationItem>
           <PaginationLink href="#">1</PaginationLink>
         </PaginationItem>
@@ -29,7 +21,18 @@ export const Default: Story = {
         <PaginationItem>
           <PaginationLink href="#">3</PaginationLink>
         </PaginationItem>
-      </PaginationContent>
+      </>
+    ),
+  },
+} satisfies Meta<typeof PaginationContent>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  render: (args) => (
+    <Pagination>
+      <PaginationContent {...args}>{args.children}</PaginationContent>
     </Pagination>
   ),
 };

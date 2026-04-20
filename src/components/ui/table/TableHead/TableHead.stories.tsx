@@ -21,7 +21,6 @@ export const Default: Story = {
       <TableHeader>
         <TableRow>
           <TableHead {...args} />
-          <TableHead>列2</TableHead>
         </TableRow>
       </TableHeader>
     </Table>

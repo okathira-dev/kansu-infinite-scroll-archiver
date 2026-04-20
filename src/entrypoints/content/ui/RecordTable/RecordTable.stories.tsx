@@ -4,7 +4,17 @@ import { useArgs } from "storybook/preview-api";
 import type { ExtractedRecord, SortOrder } from "@/lib/types";
 import { RecordTable } from "./index";
 
-type RecordTableStoryArgs = ComponentProps<typeof RecordTable>;
+type RecordTableStoryArgs = ComponentProps<typeof RecordTable> & {
+  containerClassName: string;
+};
+
+function RecordTableStory({ containerClassName, ...props }: RecordTableStoryArgs) {
+  return (
+    <div className={containerClassName}>
+      <RecordTable {...props} />
+    </div>
+  );
+}
 
 const demoRecords: ExtractedRecord[] = [
   {
@@ -32,18 +42,19 @@ const demoRecords: ExtractedRecord[] = [
 const fieldNames = ["title", "author", "url"];
 
 const meta = {
-  component: RecordTable,
+  component: RecordTableStory,
   parameters: {
     layout: "centered",
   },
   args: {
+    containerClassName: "w-[760px] rounded-md border bg-card p-4",
     records: demoRecords,
     fieldNames,
     sortBy: "title",
     sortOrder: "asc",
     onSortBy: () => undefined,
   },
-} satisfies Meta<typeof RecordTable>;
+} satisfies Meta<typeof RecordTableStory>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -53,8 +64,8 @@ export const Default: Story = {
     const [args, updateArgs] = useArgs<RecordTableStoryArgs>();
 
     const handleSortBy = (fieldName: string) => {
-      const by = args?.sortBy ?? "title";
-      const order = (args?.sortOrder ?? "asc") as SortOrder;
+      const by = args.sortBy;
+      const order = args.sortOrder as SortOrder;
       if (by === fieldName) {
         updateArgs({ sortOrder: order === "asc" ? "desc" : "asc" });
       } else {
@@ -63,15 +74,14 @@ export const Default: Story = {
     };
 
     return (
-      <div className="w-[760px] rounded-md border bg-card p-4">
-        <RecordTable
-          records={args?.records ?? demoRecords}
-          fieldNames={args?.fieldNames ?? fieldNames}
-          sortBy={args?.sortBy ?? "title"}
-          sortOrder={(args?.sortOrder ?? "asc") as SortOrder}
-          onSortBy={handleSortBy}
-        />
-      </div>
+      <RecordTableStory
+        containerClassName={args.containerClassName}
+        records={args.records}
+        fieldNames={args.fieldNames}
+        sortBy={args.sortBy}
+        sortOrder={args.sortOrder as SortOrder}
+        onSortBy={handleSortBy}
+      />
     );
   },
 };
@@ -81,14 +91,13 @@ export const NoFields: Story = {
     fieldNames: [],
   },
   render: (args) => (
-    <div className="w-[760px] rounded-md border bg-card p-4">
-      <RecordTable
-        records={args.records}
-        fieldNames={args.fieldNames}
-        sortBy={args.sortBy}
-        sortOrder={args.sortOrder}
-        onSortBy={args.onSortBy}
-      />
-    </div>
+    <RecordTableStory
+      containerClassName={args.containerClassName}
+      records={args.records}
+      fieldNames={args.fieldNames}
+      sortBy={args.sortBy}
+      sortOrder={args.sortOrder}
+      onSortBy={args.onSortBy}
+    />
   ),
 };

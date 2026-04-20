@@ -9,6 +9,11 @@ const meta = {
   },
   args: {
     className: "",
+    children: (
+      <Button size="sm" type="button" variant="outline">
+        編集
+      </Button>
+    ),
   },
 } satisfies Meta<typeof CardAction>;
 
@@ -20,11 +25,7 @@ export const Default: Story = {
     <Card className="w-[360px]">
       <CardHeader>
         <CardTitle className="text-base">設定</CardTitle>
-        <CardAction {...args}>
-          <Button size="sm" type="button" variant="outline">
-            編集
-          </Button>
-        </CardAction>
+        <CardAction {...args}>{args.children}</CardAction>
       </CardHeader>
     </Card>
   ),

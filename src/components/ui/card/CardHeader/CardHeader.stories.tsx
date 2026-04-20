@@ -8,6 +8,12 @@ const meta = {
   },
   args: {
     className: "gap-2",
+    children: (
+      <>
+        <CardTitle>通知設定</CardTitle>
+        <CardDescription>日次レポートの配信設定を変更できます。</CardDescription>
+      </>
+    ),
   },
 } satisfies Meta<typeof CardHeader>;
 
@@ -17,10 +23,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: (args) => (
     <Card className="w-[360px]">
-      <CardHeader {...args}>
-        <CardTitle>通知設定</CardTitle>
-        <CardDescription>日次レポートの配信設定を変更できます。</CardDescription>
-      </CardHeader>
+      <CardHeader {...args}>{args.children}</CardHeader>
     </Card>
   ),
 };

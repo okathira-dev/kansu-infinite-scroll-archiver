@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../index";
 
 const meta = {
@@ -9,6 +10,7 @@ const meta = {
   args: {
     value: "general",
     children: "一般設定の内容です。",
+    className: "",
   },
 } satisfies Meta<typeof TabsContent>;
 
@@ -22,7 +24,7 @@ export const Default: Story = {
         <TabsTrigger value="general">一般</TabsTrigger>
         <TabsTrigger value="search">検索</TabsTrigger>
       </TabsList>
-      <TabsContent {...args} className="rounded-md border p-4 text-sm" />
+      <TabsContent {...args} className={cn("rounded-md border p-4 text-sm", args.className)} />
       <TabsContent value="search" className="rounded-md border p-4 text-sm">
         検索設定の内容です。
       </TabsContent>

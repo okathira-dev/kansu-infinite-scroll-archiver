@@ -8,6 +8,12 @@ const meta = {
   },
   args: {
     className: "",
+    children: (
+      <TableRow>
+        <TableHead>列A</TableHead>
+        <TableHead>列B</TableHead>
+      </TableRow>
+    ),
   },
 } satisfies Meta<typeof TableHeader>;
 
@@ -17,12 +23,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: (args) => (
     <Table className="w-[480px]">
-      <TableHeader {...args}>
-        <TableRow>
-          <TableHead>列A</TableHead>
-          <TableHead>列B</TableHead>
-        </TableRow>
-      </TableHeader>
+      <TableHeader {...args}>{args.children}</TableHeader>
     </Table>
   ),
 };

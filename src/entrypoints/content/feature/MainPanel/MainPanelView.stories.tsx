@@ -63,6 +63,13 @@ const demoResult: SearchResult = {
 
 const meta = {
   component: MainPanelView,
+  decorators: [
+    (Story) => (
+      <div className="min-h-screen bg-muted/20 p-6">
+        <Story />
+      </div>
+    ),
+  ],
   parameters: {
     layout: "fullscreen",
   },
@@ -88,71 +95,69 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: () => {
     const [args, updateArgs] = useArgs<MainPanelStoryArgs>();
-    const query = args?.query ?? demoQuery;
-    const availableFieldNames = args?.availableFieldNames ?? ["title", "author", "url"];
+    const query = args.query;
+    const availableFieldNames = args.availableFieldNames;
 
     return (
-      <div className="min-h-screen bg-muted/20 p-6">
-        <MainPanelView
-          onRequestClose={args?.onRequestClose ?? (() => undefined)}
-          configs={args?.configs ?? demoConfigs}
-          query={query}
-          result={args?.result ?? demoResult}
-          loading={args?.loading ?? false}
-          availableFieldNames={availableFieldNames}
-          onConfigChange={(serviceId) => {
-            updateArgs({
-              query: { ...query, serviceId, page: 1 },
-            });
-          }}
-          onKeywordChange={(keyword) => {
-            updateArgs({
-              query: { ...query, keyword, page: 1 },
-            });
-          }}
-          onToggleTargetField={(fieldName) => {
-            const selected = query.targetFieldNames.includes(fieldName);
-            const nextFieldNames = selected
-              ? query.targetFieldNames.filter((name) => name !== fieldName)
-              : [...query.targetFieldNames, fieldName];
-            updateArgs({
-              query: {
-                ...query,
-                targetFieldNames: nextFieldNames,
-                page: 1,
-              },
-            });
-          }}
-          onPageSizeChange={(pageSize) => {
-            updateArgs({
-              query: { ...query, pageSize, page: 1 },
-            });
-          }}
-          onSortBy={(fieldName) => {
-            if (query.sortBy === fieldName) {
-              updateArgs({
-                query: {
-                  ...query,
-                  sortOrder: query.sortOrder === "asc" ? "desc" : "asc",
-                },
-              });
-              return;
-            }
+      <MainPanelView
+        onRequestClose={args.onRequestClose}
+        configs={args.configs}
+        query={query}
+        result={args.result}
+        loading={args.loading}
+        availableFieldNames={availableFieldNames}
+        onConfigChange={(serviceId) => {
+          updateArgs({
+            query: { ...query, serviceId, page: 1 },
+          });
+        }}
+        onKeywordChange={(keyword) => {
+          updateArgs({
+            query: { ...query, keyword, page: 1 },
+          });
+        }}
+        onToggleTargetField={(fieldName) => {
+          const selected = query.targetFieldNames.includes(fieldName);
+          const nextFieldNames = selected
+            ? query.targetFieldNames.filter((name) => name !== fieldName)
+            : [...query.targetFieldNames, fieldName];
+          updateArgs({
+            query: {
+              ...query,
+              targetFieldNames: nextFieldNames,
+              page: 1,
+            },
+          });
+        }}
+        onPageSizeChange={(pageSize) => {
+          updateArgs({
+            query: { ...query, pageSize, page: 1 },
+          });
+        }}
+        onSortBy={(fieldName) => {
+          if (query.sortBy === fieldName) {
             updateArgs({
               query: {
                 ...query,
-                sortBy: fieldName,
-                sortOrder: "asc",
+                sortOrder: query.sortOrder === "asc" ? "desc" : "asc",
               },
             });
-          }}
-          onPageChange={(page) => {
-            updateArgs({
-              query: { ...query, page },
-            });
-          }}
-        />
-      </div>
+            return;
+          }
+          updateArgs({
+            query: {
+              ...query,
+              sortBy: fieldName,
+              sortOrder: "asc",
+            },
+          });
+        }}
+        onPageChange={(page) => {
+          updateArgs({
+            query: { ...query, page },
+          });
+        }}
+      />
     );
   },
 };
