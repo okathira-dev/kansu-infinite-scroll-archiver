@@ -3,25 +3,24 @@ import type { ComponentProps } from "react";
 import { useArgs } from "storybook/preview-api";
 import { SearchBar } from "./index";
 
-type SearchBarStoryArgs = ComponentProps<typeof SearchBar> & {
-  containerClassName: string;
-};
-
-function SearchBarStory({ containerClassName, ...props }: SearchBarStoryArgs) {
-  return (
-    <div className={containerClassName}>
-      <SearchBar {...props} />
-    </div>
-  );
-}
+type SearchBarStoryArgs = ComponentProps<typeof SearchBar>;
 
 const meta = {
-  component: SearchBarStory,
+  component: SearchBar,
+  decorators: [
+    (Story) => (
+      <div className="w-[560px] rounded-md border bg-card p-4">
+        <Story />
+      </div>
+    ),
+  ],
   parameters: {
     layout: "centered",
+    controls: {
+      exclude: /^on[A-Z].*/,
+    },
   },
   args: {
-    containerClassName: "w-[560px] rounded-md border bg-card p-4",
     keyword: "",
     targetFieldNames: ["title"],
     pageSize: 10,
@@ -30,7 +29,7 @@ const meta = {
     onToggleTargetField: () => undefined,
     onPageSizeChange: () => undefined,
   },
-} satisfies Meta<typeof SearchBarStory>;
+} satisfies Meta<typeof SearchBar>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -49,8 +48,7 @@ export const Default: Story = {
     };
 
     return (
-      <SearchBarStory
-        containerClassName={args.containerClassName}
+      <SearchBar
         keyword={args.keyword}
         targetFieldNames={args.targetFieldNames}
         pageSize={args.pageSize}

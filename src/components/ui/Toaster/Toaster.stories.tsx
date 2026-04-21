@@ -88,9 +88,9 @@ export const ToasterControls: Story = {
 /** 種別ごとの表示例を固定文言で確認する。 */
 export const PresetExamples: Story = {
   argTypes: {
-    previewKind: { table: { disable: true } },
-    previewTitle: { table: { disable: true } },
-    previewDescription: { table: { disable: true } },
+    previewKind: { table: { disable: true }, control: false },
+    previewTitle: { table: { disable: true }, control: false },
+    previewDescription: { table: { disable: true }, control: false },
   },
   render: (args) => {
     const { previewKind, previewTitle, previewDescription, ...toasterProps } = args;

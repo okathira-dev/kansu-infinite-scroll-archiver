@@ -19,13 +19,13 @@ export const Playground: Story = {
     args.orientation === "vertical" ? (
       <div className="flex h-20 items-center gap-4">
         <span className="text-sm">左</span>
-        <Separator orientation="vertical" />
+        <Separator {...args} />
         <span className="text-sm">右</span>
       </div>
     ) : (
       <div className="w-72 space-y-2">
         <p className="text-sm">上段</p>
-        <Separator orientation={args.orientation} />
+        <Separator {...args} />
         <p className="text-sm">下段</p>
       </div>
     ),
@@ -36,7 +36,7 @@ export const Horizontal: Story = {
   render: (args) => (
     <div className="w-72 space-y-2">
       <p className="text-sm">上段</p>
-      <Separator orientation={args.orientation} />
+      <Separator {...args} />
       <p className="text-sm">下段</p>
     </div>
   ),
@@ -47,7 +47,7 @@ export const Vertical: Story = {
   render: (args) => (
     <div className="flex h-20 items-center gap-4">
       <span className="text-sm">左</span>
-      <Separator orientation={args.orientation} />
+      <Separator {...args} />
       <span className="text-sm">右</span>
     </div>
   ),

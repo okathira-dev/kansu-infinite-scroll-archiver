@@ -3,31 +3,30 @@ import type { ComponentProps } from "react";
 import { useArgs } from "storybook/preview-api";
 import { PaginationControls } from "./index";
 
-type PaginationControlsStoryProps = ComponentProps<typeof PaginationControls> & {
-  containerClassName: string;
-};
-
-function PaginationControlsStory({ containerClassName, ...props }: PaginationControlsStoryProps) {
-  return (
-    <div className={containerClassName}>
-      <PaginationControls {...props} />
-    </div>
-  );
-}
+type PaginationControlsStoryProps = ComponentProps<typeof PaginationControls>;
 
 const meta = {
-  component: PaginationControlsStory,
+  component: PaginationControls,
+  decorators: [
+    (Story) => (
+      <div className="w-[560px] rounded-md border bg-card p-4">
+        <Story />
+      </div>
+    ),
+  ],
   parameters: {
     layout: "centered",
+    controls: {
+      exclude: /^on[A-Z].*/,
+    },
   },
   args: {
-    containerClassName: "w-[560px] rounded-md border bg-card p-4",
     page: 2,
     total: 55,
     pageSize: 10,
     onPageChange: () => undefined,
   },
-} satisfies Meta<typeof PaginationControlsStory>;
+} satisfies Meta<typeof PaginationControls>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -36,8 +35,7 @@ const renderWithUseArgs = () => {
   const [args, updateArgs] = useArgs<PaginationControlsStoryProps>();
 
   return (
-    <PaginationControlsStory
-      containerClassName={args.containerClassName}
+    <PaginationControls
       page={args.page}
       pageSize={args.pageSize}
       total={args.total}

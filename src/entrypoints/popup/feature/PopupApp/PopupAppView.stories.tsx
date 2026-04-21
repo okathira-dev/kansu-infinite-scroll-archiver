@@ -9,6 +9,9 @@ const meta = {
   component: PopupAppView,
   parameters: {
     layout: "centered",
+    controls: {
+      exclude: /^on[A-Z].*/,
+    },
   },
   args: {
     status: "待機中",

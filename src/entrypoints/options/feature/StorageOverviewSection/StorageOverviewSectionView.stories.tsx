@@ -27,6 +27,9 @@ const meta = {
   component: StorageOverviewSectionView,
   parameters: {
     layout: "centered",
+    controls: {
+      exclude: /^on[A-Z].*/,
+    },
   },
   args: {
     storageLoading: false,

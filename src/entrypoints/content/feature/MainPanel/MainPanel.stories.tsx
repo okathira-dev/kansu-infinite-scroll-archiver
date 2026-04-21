@@ -44,6 +44,9 @@ const meta = {
   ],
   parameters: {
     layout: "fullscreen",
+    controls: {
+      disable: true,
+    },
   },
   args: {
     onRequestClose: () => undefined,

@@ -72,6 +72,9 @@ const meta = {
   ],
   parameters: {
     layout: "fullscreen",
+    controls: {
+      exclude: /^on[A-Z].*/,
+    },
   },
   args: {
     configs: demoConfigs,

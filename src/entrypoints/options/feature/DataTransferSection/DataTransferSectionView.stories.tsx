@@ -24,6 +24,9 @@ const meta = {
   component: DataTransferSectionView,
   parameters: {
     layout: "centered",
+    controls: {
+      exclude: /^on[A-Z].*/,
+    },
   },
   args: {
     configs: demoConfigs,

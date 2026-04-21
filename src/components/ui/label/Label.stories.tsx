@@ -16,22 +16,28 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {
-  render: (args) => (
-    <div className="grid w-72 gap-2">
-      <Label {...args} htmlFor="sb-label-playground" />
-      <Input id="sb-label-playground" placeholder="入力" className="w-72" />
-    </div>
-  ),
+  render: (args) => {
+    const { htmlFor = "sb-label-playground", ...labelArgs } = args;
+    return (
+      <div className="grid w-72 gap-2">
+        <Label htmlFor={htmlFor} {...labelArgs} />
+        <Input id={htmlFor} placeholder="入力" className="w-72" />
+      </div>
+    );
+  },
 };
 
 export const WithInput: Story = {
   args: {
     children: "メールアドレス",
   },
-  render: (args) => (
-    <div className="grid w-72 gap-2">
-      <Label {...args} htmlFor="email" />
-      <Input id="email" type="email" placeholder="you@example.com" />
-    </div>
-  ),
+  render: (args) => {
+    const { htmlFor = "email", ...labelArgs } = args;
+    return (
+      <div className="grid w-72 gap-2">
+        <Label htmlFor={htmlFor} {...labelArgs} />
+        <Input id={htmlFor} type="email" placeholder="you@example.com" />
+      </div>
+    );
+  },
 };

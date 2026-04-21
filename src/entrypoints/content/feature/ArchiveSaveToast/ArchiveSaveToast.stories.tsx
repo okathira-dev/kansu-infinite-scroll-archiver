@@ -8,6 +8,9 @@ const meta = {
   component: ArchiveSaveToast,
   parameters: {
     layout: "centered",
+    controls: {
+      disable: true,
+    },
   },
 } satisfies Meta<typeof ArchiveSaveToast>;
 

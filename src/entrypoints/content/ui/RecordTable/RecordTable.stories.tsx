@@ -4,17 +4,7 @@ import { useArgs } from "storybook/preview-api";
 import type { ExtractedRecord, SortOrder } from "@/lib/types";
 import { RecordTable } from "./index";
 
-type RecordTableStoryArgs = ComponentProps<typeof RecordTable> & {
-  containerClassName: string;
-};
-
-function RecordTableStory({ containerClassName, ...props }: RecordTableStoryArgs) {
-  return (
-    <div className={containerClassName}>
-      <RecordTable {...props} />
-    </div>
-  );
-}
+type RecordTableStoryArgs = ComponentProps<typeof RecordTable>;
 
 const demoRecords: ExtractedRecord[] = [
   {
@@ -42,19 +32,28 @@ const demoRecords: ExtractedRecord[] = [
 const fieldNames = ["title", "author", "url"];
 
 const meta = {
-  component: RecordTableStory,
+  component: RecordTable,
+  decorators: [
+    (Story) => (
+      <div className="w-[760px] rounded-md border bg-card p-4">
+        <Story />
+      </div>
+    ),
+  ],
   parameters: {
     layout: "centered",
+    controls: {
+      exclude: /^on[A-Z].*/,
+    },
   },
   args: {
-    containerClassName: "w-[760px] rounded-md border bg-card p-4",
     records: demoRecords,
     fieldNames,
     sortBy: "title",
     sortOrder: "asc",
     onSortBy: () => undefined,
   },
-} satisfies Meta<typeof RecordTableStory>;
+} satisfies Meta<typeof RecordTable>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -74,8 +73,7 @@ export const Default: Story = {
     };
 
     return (
-      <RecordTableStory
-        containerClassName={args.containerClassName}
+      <RecordTable
         records={args.records}
         fieldNames={args.fieldNames}
         sortBy={args.sortBy}
@@ -91,8 +89,7 @@ export const NoFields: Story = {
     fieldNames: [],
   },
   render: (args) => (
-    <RecordTableStory
-      containerClassName={args.containerClassName}
+    <RecordTable
       records={args.records}
       fieldNames={args.fieldNames}
       sortBy={args.sortBy}

@@ -23,6 +23,9 @@ const meta = {
   component: ServiceConfigsSectionView,
   parameters: {
     layout: "centered",
+    controls: {
+      exclude: /^on[A-Z].*/,
+    },
   },
   args: {
     loading: false,

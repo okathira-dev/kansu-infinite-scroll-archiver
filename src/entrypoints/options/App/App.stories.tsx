@@ -33,6 +33,9 @@ const meta = {
   component: App,
   parameters: {
     layout: "fullscreen",
+    controls: {
+      disable: true,
+    },
   },
 } satisfies Meta<typeof App>;
 
