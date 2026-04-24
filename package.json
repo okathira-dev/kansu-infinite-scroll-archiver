@@ -50,7 +50,7 @@
     "build-storybook": "storybook build -o storybook-static"
   },
   "dependencies": {
-    "@base-ui/react": "^1.4.0",
+    "@base-ui/react": "^1.4.1",
     "@radix-ui/react-slot": "^1.2.4",
     "@tailwindcss/vite": "^4.2.4",
     "class-variance-authority": "^0.7.1",
