@@ -52,7 +52,7 @@
   "dependencies": {
     "@base-ui/react": "^1.4.0",
     "@radix-ui/react-slot": "^1.2.4",
-    "@tailwindcss/vite": "^4.2.2",
+    "@tailwindcss/vite": "^4.2.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dexie": "^4.4.2",
@@ -62,7 +62,7 @@
     "react-dom": "^19.2.5",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
-    "tailwindcss": "^4.2.2",
+    "tailwindcss": "^4.2.4",
     "wanakana": "^5.3.1",
     "zustand": "^5.0.12"
   },
