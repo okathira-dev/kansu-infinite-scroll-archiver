@@ -24,7 +24,10 @@ export const Variants: Story = {
       <Badge variant="destructive">destructive</Badge>
       <Badge variant="outline">outline</Badge>
       <Badge variant="ghost">ghost</Badge>
-      <Badge variant="link">link</Badge>
+      <Badge asChild variant="link">
+        {/* biome-ignore lint/a11y/useValidAnchor: Storybook 上のプレースホルダ。実装では遷移先の実 URL を入れる */}
+        <a href="#">link</a>
+      </Badge>
     </div>
   ),
 };
