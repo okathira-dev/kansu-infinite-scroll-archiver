@@ -33,8 +33,18 @@ const fieldNames = ["title", "author", "url"];
 
 const meta = {
   component: RecordTable,
+  decorators: [
+    (Story) => (
+      <div className="w-[760px] rounded-md border bg-card p-4">
+        <Story />
+      </div>
+    ),
+  ],
   parameters: {
     layout: "centered",
+    controls: {
+      exclude: /^on[A-Z].*/,
+    },
   },
   args: {
     records: demoRecords,
@@ -53,8 +63,8 @@ export const Default: Story = {
     const [args, updateArgs] = useArgs<RecordTableStoryArgs>();
 
     const handleSortBy = (fieldName: string) => {
-      const by = args?.sortBy ?? "title";
-      const order = (args?.sortOrder ?? "asc") as SortOrder;
+      const by = args.sortBy;
+      const order = args.sortOrder as SortOrder;
       if (by === fieldName) {
         updateArgs({ sortOrder: order === "asc" ? "desc" : "asc" });
       } else {
@@ -63,15 +73,13 @@ export const Default: Story = {
     };
 
     return (
-      <div className="w-[760px] rounded-md border bg-card p-4">
-        <RecordTable
-          records={args?.records ?? demoRecords}
-          fieldNames={args?.fieldNames ?? fieldNames}
-          sortBy={args?.sortBy ?? "title"}
-          sortOrder={(args?.sortOrder ?? "asc") as SortOrder}
-          onSortBy={handleSortBy}
-        />
-      </div>
+      <RecordTable
+        records={args.records}
+        fieldNames={args.fieldNames}
+        sortBy={args.sortBy}
+        sortOrder={args.sortOrder as SortOrder}
+        onSortBy={handleSortBy}
+      />
     );
   },
 };
@@ -81,14 +89,12 @@ export const NoFields: Story = {
     fieldNames: [],
   },
   render: (args) => (
-    <div className="w-[760px] rounded-md border bg-card p-4">
-      <RecordTable
-        records={args.records}
-        fieldNames={args.fieldNames}
-        sortBy={args.sortBy}
-        sortOrder={args.sortOrder}
-        onSortBy={args.onSortBy}
-      />
-    </div>
+    <RecordTable
+      records={args.records}
+      fieldNames={args.fieldNames}
+      sortBy={args.sortBy}
+      sortOrder={args.sortOrder}
+      onSortBy={args.onSortBy}
+    />
   ),
 };

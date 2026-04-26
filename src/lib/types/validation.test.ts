@@ -4,6 +4,7 @@ import {
   validateBulkUpsertPayload,
   validateConfigDeletePayload,
   validateImportPayload,
+  validateRecordCountByServicePayload,
   validateSearchQuery,
   validateServiceConfig,
 } from "./validation";
@@ -35,6 +36,44 @@ describe("サービス設定バリデーション", () => {
   it("有効な設定を受け入れる", () => {
     const result = validateServiceConfig(validServiceConfig);
     expect(result.ok).toBe(true);
+  });
+
+  it("通知設定が未指定でも既定値を補完して受け入れる", () => {
+    const result = validateServiceConfig(validServiceConfig);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.notificationSettings).toEqual({
+        badge: {
+          showMonitoringIndicator: true,
+          showTotalSavedCount: true,
+        },
+        toast: {
+          enabled: true,
+          showIncrementCount: true,
+        },
+      });
+    }
+  });
+
+  it("通知設定の型が不正な場合は拒否する", () => {
+    const result = validateServiceConfig({
+      ...validServiceConfig,
+      notificationSettings: {
+        badge: {
+          showMonitoringIndicator: "yes",
+        },
+      },
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(
+        result.errors.some(
+          (error) =>
+            error.field === "serviceConfig.notificationSettings.badge.showMonitoringIndicator",
+        ),
+      ).toBe(true);
+    }
   });
 
   it("uniqueKeyField が fieldRules に存在しない場合は拒否する", () => {
@@ -116,6 +155,21 @@ describe("サービス設定バリデーション", () => {
         result.errors.some((error) => error.field.includes("serviceConfig.fieldRules[1].regex")),
       ).toBe(true);
     }
+  });
+});
+
+describe("サービス別件数ペイロードバリデーション", () => {
+  it("有効な serviceId を受け入れる", () => {
+    const result = validateRecordCountByServicePayload({ serviceId: "service-1" });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.serviceId).toBe("service-1");
+    }
+  });
+
+  it("空の serviceId を拒否する", () => {
+    const result = validateRecordCountByServicePayload({ serviceId: "" });
+    expect(result.ok).toBe(false);
   });
 });
 

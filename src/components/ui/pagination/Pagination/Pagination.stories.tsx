@@ -14,14 +14,9 @@ const meta = {
   parameters: {
     layout: "centered",
   },
-} satisfies Meta<typeof Pagination>;
-
-export default meta;
-type Story = StoryObj<typeof meta>;
-
-export const Default: Story = {
-  render: () => (
-    <Pagination>
+  args: {
+    className: "w-[560px]",
+    children: (
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious href="#" />
@@ -44,6 +39,13 @@ export const Default: Story = {
           <PaginationNext href="#" />
         </PaginationItem>
       </PaginationContent>
-    </Pagination>
-  ),
+    ),
+  },
+} satisfies Meta<typeof Pagination>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  render: (args) => <Pagination {...args}>{args.children}</Pagination>,
 };

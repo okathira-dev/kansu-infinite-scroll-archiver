@@ -14,7 +14,12 @@ import type {
   RecordFieldValue,
   SearchQuery,
   ServiceConfig,
+  ServiceNotificationSettings,
   SortOrder,
+} from "./domain";
+import {
+  DEFAULT_SERVICE_NOTIFICATION_SETTINGS,
+  resolveServiceNotificationSettings,
 } from "./domain";
 
 /** 検証失敗 1 件。`field` はドット区切りでネストを表す。 */
@@ -104,6 +109,77 @@ const isFieldType = (value: unknown): value is FieldType =>
   value === "text" || value === "linkUrl" || value === "imageUrl" || value === "regex";
 
 const isSortOrder = (value: unknown): value is SortOrder => value === "asc" || value === "desc";
+
+const parseNotificationSettings = (
+  input: unknown,
+  field: string,
+  issues: ValidationIssue[],
+): ServiceNotificationSettings => {
+  const fallback = resolveServiceNotificationSettings(undefined);
+  if (typeof input === "undefined") {
+    return fallback;
+  }
+  if (!isRecord(input)) {
+    issues.push({ field, message: "must be an object when provided" });
+    return fallback;
+  }
+
+  const next = resolveServiceNotificationSettings(undefined);
+
+  const parseBooleanOption = (
+    value: unknown,
+    current: boolean,
+    optionField: string,
+    optionDefault: boolean,
+  ): boolean => {
+    if (typeof value === "undefined") {
+      return current;
+    }
+    if (typeof value !== "boolean") {
+      issues.push({ field: optionField, message: "must be a boolean when provided" });
+      return optionDefault;
+    }
+    return value;
+  };
+
+  const badgeInput = input.badge;
+  if (typeof badgeInput !== "undefined" && !isRecord(badgeInput)) {
+    issues.push({ field: `${field}.badge`, message: "must be an object when provided" });
+  } else if (isRecord(badgeInput)) {
+    next.badge.showMonitoringIndicator = parseBooleanOption(
+      badgeInput.showMonitoringIndicator,
+      next.badge.showMonitoringIndicator,
+      `${field}.badge.showMonitoringIndicator`,
+      DEFAULT_SERVICE_NOTIFICATION_SETTINGS.badge.showMonitoringIndicator,
+    );
+    next.badge.showTotalSavedCount = parseBooleanOption(
+      badgeInput.showTotalSavedCount,
+      next.badge.showTotalSavedCount,
+      `${field}.badge.showTotalSavedCount`,
+      DEFAULT_SERVICE_NOTIFICATION_SETTINGS.badge.showTotalSavedCount,
+    );
+  }
+
+  const toastInput = input.toast;
+  if (typeof toastInput !== "undefined" && !isRecord(toastInput)) {
+    issues.push({ field: `${field}.toast`, message: "must be an object when provided" });
+  } else if (isRecord(toastInput)) {
+    next.toast.enabled = parseBooleanOption(
+      toastInput.enabled,
+      next.toast.enabled,
+      `${field}.toast.enabled`,
+      DEFAULT_SERVICE_NOTIFICATION_SETTINGS.toast.enabled,
+    );
+    next.toast.showIncrementCount = parseBooleanOption(
+      toastInput.showIncrementCount,
+      next.toast.showIncrementCount,
+      `${field}.toast.showIncrementCount`,
+      DEFAULT_SERVICE_NOTIFICATION_SETTINGS.toast.showIncrementCount,
+    );
+  }
+
+  return next;
+};
 
 /**
  * 単一の `FieldRule` を検証する。
@@ -209,6 +285,11 @@ export const validateServiceConfig = (input: unknown): ValidationResult<ServiceC
     issues,
   );
   const updatedAt = asNonEmptyString(input.updatedAt, "serviceConfig.updatedAt", issues);
+  const notificationSettings = parseNotificationSettings(
+    input.notificationSettings,
+    "serviceConfig.notificationSettings",
+    issues,
+  );
 
   if (typeof input.enabled !== "boolean") {
     issues.push({ field: "serviceConfig.enabled", message: "must be a boolean" });
@@ -263,6 +344,7 @@ export const validateServiceConfig = (input: unknown): ValidationResult<ServiceC
       uniqueKeyField,
       fieldRules: parsedFieldRules,
       enabled: input.enabled,
+      notificationSettings,
       updatedAt,
     },
   };
@@ -366,6 +448,22 @@ export const validateBulkUpsertPayload = (
   }
 
   return { ok: true, data: { records } };
+};
+
+/** `records/countByServiceId` 要求の payload（サービス ID のみ）を検証する。 */
+export const validateRecordCountByServicePayload = (
+  input: unknown,
+): ValidationResult<{ serviceId: string }> => {
+  const issues: ValidationIssue[] = [];
+  if (!isRecord(input)) {
+    return { ok: false, errors: [{ field: "recordCountPayload", message: "must be an object" }] };
+  }
+
+  const serviceId = asNonEmptyString(input.serviceId, "recordCountPayload.serviceId", issues);
+  if (!serviceId || issues.length > 0) {
+    return { ok: false, errors: issues };
+  }
+  return { ok: true, data: { serviceId } };
 };
 
 /** `data/export` 要求の payload（サービス ID のみ）を検証する。 */

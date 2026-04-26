@@ -10,7 +10,15 @@ const meta = {
     showCloseButton: true,
     disablePortal: false,
     disableOutsideDismiss: false,
-    children: "本文テキスト。showCloseButton や className を Controls から変えられます。",
+    children: (
+      <>
+        <DialogTitle>ダイアログ</DialogTitle>
+        <DialogDescription>
+          プレビュー用。本文は Controls の children で変更できます。
+        </DialogDescription>
+        本文テキスト。showCloseButton や className を Controls から変えられます。
+      </>
+    ),
   },
 } satisfies Meta<typeof DialogContent>;
 
@@ -22,13 +30,7 @@ export const Default: Story = {
     const { children, ...contentProps } = args;
     return (
       <Dialog defaultOpen>
-        <DialogContent {...contentProps}>
-          <DialogTitle>ダイアログ</DialogTitle>
-          <DialogDescription>
-            プレビュー用。本文は Controls の children で変更できます。
-          </DialogDescription>
-          {children}
-        </DialogContent>
+        <DialogContent {...contentProps}>{children}</DialogContent>
       </Dialog>
     );
   },
@@ -38,19 +40,22 @@ export const Default: Story = {
 export const DisableOutsideDismiss: Story = {
   args: {
     disableOutsideDismiss: true,
+    children: (
+      <>
+        <DialogTitle>外側クリックでは閉じない</DialogTitle>
+        <DialogDescription>
+          オーバーレイをクリックしても閉じません。閉じる操作は × ボタンや Esc キー（Radix
+          既定）を利用してください。
+        </DialogDescription>
+        外側クリック無効の確認用コンテンツです。
+      </>
+    ),
   },
   render: (args) => {
     const { children, ...contentProps } = args;
     return (
       <Dialog defaultOpen>
-        <DialogContent {...contentProps}>
-          <DialogTitle>外側クリックでは閉じない</DialogTitle>
-          <DialogDescription>
-            オーバーレイをクリックしても閉じません。閉じる操作は × ボタンや Esc キー（Radix
-            既定）を利用してください。
-          </DialogDescription>
-          {children}
-        </DialogContent>
+        <DialogContent {...contentProps}>{children}</DialogContent>
       </Dialog>
     );
   },
@@ -60,18 +65,21 @@ export const DisableOutsideDismiss: Story = {
 export const DisablePortal: Story = {
   args: {
     disablePortal: true,
+    children: (
+      <>
+        <DialogTitle>Portal を使わない描画</DialogTitle>
+        <DialogDescription>
+          Portal を使わず、呼び出し位置へインライン描画して挙動を確認します。
+        </DialogDescription>
+        インライン描画確認用の本文です。
+      </>
+    ),
   },
   render: (args) => {
     const { children, ...contentProps } = args;
     return (
       <Dialog defaultOpen>
-        <DialogContent {...contentProps}>
-          <DialogTitle>Portal を使わない描画</DialogTitle>
-          <DialogDescription>
-            Portal を使わず、呼び出し位置へインライン描画して挙動を確認します。
-          </DialogDescription>
-          {children}
-        </DialogContent>
+        <DialogContent {...contentProps}>{children}</DialogContent>
       </Dialog>
     );
   },

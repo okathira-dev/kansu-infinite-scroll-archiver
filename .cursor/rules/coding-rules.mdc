@@ -18,7 +18,7 @@ alwaysApply: false
 
 ## ディレクトリ・責務
 
-- `src/entrypoints/`: 拡張のエントリーポイント（background/content/popup）。
+- `src/entrypoints/`: 拡張のエントリーポイント（background / content / popup / options）。
 - `src/lib/`: 共有ロジック、ユーティリティ、純粋関数を優先して配置する。
 - `src/components/ui/`: 再利用前提のUIプリミティブを配置する。
 

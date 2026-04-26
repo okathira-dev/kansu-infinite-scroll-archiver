@@ -1,4 +1,4 @@
-import type { ServiceConfig } from "@/lib/types";
+import { resolveServiceNotificationSettings, type ServiceConfig } from "@/lib/types";
 
 export const sampleServiceConfig: ServiceConfig = {
   id: "service-example",
@@ -15,6 +15,7 @@ export const sampleServiceConfig: ServiceConfig = {
     { name: "digits", selector: ".title", type: "regex", regex: "(\\d+)" },
   ],
   enabled: true,
+  notificationSettings: resolveServiceNotificationSettings(undefined),
   updatedAt: "2026-04-02T00:00:00.000Z",
 };
 

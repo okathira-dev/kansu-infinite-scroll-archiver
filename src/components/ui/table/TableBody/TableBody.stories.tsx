@@ -8,6 +8,18 @@ const meta = {
   },
   args: {
     className: "",
+    children: (
+      <>
+        <TableRow>
+          <TableCell>セル 1-A</TableCell>
+          <TableCell>セル 1-B</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell>セル 2-A</TableCell>
+          <TableCell>セル 2-B</TableCell>
+        </TableRow>
+      </>
+    ),
   },
 } satisfies Meta<typeof TableBody>;
 
@@ -23,16 +35,7 @@ export const Default: Story = {
           <TableHead>列B</TableHead>
         </TableRow>
       </TableHeader>
-      <TableBody {...args}>
-        <TableRow>
-          <TableCell>セル 1-A</TableCell>
-          <TableCell>セル 1-B</TableCell>
-        </TableRow>
-        <TableRow>
-          <TableCell>セル 2-A</TableCell>
-          <TableCell>セル 2-B</TableCell>
-        </TableRow>
-      </TableBody>
+      <TableBody {...args}>{args.children}</TableBody>
     </Table>
   ),
 };

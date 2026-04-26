@@ -16,7 +16,10 @@ const {
   storeState,
 } = vi.hoisted(() => ({
   fetchConfigsMock: vi.fn(async () => {}),
-  saveConfigMock: vi.fn(async () => ({ ok: true as const, configId: "service-1" })),
+  saveConfigMock: vi.fn(async (_config: ServiceConfig) => ({
+    ok: true as const,
+    configId: "service-1",
+  })),
   deleteConfigMock: vi.fn(async () => ({ ok: true as const, deletedRecords: 0 })),
   exportServiceDataMock: vi.fn(
     async () =>
@@ -110,5 +113,33 @@ describe("Options App", () => {
     await user.click(screen.getByRole("button", { name: "JSON をエクスポート" }));
 
     expect(exportServiceDataMock).toHaveBeenCalledWith("service-1");
+  });
+
+  it("通知設定を編集して保存できる", async () => {
+    const user = userEvent.setup();
+    storeState.configs = [
+      {
+        id: "service-1",
+        name: "Service 1",
+        urlPatterns: ["*://example.com/*"],
+        observeRootSelector: "body",
+        itemSelector: ".item",
+        uniqueKeyField: "id",
+        fieldRules: [{ name: "id", selector: ".id", type: "text" }],
+        enabled: true,
+        updatedAt: "2026-04-09T00:00:00.000Z",
+      },
+    ];
+
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "編集" }));
+    await user.click(screen.getByLabelText("今回の内訳（新規・更新）を表示"));
+    await user.click(screen.getByRole("button", { name: "保存" }));
+
+    expect(saveConfigMock).toHaveBeenCalledTimes(1);
+    const savedConfig = saveConfigMock.mock.lastCall?.[0];
+    expect(savedConfig).toBeDefined();
+    expect(savedConfig?.notificationSettings?.toast.showIncrementCount).toBe(false);
   });
 });

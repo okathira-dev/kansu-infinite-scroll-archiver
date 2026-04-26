@@ -8,6 +8,12 @@ const meta = {
   },
   args: {
     className: "gap-2",
+    children: (
+      <>
+        <DialogTitle>タイトル</DialogTitle>
+        <DialogDescription>ヘッダー領域のレイアウト用コンポーネントです。</DialogDescription>
+      </>
+    ),
   },
 } satisfies Meta<typeof DialogHeader>;
 
@@ -18,10 +24,7 @@ export const Default: Story = {
   render: (args) => (
     <Dialog defaultOpen>
       <DialogContent showCloseButton={false}>
-        <DialogHeader {...args}>
-          <DialogTitle>タイトル</DialogTitle>
-          <DialogDescription>ヘッダー領域のレイアウト用コンポーネントです。</DialogDescription>
-        </DialogHeader>
+        <DialogHeader {...args}>{args.children}</DialogHeader>
       </DialogContent>
     </Dialog>
   ),

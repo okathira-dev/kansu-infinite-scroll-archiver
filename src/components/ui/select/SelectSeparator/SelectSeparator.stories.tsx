@@ -14,6 +14,9 @@ const meta = {
   parameters: {
     layout: "centered",
   },
+  args: {
+    className: "",
+  },
 } satisfies Meta<typeof SelectSeparator>;
 
 export default meta;

@@ -76,6 +76,31 @@ describe("RecordRepository", () => {
     expect(records[0]?.fieldValues.title?.raw).toBe("更新タイトル");
   });
 
+  it("countByServiceId が保存件数を返す", async () => {
+    const repository = createRepository();
+    await repository.bulkUpsert([
+      createRecord({ serviceId: "svc-a", uniqueKey: "a1", title: "t1" }),
+      createRecord({ serviceId: "svc-a", uniqueKey: "a2", title: "t2" }),
+      createRecord({ serviceId: "svc-b", uniqueKey: "b1", title: "t3" }),
+    ]);
+    expect(await repository.countByServiceId("svc-a")).toBe(2);
+    expect(await repository.countByServiceId("svc-b")).toBe(1);
+    expect(await repository.countByServiceId("svc-none")).toBe(0);
+  });
+
+  it("countAllByServiceId がサービス ID ごとの件数を返す", async () => {
+    const repository = createRepository();
+    await repository.bulkUpsert([
+      createRecord({ serviceId: "svc-a", uniqueKey: "a1", title: "t1" }),
+      createRecord({ serviceId: "svc-a", uniqueKey: "a2", title: "t2" }),
+      createRecord({ serviceId: "svc-b", uniqueKey: "b1", title: "t3" }),
+    ]);
+    expect(await repository.countAllByServiceId()).toEqual({
+      "svc-a": 2,
+      "svc-b": 1,
+    });
+  });
+
   it("bulkPut が途中で失敗した場合に transaction をロールバックする", async () => {
     const repository = createRepository();
     const invalidRecord = {

@@ -8,6 +8,12 @@ const meta = {
   },
   args: {
     className: "",
+    children: (
+      <>
+        <TableCell>主役の行・左</TableCell>
+        <TableCell>主役の行・右</TableCell>
+      </>
+    ),
   },
 } satisfies Meta<typeof TableRow>;
 
@@ -24,10 +30,7 @@ export const Default: Story = {
         </TableRow>
       </TableHeader>
       <TableBody>
-        <TableRow {...args}>
-          <TableCell>主役の行・左</TableCell>
-          <TableCell>主役の行・右</TableCell>
-        </TableRow>
+        <TableRow {...args}>{args.children}</TableRow>
         <TableRow>
           <TableCell>比較用</TableCell>
           <TableCell>比較用</TableCell>

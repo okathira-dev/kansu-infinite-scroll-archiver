@@ -7,28 +7,37 @@ const meta = {
   parameters: {
     layout: "centered",
   },
+  args: {
+    children: "ラベル文言",
+  },
 } satisfies Meta<typeof Label>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {
-  args: {
-    children: "ラベル文言",
+  render: (args) => {
+    const { htmlFor = "sb-label-playground", ...labelArgs } = args;
+    return (
+      <div className="grid w-72 gap-2">
+        <Label htmlFor={htmlFor} {...labelArgs} />
+        <Input id={htmlFor} placeholder="入力" className="w-72" />
+      </div>
+    );
   },
-  render: (args) => (
-    <div className="grid w-72 gap-2">
-      <Label htmlFor="sb-label-playground">{args.children}</Label>
-      <Input id="sb-label-playground" placeholder="入力" className="w-72" />
-    </div>
-  ),
 };
 
 export const WithInput: Story = {
-  render: () => (
-    <div className="grid w-72 gap-2">
-      <Label htmlFor="email">メールアドレス</Label>
-      <Input id="email" type="email" placeholder="you@example.com" />
-    </div>
-  ),
+  args: {
+    children: "メールアドレス",
+  },
+  render: (args) => {
+    const { htmlFor = "email", ...labelArgs } = args;
+    return (
+      <div className="grid w-72 gap-2">
+        <Label htmlFor={htmlFor} {...labelArgs} />
+        <Input id={htmlFor} type="email" placeholder="you@example.com" />
+      </div>
+    );
+  },
 };

@@ -1,10 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink } from "../index";
+import { Pagination, PaginationContent, PaginationItem } from "../index";
 
 const meta = {
   component: PaginationItem,
   parameters: {
     layout: "centered",
+  },
+  args: {
+    children: <span>主役のページ項目</span>,
   },
 } satisfies Meta<typeof PaginationItem>;
 
@@ -15,12 +18,7 @@ export const Default: Story = {
   render: (args) => (
     <Pagination>
       <PaginationContent>
-        <PaginationItem {...args}>
-          <PaginationLink href="#">主役のページ項目</PaginationLink>
-        </PaginationItem>
-        <PaginationItem>
-          <PaginationLink href="#">2</PaginationLink>
-        </PaginationItem>
+        <PaginationItem {...args}>{args.children}</PaginationItem>
       </PaginationContent>
     </Pagination>
   ),

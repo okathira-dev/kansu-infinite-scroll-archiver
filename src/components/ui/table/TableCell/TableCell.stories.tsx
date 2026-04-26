@@ -21,7 +21,6 @@ export const Default: Story = {
       <TableBody>
         <TableRow>
           <TableCell {...args} />
-          <TableCell>隣のセル</TableCell>
         </TableRow>
       </TableBody>
     </Table>

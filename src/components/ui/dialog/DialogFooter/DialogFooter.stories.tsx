@@ -17,6 +17,14 @@ const meta = {
   args: {
     showCloseButton: false,
     className: "",
+    children: (
+      <>
+        <Button type="button" variant="outline">
+          キャンセル
+        </Button>
+        <Button type="button">OK</Button>
+      </>
+    ),
   },
 } satisfies Meta<typeof DialogFooter>;
 
@@ -31,12 +39,7 @@ export const Default: Story = {
           <DialogTitle>確認</DialogTitle>
           <DialogDescription>フッターのアクション配置を確認するプレビューです。</DialogDescription>
         </DialogHeader>
-        <DialogFooter {...args}>
-          <Button type="button" variant="outline">
-            キャンセル
-          </Button>
-          <Button type="button">OK</Button>
-        </DialogFooter>
+        <DialogFooter {...args}>{args.children}</DialogFooter>
       </DialogContent>
     </Dialog>
   ),

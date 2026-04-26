@@ -19,6 +19,64 @@ export interface FieldRule {
   regex?: string;
 }
 
+/** バッジ通知のサービス別設定。 */
+export interface ServiceBadgeNotificationSettings {
+  /** 監視中インジケータ（`ON`）を表示する。 */
+  showMonitoringIndicator: boolean;
+  /** 保存済み合計件数をバッジ表示する。 */
+  showTotalSavedCount: boolean;
+}
+
+/** トースト通知のサービス別設定。 */
+export interface ServiceToastNotificationSettings {
+  /** 保存時トーストを表示する。 */
+  enabled: boolean;
+  /** 今回の内訳（新規件数・更新件数・処理件数）をトーストに表示する。 */
+  showIncrementCount: boolean;
+}
+
+/** サービス単位の通知設定。 */
+export interface ServiceNotificationSettings {
+  badge: ServiceBadgeNotificationSettings;
+  toast: ServiceToastNotificationSettings;
+}
+
+/** 既存設定に通知項目がない場合に補完する既定値。 */
+export const DEFAULT_SERVICE_NOTIFICATION_SETTINGS: ServiceNotificationSettings = {
+  badge: {
+    showMonitoringIndicator: true,
+    showTotalSavedCount: true,
+  },
+  toast: {
+    enabled: true,
+    showIncrementCount: true,
+  },
+};
+
+/**
+ * 通知設定を正規化する。
+ *
+ * 旧データ（通知設定が未定義）を読む場合でも、呼び出し側は常に完全な設定を扱える。
+ */
+export const resolveServiceNotificationSettings = (
+  input: Partial<ServiceNotificationSettings> | undefined,
+): ServiceNotificationSettings => ({
+  badge: {
+    showMonitoringIndicator:
+      input?.badge?.showMonitoringIndicator ??
+      DEFAULT_SERVICE_NOTIFICATION_SETTINGS.badge.showMonitoringIndicator,
+    showTotalSavedCount:
+      input?.badge?.showTotalSavedCount ??
+      DEFAULT_SERVICE_NOTIFICATION_SETTINGS.badge.showTotalSavedCount,
+  },
+  toast: {
+    enabled: input?.toast?.enabled ?? DEFAULT_SERVICE_NOTIFICATION_SETTINGS.toast.enabled,
+    showIncrementCount:
+      input?.toast?.showIncrementCount ??
+      DEFAULT_SERVICE_NOTIFICATION_SETTINGS.toast.showIncrementCount,
+  },
+});
+
 /**
  * サイト単位の抽出・監視設定。
  *
@@ -38,6 +96,8 @@ export interface ServiceConfig {
   fieldRules: FieldRule[];
   /** 有効なときのみ抽出パイプラインを動かす（FR-01）。 */
   enabled: boolean;
+  /** 監視中インジケータ・保存通知のサービス別設定。 */
+  notificationSettings?: ServiceNotificationSettings;
   /** ISO 8601 など、更新時刻の文字列。 */
   updatedAt: string;
 }

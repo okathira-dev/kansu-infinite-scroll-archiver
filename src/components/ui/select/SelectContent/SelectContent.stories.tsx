@@ -11,6 +11,13 @@ const meta = {
     position: "item-aligned" as const,
     align: "center" as const,
     className: "",
+    children: (
+      <>
+        <SelectItem value="1">項目 1</SelectItem>
+        <SelectItem value="2">項目 2</SelectItem>
+        <SelectItem value="3">項目 3</SelectItem>
+      </>
+    ),
   },
 } satisfies Meta<typeof SelectContent>;
 
@@ -31,11 +38,7 @@ export const Default: Story = {
         <SelectTrigger className="w-64" aria-label="コンテンツ確認用">
           <SelectValue placeholder="選択" />
         </SelectTrigger>
-        <SelectContent {...args}>
-          <SelectItem value="1">項目 1</SelectItem>
-          <SelectItem value="2">項目 2</SelectItem>
-          <SelectItem value="3">項目 3</SelectItem>
-        </SelectContent>
+        <SelectContent {...args}>{args.children}</SelectContent>
       </Select>
     );
   },
@@ -45,6 +48,13 @@ export const Default: Story = {
 export const Scrollable: Story = {
   args: {
     className: "max-h-36",
+    children: Array.from({ length: 40 }, (_, i) => ({ value: `v${i}`, label: i + 1 })).map(
+      ({ value, label }) => (
+        <SelectItem key={value} value={value}>
+          項目 {label}
+        </SelectItem>
+      ),
+    ),
   },
   render: (args) => {
     const [value, setValue] = useState("v0");
@@ -58,15 +68,7 @@ export const Scrollable: Story = {
         <SelectTrigger className="w-64" aria-label="長い一覧">
           <SelectValue />
         </SelectTrigger>
-        <SelectContent {...args}>
-          {Array.from({ length: 40 }, (_, i) => ({ value: `v${i}`, label: i + 1 })).map(
-            ({ value: itemValue, label }) => (
-              <SelectItem key={itemValue} value={itemValue}>
-                項目 {label}
-              </SelectItem>
-            ),
-          )}
-        </SelectContent>
+        <SelectContent {...args}>{args.children}</SelectContent>
       </Select>
     );
   },

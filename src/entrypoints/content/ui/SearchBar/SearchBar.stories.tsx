@@ -1,11 +1,24 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { ComponentProps } from "react";
 import { useArgs } from "storybook/preview-api";
 import { SearchBar } from "./index";
 
+type SearchBarStoryArgs = ComponentProps<typeof SearchBar>;
+
 const meta = {
   component: SearchBar,
+  decorators: [
+    (Story) => (
+      <div className="w-[560px] rounded-md border bg-card p-4">
+        <Story />
+      </div>
+    ),
+  ],
   parameters: {
     layout: "centered",
+    controls: {
+      exclude: /^on[A-Z].*/,
+    },
   },
   args: {
     keyword: "",
@@ -23,10 +36,10 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: () => {
-    const [args, updateArgs] = useArgs<typeof meta.args>();
+    const [args, updateArgs] = useArgs<SearchBarStoryArgs>();
 
     const handleToggleTargetField = (fieldName: string) => {
-      const current = args?.targetFieldNames ?? [];
+      const current = args.targetFieldNames;
       updateArgs({
         targetFieldNames: current.includes(fieldName)
           ? current.filter((name) => name !== fieldName)
@@ -35,21 +48,19 @@ export const Default: Story = {
     };
 
     return (
-      <div className="w-[560px] rounded-md border bg-card p-4">
-        <SearchBar
-          keyword={args?.keyword ?? ""}
-          targetFieldNames={args?.targetFieldNames ?? ["title"]}
-          pageSize={args?.pageSize ?? 10}
-          availableFieldNames={args?.availableFieldNames ?? ["title", "author", "url"]}
-          onKeywordChange={(k) => {
-            updateArgs({ keyword: k });
-          }}
-          onToggleTargetField={handleToggleTargetField}
-          onPageSizeChange={(s) => {
-            updateArgs({ pageSize: s });
-          }}
-        />
-      </div>
+      <SearchBar
+        keyword={args.keyword}
+        targetFieldNames={args.targetFieldNames}
+        pageSize={args.pageSize}
+        availableFieldNames={args.availableFieldNames}
+        onKeywordChange={(k) => {
+          updateArgs({ keyword: k });
+        }}
+        onToggleTargetField={handleToggleTargetField}
+        onPageSizeChange={(s) => {
+          updateArgs({ pageSize: s });
+        }}
+      />
     );
   },
 };

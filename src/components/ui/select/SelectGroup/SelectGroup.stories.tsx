@@ -15,6 +15,15 @@ const meta = {
   parameters: {
     layout: "centered",
   },
+  args: {
+    children: (
+      <>
+        <SelectLabel>グループA</SelectLabel>
+        <SelectItem value="a1">項目 A-1</SelectItem>
+        <SelectItem value="a2">項目 A-2</SelectItem>
+      </>
+    ),
+  },
 } satisfies Meta<typeof SelectGroup>;
 
 export default meta;
@@ -30,11 +39,7 @@ export const Default: Story = {
           <SelectValue placeholder="選択" />
         </SelectTrigger>
         <SelectContent>
-          <SelectGroup {...args}>
-            <SelectLabel>グループA</SelectLabel>
-            <SelectItem value="a1">項目 A-1</SelectItem>
-            <SelectItem value="a2">項目 A-2</SelectItem>
-          </SelectGroup>
+          <SelectGroup {...args}>{args.children}</SelectGroup>
         </SelectContent>
       </Select>
     );

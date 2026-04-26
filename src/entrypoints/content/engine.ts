@@ -1,6 +1,15 @@
 import { recordDevPerformanceMetric } from "@/lib/dev/performanceMetrics";
 import type { ResponseMessage } from "@/lib/messages";
-import type { ExtractedRecord, ServiceConfig } from "@/lib/types";
+import {
+  MONITORING_STATE_MESSAGE_TYPE,
+  SAVE_SUMMARY_EVENT_NAME,
+  type SaveSummaryEventDetail,
+} from "@/lib/messages/systemEvents";
+import {
+  type ExtractedRecord,
+  resolveServiceNotificationSettings,
+  type ServiceConfig,
+} from "@/lib/types";
 import { MutationBatchProcessor } from "./mutationBatchProcessor";
 import { extractRecordsFromDom } from "./recordExtractor";
 import { matchesAnyUrlPattern } from "./urlPatternMatcher";
@@ -10,6 +19,12 @@ const BATCH_DELAY_MS = 200;
 const isSuccessResponse = (value: unknown): value is { ok: true; data: unknown } =>
   typeof value === "object" && value !== null && "ok" in value && value.ok === true;
 
+interface BulkUpsertSummary {
+  processed: number;
+  created: number;
+  updated: number;
+}
+
 const toServiceConfigs = (value: unknown): ServiceConfig[] | null => {
   if (typeof value !== "object" || value === null || !("configs" in value)) {
     return null;
@@ -17,6 +32,24 @@ const toServiceConfigs = (value: unknown): ServiceConfig[] | null => {
 
   const { configs } = value as { configs: unknown };
   return Array.isArray(configs) ? (configs as ServiceConfig[]) : null;
+};
+
+const toBulkUpsertSummary = (value: unknown): BulkUpsertSummary | null => {
+  if (typeof value !== "object" || value === null) {
+    return null;
+  }
+  const { processed, created, updated } = value as Record<string, unknown>;
+  if (
+    typeof processed !== "number" ||
+    typeof created !== "number" ||
+    typeof updated !== "number" ||
+    !Number.isFinite(processed) ||
+    !Number.isFinite(created) ||
+    !Number.isFinite(updated)
+  ) {
+    return null;
+  }
+  return { processed, created, updated };
 };
 
 const resolveObserveRoot = (selector: string): Element | null => {
@@ -56,7 +89,29 @@ const fetchMatchedServiceConfig = async (currentUrl: string): Promise<ServiceCon
   );
 };
 
-const sendBulkUpsert = async (records: ExtractedRecord[]): Promise<void> => {
+const fetchRecordCountByServiceId = async (serviceId: string): Promise<number> => {
+  try {
+    const response = await browser.runtime.sendMessage({
+      type: "records/countByServiceId",
+      payload: { serviceId },
+    });
+    if (!isSuccessResponse(response)) {
+      console.warn("Kansu: 保存件数の取得が失敗応答でした", response);
+      return 0;
+    }
+    const data = response.data as { count?: unknown };
+    if (typeof data.count !== "number" || !Number.isFinite(data.count)) {
+      console.warn("Kansu: 保存件数の応答形式が不正です", response.data);
+      return 0;
+    }
+    return Math.max(0, Math.floor(data.count));
+  } catch (error) {
+    console.error("Kansu: 保存件数の取得に失敗しました", error);
+    return 0;
+  }
+};
+
+const sendBulkUpsert = async (records: ExtractedRecord[]): Promise<BulkUpsertSummary | null> => {
   try {
     const response = await browser.runtime.sendMessage({
       type: "records/bulkUpsert",
@@ -64,9 +119,17 @@ const sendBulkUpsert = async (records: ExtractedRecord[]): Promise<void> => {
     });
     if (!isSuccessResponse(response)) {
       console.warn("Kansu: 一括保存リクエストが失敗しました", response);
+      return null;
     }
+    const summary = toBulkUpsertSummary(response.data);
+    if (!summary) {
+      console.warn("Kansu: 一括保存の応答形式が不正です", response.data);
+      return null;
+    }
+    return summary;
   } catch (error) {
     console.error("Kansu: 一括保存の送信に失敗しました", error);
+    return null;
   }
 };
 
@@ -87,6 +150,26 @@ export const startContentEngine = async (): Promise<void> => {
     return;
   }
 
+  const notificationSettings = resolveServiceNotificationSettings(config.notificationSettings);
+  const persistedRecordCount = await fetchRecordCountByServiceId(config.id);
+  const notifyMonitoringState = async (active: boolean, persistedCount = 0): Promise<void> => {
+    try {
+      await browser.runtime.sendMessage({
+        type: MONITORING_STATE_MESSAGE_TYPE,
+        payload: {
+          active,
+          serviceId: config.id,
+          notificationSettings,
+          ...(active ? { persistedRecordCount: persistedCount } : {}),
+        },
+      });
+    } catch (error) {
+      console.warn("Kansu: 監視状態通知の送信に失敗しました", error);
+    }
+  };
+
+  await notifyMonitoringState(true, persistedRecordCount);
+
   const flushExtraction = async () => {
     const extractionStartAt = performance.now();
     const records = extractRecordsFromDom({ config, observeRoot, pageUrl: currentUrl });
@@ -99,7 +182,22 @@ export const startContentEngine = async (): Promise<void> => {
       });
       return;
     }
-    await sendBulkUpsert(records);
+    const summary = await sendBulkUpsert(records);
+    if (summary) {
+      const totalSaved = await fetchRecordCountByServiceId(config.id);
+      const detail: SaveSummaryEventDetail = {
+        serviceId: config.id,
+        serviceName: config.name,
+        processed: summary.processed,
+        created: summary.created,
+        updated: summary.updated,
+        totalSaved,
+        notificationSettings,
+      };
+      window.dispatchEvent(
+        new CustomEvent<SaveSummaryEventDetail>(SAVE_SUMMARY_EVENT_NAME, { detail }),
+      );
+    }
     const flushFinishedAt = performance.now();
     recordDevPerformanceMetric("content-extraction", flushFinishedAt - extractionStartAt, {
       serviceId: config.id,
@@ -124,6 +222,7 @@ export const startContentEngine = async (): Promise<void> => {
   const cleanup = () => {
     observer.disconnect();
     batchProcessor.stop();
+    void notifyMonitoringState(false);
     window.removeEventListener("pagehide", cleanup);
   };
   window.addEventListener("pagehide", cleanup, { once: true });

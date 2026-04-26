@@ -6,6 +6,9 @@ const meta = {
   component: App,
   parameters: {
     layout: "centered",
+    controls: {
+      disable: true,
+    },
   },
 } satisfies Meta<typeof App>;
 
