@@ -584,7 +584,7 @@ function App() {
                           }
                         />
                         <Label htmlFor="config-badge-monitoring">
-                          監視中の ON インジケータを表示
+                          監視中の ON インジケータをバッジ表示
                         </Label>
                       </div>
                       <div className="flex items-center gap-2">
