@@ -99,6 +99,11 @@ alwaysApply: true
 - **`useArgs` 利用時の既定値**: 既定値は `meta.args` または各ストーリーの `args` に置き、`render` 内で `args?.x ?? ...` / `args.x ?? ...` のフォールバックを追加しない。`render` は `args` を直接参照して同期する。
 - **`children` 中心 props の UI / View Story**: `children` など限定的な props しか持たない場合でも、主役コンポーネントへは **`args` / props 経由で `children` を渡す**。`args.children ?? ...` のフォールバックは使わない。これが成立しない場合は、UI/View 境界や責務（命名・配置）を見直す候補として扱う。
 - **バリアント一覧ストーリーの固定運用**: `variant` / `size` などの**一覧比較（マトリクス表示）**を目的とするストーリーでは、主役を置かず **Controls は使わず固定表示**にする（例: `Badge` の `Variants`、`Button` の `Variants` / `Sizes`）。比較ラベルや表示要素は最小限にとどめる。
+- **CVA バリアント（`link` 等）と正しい根要素**（[Issue #50](https://github.com/okathira-dev/kansu-infinite-scroll-archiver/issues/50) 由来の方針）: バリアント一覧の目的は**実装と同じ前提で見た目を揃えて比較すること**。`variant` 名は似ていても、**コンポーネント間で同じ根要素（`a` / `button` / `span` 等）を仮定してよいとは限らない**。
+  - 実装が `asChild`＋子要素、またはアンカー専用セレクタ（例: `[a&]…`）に依存するなら、**一覧ストーリーでも**その形で示す（`Badge` の `link` なら `asChild` + `<a>…</a>` が典型）。
+  - 実装が**ボタン根要素上の装飾**（例: `Button` の `link`）なら、**`button` 要素のまま**でよい。無理に `<a>` に合わせない。
+- **ストーリー上の `href` と a11y（Biome）**: プレースホルダの **`<a href="#">`** は `lint/a11y/useValidAnchor` になり得る。対応は**いずれか一つ**に揃える:（1）**有効な URL** の `href`、（2）1 行の `biome-ignore` + 短い理由（Storybook 専用プレースホルダであること）。**`<a>` + `onClick` で遷移を止める**偽ナビは避ける（`useValidAnchor` の他条項に抵触しやすい）。
+- **同種の見落としを防ぐ掃引**: ストーリー変更時は `pnpm biome lint src`（少なくとも変更した `.stories.tsx`）を通し、必要に応じて `variant=…link` / `asChild` / 生の `<a` / `href=` を `src` 内ストーリーで点検する。
 - **複合 UI（Tabs など）**: ストーリーはコンポーネント名のフォルダへ分割し、**サブコンポーネントごとに個別の `.stories.tsx`** を作る。
 - **複合 UI のサブ用ストーリー**: キャンバスは **実利用に近い親子構成**で組み、`meta.component` と `args` は **そのサブコンポーネント**に対応させ、`render` 内では **`{...args}` を当該サブ（またはそれに渡す専用 props）にだけ** 当てる。
 - **UI 以外**（content / options / popup 等、molecules 以上）: **可視の説明テキスト・`Label` との紐付け**など、実画面に近い形で a11y を満たす。

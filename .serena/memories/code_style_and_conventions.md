@@ -21,6 +21,7 @@
 
 - **本文は載せない**（二重管理と `read_memory` 時の無駄なトークンを避ける）。
 - 言語・コロケーション・ドキュメント参照の詳細はリポジトリの `.cursor/rules/kansu-agent-conventions.mdc`（`alwaysApply: true`）を正本とする。コンポーネント境界の用語表は `docs/ubiquitous-language.md` を先に確認する（表は Markdown プレビュー向け）。索引は `.cursor/rules/ubiquitous-language.mdc`。Serena 利用時に確認したければ **当該 `.mdc` をファイル読取で開く**（メモリに同文を複製しない）。
+- **Storybook**: CVA の `link` 等と根要素（`asChild`＋`a` 等）、バリアント一覧の比較軸、`href` プレースホルダと Biome `useValidAnchor` の扱いは、同 `kansu-agent-conventions.mdc` の `### Storybook` 内（CVA/バリアント…・`href` と a11y・掃引の箇条書き）を正本とする（Issue #50 相当の方針）。
 
 ## Cursor ルールと Serena メモリの役割
 
