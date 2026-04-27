@@ -43,6 +43,10 @@ alwaysApply: false
 - [Scratchpad.md](mdc:Scratchpad.md): 短期的なタスク計画・進捗管理
 - Serena memories（`.serena/memories/*.md`）: 長期知識（規約・教訓・運用メモ）
 - [GITHUB-MCP.md](mdc:.cursor/GITHUB-MCP.md): GitHub MCP の利用手順（PAT はグローバル設定）
+- `.cursor/skills/*/`: Cursor のプロジェクト共有 Agent Skills（mizchi 由来は英語 `SKILL.md` を正本とし、人間向け日本語は各フォルダの `OVERVIEW-ja.md` にコロケーション）
+- [mizchi/skills 調査メモ](mdc:docs/agent-skills/mizchi-skills-survey.md): 外部 Skill 集合の採用候補メモ
+- [empirical-prompt-tuning OVERVIEW（日本語）](mdc:.cursor/skills/empirical-prompt-tuning/OVERVIEW-ja.md): 実証的プロンプト調整 Skill の人間向け説明
+- [playwright-test OVERVIEW（日本語）](mdc:.cursor/skills/playwright-test/OVERVIEW-ja.md): Playwright Test Skill の人間向け説明
 
 ## 参照ドキュメント
 

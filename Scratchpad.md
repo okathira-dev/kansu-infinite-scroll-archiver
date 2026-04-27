@@ -7,6 +7,8 @@
 
 Phase 6 の品質強化は一通り反映済み。Chrome Web Store 向けの**手順・チェックリスト・メタ草案**は [docs/chrome-web-store-release.md](docs/chrome-web-store-release.md) に集約し、**ここで一区切り**。
 
+Cursor 向けプロジェクト Skill として `empirical-prompt-tuning`（[`.cursor/skills/empirical-prompt-tuning/`](.cursor/skills/empirical-prompt-tuning/)）と `playwright-test`（[`.cursor/skills/playwright-test/`](.cursor/skills/playwright-test/)）を導入済み（本文は mizchi に合わせ英語、人間向け日本語は各 `OVERVIEW-ja.md`、差分は各 `upstream-divergences.md`）。外部集合の調査メモは [docs/agent-skills/mizchi-skills-survey.md](docs/agent-skills/mizchi-skills-survey.md)。
+
 **次（別PR）**: `package.json` の version を **0.1.0** に上げ、手順書どおり **手動でストア提出**（ビルド・ZIP・アップロード）を試す。そのPRで **リスティング情報を詰める**（説明・スクリーンショット・Privacy 宣言・サポート連絡先など）。
 
 併行してよいもの：**UI 確認・修正**（Popup / Options / メインUI の見た目・操作性・a11y）。必要なら上記リリースPRとは分けてもよい。
