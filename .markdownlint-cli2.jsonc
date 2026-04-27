@@ -4,5 +4,5 @@
     "MD013": false
   },
   "gitignore": true,
-  "ignores": [".cursor/**", ".serena/**"]
+  "ignores": [".serena/**"]
 }

@@ -6,7 +6,7 @@ alwaysApply: false
 # Kansu ユビキタス言語（このファイルの役割）
 
 - **用語表の正本（表・プレビュー向け）**: [docs/ubiquitous-language.md](mdc:docs/ubiquitous-language.md) を開く。Markdown プレビューで一覧表を確認できる。
-- **実装規約の正本**: [kansu-agent-conventions.mdc](mdc:.cursor/rules/kansu-agent-conventions.mdc)（命名・Storybook・境界の詳細）。
+- **実装規約の正本**: [kansu-agent-conventions.mdc](mdc:.cursor/rules/kansu-agent-conventions.mdc)（命名・境界の詳細）。Storybook の細目は [storybook.mdc](mdc:.cursor/rules/storybook.mdc)。
 
 この `.mdc` は **Cursor ルールとしての索引**に留め、長い表は `docs/ubiquitous-language.md` に二重掲載しない。
 

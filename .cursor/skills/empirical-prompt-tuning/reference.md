@@ -1,9 +1,5 @@
 # empirical-prompt-tuning — reference templates
 
-Templates and tables used by [SKILL.md](SKILL.md). Wording follows the **English** [upstream `SKILL.md`](https://raw.githubusercontent.com/mizchi/skills/main/empirical-prompt-tuning/SKILL.md) where that file is canonical. **Japanese** explanations for humans are in [OVERVIEW-ja.md](OVERVIEW-ja.md). Divergences from upstream are tracked in [upstream-divergences.md](upstream-divergences.md).
-
----
-
 ## Subagent invocation contract
 
 Paste the following into the executor prompt. Fill `<>` placeholders.

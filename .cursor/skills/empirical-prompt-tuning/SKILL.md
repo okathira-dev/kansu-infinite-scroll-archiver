@@ -9,8 +9,6 @@ description: >-
 
 # Empirical Prompt Tuning
 
-> **Human readers (日本語):** workflow summary and repo context are in [OVERVIEW-ja.md](OVERVIEW-ja.md) (colocated). This `SKILL.md` follows the English source style of [mizchi/skills `empirical-prompt-tuning`](https://github.com/mizchi/skills/tree/main/empirical-prompt-tuning).
-
 The author of a prompt cannot judge its quality. The clearer the writer thinks something is, the more likely another agent will stumble on it. The core of this skill is to **have a bias-free executor actually run the instruction, evaluate it two-sidedly, and iterate**. Do not stop until improvements plateau.
 
 ## When to use
@@ -70,11 +68,6 @@ If dispatching a new subagent is not possible (already running as a subagent, Ta
 ## Optional: variant exploration
 
 When plateauing without meeting convergence, see **Variant exploration** in [reference.md](reference.md).
-
-## Additional resources
-
-- Templates, tables, red flags, common failures: [reference.md](reference.md)
-- **Divergences from upstream (canonical):** [upstream-divergences.md](upstream-divergences.md)
 
 ## Related (optional; not prerequisites)
 

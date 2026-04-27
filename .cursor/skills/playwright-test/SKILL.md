@@ -8,8 +8,6 @@ description: >-
 
 # Playwright Test
 
-> **Human readers (日本語):** see [OVERVIEW-ja.md](OVERVIEW-ja.md) (colocated). Full English reference (mizchi-aligned body) is in [reference.md](reference.md).
-
 ## When to use
 
 - Writing or reviewing E2E tests under Playwright Test
@@ -18,28 +16,20 @@ description: >-
 
 ## Kansu repository context
 
-Use these project facts before suggesting copy-paste from generic templates:
+Use these project facts before copy-pasting generic Playwright templates (upstream examples often use `npm` / `testDir: './tests'`):
 
 | Topic | This repo |
 | --- | --- |
 | Test directory | `./e2e` (`playwright.config.ts` → `testDir`) |
 | Run commands | `pnpm e2e` (build + test), `pnpm e2e:only` (tests only), `pnpm e2e:watch` (UI mode) |
 | Step / expect timeouts | Shared constants in `e2e/constants.ts` (e.g. `E2E_STEP_TIMEOUT_MS`); align new waits with them |
-| Package manager | **pnpm** — prefer `pnpm exec playwright …` over `npx` in docs you author for this repo |
-| CI | See `.github/workflows/` for actual jobs (may differ from upstream `npm` examples) |
+| Package manager | **pnpm** — use `pnpm exec playwright …` in snippets you author for this repo |
+| CI | `.github/workflows/` — toolchain via `.github/actions/setup-node-pnpm` (do not hard-code `node-version` in new YAML) |
 
-Do not replace this repo’s `playwright.config.ts` wholesale with the template in `reference.md` unless the task explicitly asks for it—merge patterns (retries, reporters, trace) conservatively.
+Do not replace this repo’s `playwright.config.ts` wholesale with upstream templates unless the task explicitly asks for it—merge patterns (retries, reporters, trace) conservatively.
 
 ## Non-negotiables (summary)
 
 - **No fixed sleeps**: do not use `page.waitForTimeout()`. Rely on auto-waiting, `expect(locator)` web-first assertions, or targeted `waitForResponse` / `waitForURL` when the UI truly depends on network or navigation.
 - **Prefer web-first `expect`**: avoid one-shot reads (`isVisible()`, raw `innerText()` for assertions) when an auto-retrying matcher exists.
 - **Set up network listeners before the action** that triggers the request (`waitForResponse`, `waitForRequest`).
-
-## Full reference
-
-Templates (config, GitHub Actions, sharding), network/HAR, DnD, locators, modals, auth setup, POM, debugging CLI — see **[reference.md](reference.md)** (progressive load; same substance as [mizchi/skills `playwright-test/SKILL.md`](https://github.com/mizchi/skills/blob/main/playwright-test/SKILL.md)).
-
-## Divergences from upstream
-
-Structural and repo-specific changes are listed in [upstream-divergences.md](upstream-divergences.md).
