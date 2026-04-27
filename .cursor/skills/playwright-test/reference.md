@@ -1,9 +1,3 @@
-# playwright-test — reference (upstream body)
-
-English reference material aligned with [mizchi/skills `playwright-test/SKILL.md`](https://github.com/mizchi/skills/blob/main/playwright-test/SKILL.md) (frontmatter removed; see [upstream-divergences.md](upstream-divergences.md)). **Japanese** overview: [OVERVIEW-ja.md](OVERVIEW-ja.md).
-
----
-
 # Playwright Test
 
 ## Configuration Template
@@ -238,7 +232,7 @@ test.describe('payment flow', () => {
 ### Choosing Trace / Screenshot / Video
 
 | Setting | When captured | Purpose / Size |
-|---|---|---|
+| --- | --- | --- |
 | `'on'` | Every test | Debug only. Not recommended on CI (artifacts balloon) |
 | `'on-first-retry'` | Only on retry | **Recommended CI default**. Sufficient for flaky investigation, minimal size |
 | `'retain-on-failure'` | Kept on failure | When you want to catch a failure on the very first run. Useful when retries are disabled |
@@ -317,7 +311,7 @@ expect(await page.getByText('Success').isVisible()).toBe(true);
 **One-shot read APIs do not auto-retry**:
 
 | Form | Behavior |
-|---|---|
+| --- | --- |
 | `expect(locator).toBeVisible()` / `toHaveText(...)` etc. | **Auto-retry** (default 5s). Use these |
 | `await locator.isVisible()` / `innerText()` / `count()` / `textContent()` | **One-shot read, no retry**. A hotbed for flaky tests |
 
@@ -603,4 +597,3 @@ npx playwright show-report           # Show report
 ```
 
 In code: `await page.pause()` opens the Inspector mid-test.
-

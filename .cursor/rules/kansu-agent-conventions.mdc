@@ -22,6 +22,19 @@ alwaysApply: true
 
 - 要件・フェーズ・技術仕様は [requirements.md](mdc:docs/requirements.md)、[implementation_plan.md](mdc:docs/implementation_plan.md)、[implementation_guide.md](mdc:docs/implementation_guide.md) を参照する。
 - 短期タスクと進捗は [Scratchpad.md](mdc:Scratchpad.md)。仕様変更時は関連ドキュメントと同期する（全体方針は [global.mdc](mdc:.cursor/rules/global.mdc)）。
+- 外部由来 Cursor Skill の upstream 差分ログは **`docs/` ではなく** `.cursor/skills/<name>/upstream-divergences.md` に置く（詳細は [global.mdc](mdc:.cursor/rules/global.mdc) のドキュメント運用）。
+
+### 外部由来 Cursor Skill（ファイルの役割・編集時）
+
+mizchi 等の **元スキル本文に無いメタ段落**（「`reference.md` を読め」「差分はこちら」など）を Skill 直下に増やさない。ファイル三層の意味づけは **本節と** 各 `upstream-divergences.md` に寄せる。
+
+- **`SKILL.md`**: 外部ソースに **英語版がある Skill は `SKILL.md` 全体を英語で運用**する。追記・改変も **英語のみ**。
+- **`reference.md`**: upstream 原文のコピー、または原文に近い比較用ブロック（**導線・説明のオリジナルは足さない**）。
+- **`upstream-divergences.md`**: 本リポジトリ側の意図的な差分と**理由**の正本（**日本語でよい**）。経緯の羅列ではなく、いまの差分と理由が分かるように書く。
+
+ワークフロー内で `reference.md` の節へ言及するのは、元スキルが同一ファイル内で後段を指していたのと同趣旨の **分割の名残**に限り、メタ説明の追加とは切り分ける。
+
+- 外部に **`SKILL-ja.md` 等の日本語版**があっても、エージェント向けの正本は **英語 `SKILL.md`** とし、日本語版を Skill 直下に複製しない。
 
 ### ドキュメントの役割分担（永続方針）
 
@@ -83,30 +96,4 @@ alwaysApply: true
 
 ### Storybook
 
-- **コンポーネント配置**: Storybook 対象のコンポーネントは **コンポーネント単位のフォルダ**を作り、実装正本（`index.tsx` または `ComponentName.tsx` / `ComponentNameView.tsx`）と `*.stories.tsx`（ストーリー）を同居させる。
-- **複合 UI の Story 配置**: 複合 UI のストーリーもサブコンポーネントフォルダに同居させる（例: `tabs/Tabs/Tabs.stories.tsx`, `tabs/TabsTrigger/TabsTrigger.stories.tsx`）。この方針は Tabs 以外の複合 UI（`card` / `dialog` / `select` / `table` / `pagination` など）にも適用する。
-- **Story の `title`**: フォルダ構造ベースの自動タイトルを使うため、**`title` は原則書かない**（特別な理由がある場合のみ明示）。
-- **`src/components/ui`（共有プリミティブ／atom 相当の粒度）**: Controls で主要 props を触れる **Controls 用ストーリー**（`args` 中心、必要なら `render` は最小）を **必ず用意**する。単体プレビューでは **`aria-label` 等の ARIA で名前を補ってよい**。
-- **`src/entrypoints/**/ui` のストーリー**: 上記 **コンポーネント／モジュール構成** の **`src/entrypoints/**/ui`**（props 駆動・副作用なし）について、**触れる props を Controls で確認できる状態**を原則とする。
-- **feature 所有 View のストーリー**: `src/entrypoints/**/feature/<ComponentName>/` に統合した `*View` は、同フォルダに `*View.stories.tsx` を置く（統合側 `ComponentName.stories.tsx` と同居可）。
-- **Controls と例示の分離**: Controls で可変確認するストーリーと、固定文言・固定挙動を示す例示ストーリーは分ける（1ストーリーに混在させない）。
-- **複合コンポーネント子ストーリーの比較要素**: 入れ子前提で、かつ **同種の子を複数並べて使うことが想定される**複合コンポーネント（例: RadioGroup / Select / Tabs）では、子コンポーネントのストーリー内に **Controls で可変確認する主役要素** と **状態比較のために固定表示する補助要素**（未選択タブ、隣接項目など）を並列に置いてよい。主役は `args` 経由で制御し、補助要素は最小限にとどめる。
-- **Story 専用 args の扱い**: 対象コンポーネントの props ではない Story 専用 args が必要な場合は、Story 内にラッパーを置いて `Meta<typeof Wrapper>` を使い、実コンポーネント props と混在させない。
-- **Story の二分**（必須ではないが推奨）:
-  - **`ui` の Story**: Controls で主要バリエーションを触れる（`useArgs` で操作とパネルを同期してよい）。
-  - **統合 Story**（`feature` / `App`）: モック・decorator・実ストアで**本番に近い経路**を確認する。Controls で全部を触ることは目的にしない。
-- **UI ストーリーの `args`**: `satisfies Meta<typeof Component>` の範囲に収まる props のみを扱い、**Storybook 専用の疑似 props（Meta 以上の独自 args）を追加しない**。
-- **`useArgs` 利用時の既定値**: 既定値は `meta.args` または各ストーリーの `args` に置き、`render` 内で `args?.x ?? ...` / `args.x ?? ...` のフォールバックを追加しない。`render` は `args` を直接参照して同期する。
-- **`children` 中心 props の UI / View Story**: `children` など限定的な props しか持たない場合でも、主役コンポーネントへは **`args` / props 経由で `children` を渡す**。`args.children ?? ...` のフォールバックは使わない。これが成立しない場合は、UI/View 境界や責務（命名・配置）を見直す候補として扱う。
-- **バリアント一覧ストーリーの固定運用**: `variant` / `size` などの**一覧比較（マトリクス表示）**を目的とするストーリーでは、主役を置かず **Controls は使わず固定表示**にする（例: `Badge` の `Variants`、`Button` の `Variants` / `Sizes`）。比較ラベルや表示要素は最小限にとどめる。
-- **CVA バリアント（`link` 等）と正しい根要素**（[Issue #50](https://github.com/okathira-dev/kansu-infinite-scroll-archiver/issues/50) 由来の方針）: バリアント一覧の目的は**実装と同じ前提で見た目を揃えて比較すること**。`variant` 名は似ていても、**コンポーネント間で同じ根要素（`a` / `button` / `span` 等）を仮定してよいとは限らない**。
-  - 実装が `asChild`＋子要素、またはアンカー専用セレクタ（例: `[a&]…`）に依存するなら、**一覧ストーリーでも**その形で示す（`Badge` の `link` なら `asChild` + `<a>…</a>` が典型）。
-  - 実装が**ボタン根要素上の装飾**（例: `Button` の `link`）なら、**`button` 要素のまま**でよい。無理に `<a>` に合わせない。
-- **ストーリー上の `href` と a11y（Biome）**: プレースホルダの **`<a href="#">`** は `lint/a11y/useValidAnchor` になり得る。対応は**いずれか一つ**に揃える:（1）**有効な URL** の `href`、（2）1 行の `biome-ignore` + 短い理由（Storybook 専用プレースホルダであること）。**`<a>` + `onClick` で遷移を止める**偽ナビは避ける（`useValidAnchor` の他条項に抵触しやすい）。
-- **同種の見落としを防ぐ掃引**: ストーリー変更時は `pnpm biome lint src`（少なくとも変更した `.stories.tsx`）を通し、必要に応じて `variant=…link` / `asChild` / 生の `<a` / `href=` を `src` 内ストーリーで点検する。
-- **複合 UI（Tabs など）**: ストーリーはコンポーネント名のフォルダへ分割し、**サブコンポーネントごとに個別の `.stories.tsx`** を作る。
-- **複合 UI のサブ用ストーリー**: キャンバスは **実利用に近い親子構成**で組み、`meta.component` と `args` は **そのサブコンポーネント**に対応させ、`render` 内では **`{...args}` を当該サブ（またはそれに渡す専用 props）にだけ** 当てる。
-- **UI 以外**（content / options / popup 等、molecules 以上）: **可視の説明テキスト・`Label` との紐付け**など、実画面に近い形で a11y を満たす。
-- **本番との切り分け**: Storybook 向けの ARIA やデモ専用の付け方を **実アプリへそのままコピーして量産しない**。
-- Storybook プロジェクトのみのテストは `pnpm test:storybook`（`package.json` のスクリプトが正本）。
-- **`meta.args`**: **全ストーリーで共通して指定したい値**（例: `children`）があるときは、**必要に応じて `meta.args` に書いてよい**。個別ストーリーだけの差分はそのストーリーの `args` に書く。
+配置・ストーリー規約の詳細は [storybook.mdc](mdc:.cursor/rules/storybook.mdc)（`*.stories.tsx` / `.storybook/**` 変更時に参照）。
