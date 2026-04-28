@@ -1,0 +1,17 @@
+---
+description: 外部由来 Cursor Skill の編集規約（skills 配下変更時）
+globs: ".cursor/skills/**"
+alwaysApply: false
+---
+
+# 外部由来 Cursor Skill（ファイルの役割・編集時）
+
+mizchi 等の **元スキル本文に無いメタ段落**（「`references/original.md` を読め」「差分はこちら」など）を Skill 直下に増やさない。ファイル三層の意味づけは本ファイルと各 `upstream-divergences.md` に寄せる。
+
+- **`SKILL.md`**: 外部ソースに英語版がある Skill は `SKILL.md` 全体を英語で運用する。追記・改変も英語のみ。
+- **`references/original.md`**: upstream 原文のコピー、または原文に近い比較用ブロック（導線・説明のオリジナルは足さない）。
+- **`upstream-divergences.md`**: 本リポジトリ側の意図的な差分と理由の正本（日本語でよい）。経緯の羅列ではなく、現在の差分と理由が分かるように書く。
+
+ワークフロー内で `references/original.md` の節へ言及するのは、元スキルが同一ファイル内で後段を指していたのと同趣旨の分割の名残に限る。メタ説明の追加とは切り分ける。
+
+- 外部に `SKILL-ja.md` 等の日本語版があっても、エージェント向け正本は英語 `SKILL.md` とし、日本語版を Skill 直下に複製しない。

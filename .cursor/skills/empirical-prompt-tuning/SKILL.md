@@ -3,8 +3,8 @@ name: empirical-prompt-tuning
 description: >-
   Iteratively improves agent-facing instructions (Cursor Skills, .mdc rules, CLAUDE.md, codegen prompts) by
   dispatching a fresh subagent as an unbiased executor and evaluating two-sidedly (self-report + checklist
-  metrics) until improvements plateau. Use after creating or substantially revising instructions, when
-  misbehavior may be instruction ambiguity, or when hardening high-traffic prompts.
+  metrics) until improvements plateau. Use only when instruction quality needs empirical validation via fresh
+  subagent execution (not for one-off wording tweaks).
 ---
 
 # Empirical Prompt Tuning
@@ -21,6 +21,14 @@ When not to use:
 
 - One-off throwaway prompts (evaluation cost does not pay off)
 - When the goal is not to improve success rate but merely to reflect the writer's subjective preferences
+
+## Minimal reading path (open only what you need)
+
+- Structural consistency only (`description` vs body): follow Workflow step `0` and `Environment constraints`
+- Full empirical loop: follow Workflow steps `1` to `7`
+- Need prompt/report templates: open `references/original.md` sections `Subagent invocation contract`, `Report structure`, `Evaluation axes`, `Iteration stopping criteria`
+
+Do not read all `references/original.md` sections unless the task explicitly needs advanced patterns (variant exploration, red flags, full ledger operations).
 
 ## Repository context (Kansu)
 
@@ -40,15 +48,15 @@ User-facing explanations and commit/PR text for this project remain **Japanese**
 
 2. **Bias-free read**: Have a blank-slate executor read the instruction. **Dispatch a new subagent** via the Task tool. Do not substitute with a self-reread. When running multiple scenarios in parallel, place multiple agent invocations within a single message when the environment allows.
 
-3. **Execution**: Hand the subagent a prompt that follows the **subagent invocation contract** in [reference.md](reference.md). The executor produces a deliverable and returns a self-report.
+3. **Execution**: Hand the subagent a prompt that follows the **subagent invocation contract** in [references/original.md](references/original.md). The executor produces a deliverable and returns a self-report.
 
 4. **Two-sided evaluation**: From the returned report, record executor self-report (unclear points, discretionary fill-ins, stuck template application), **trace** by phase (Understanding / Planning / Execution / Formatting), structured reflection (**Issue / Cause / General Fix Rule**), and instruction-side metrics (success only if all `[critical]` are met; accuracy; step count and duration — see **Cursor measurement** below; retries from self-report). On failure, add a one-line note stating **which `[critical]` item failed**.
 
-5. **Apply the diff**: Apply the **minimum** change to the target prompt to remove unclear points. **One theme per iteration** (a few related micro-fixes may bundle; unrelated fixes wait). Before applying, state **which checklist / judgment wording** the fix satisfies. Consult **fix propagation** and the **failure pattern ledger** in [reference.md](reference.md).
+5. **Apply the diff**: Apply the **minimum** change to the target prompt to remove unclear points. **One theme per iteration** (a few related micro-fixes may bundle; unrelated fixes wait). Before applying, state **which checklist / judgment wording** the fix satisfies. Consult **fix propagation** and the **failure pattern ledger** in [references/original.md](references/original.md).
 
 6. **Re-evaluate**: Run steps 2–5 again with a **new** subagent (do not reuse the same executor). Increase parallelism if improvements do not plateau.
 
-7. **Convergence check**: Follow **Iteration stopping criteria** in [reference.md](reference.md). Use **3 consecutive** clear rounds for high-importance prompts.
+7. **Convergence check**: Follow **Iteration stopping criteria** in [references/original.md](references/original.md). Use **3 consecutive** clear rounds for high-importance prompts.
 
 ### Cursor measurement (steps / duration)
 
@@ -67,7 +75,7 @@ If dispatching a new subagent is not possible (already running as a subagent, Ta
 
 ## Optional: variant exploration
 
-When plateauing without meeting convergence, see **Variant exploration** in [reference.md](reference.md).
+When plateauing without meeting convergence, see **Variant exploration** in [references/original.md](references/original.md).
 
 ## Related (optional; not prerequisites)
 
