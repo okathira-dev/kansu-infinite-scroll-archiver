@@ -1,0 +1,10 @@
+---
+description: WXT content エントリ構成の禁止事項（content 変更時）
+globs: "src/entrypoints/content.ts,src/entrypoints/content/index.ts,src/entrypoints/content/**"
+alwaysApply: false
+---
+
+# WXT エントリ（Content Script）
+
+- **`src/entrypoints/content.ts` と `src/entrypoints/content/index.ts` を併存させない**。WXT はどちらも `content` エントリとして解釈し、重複エントリエラーになる。
+- 補助モジュールを `content/` 配下に置くなら、`content/index.ts` をエントリにする方式へ寄せる。

@@ -7,7 +7,7 @@
 
 Phase 6 の品質強化は一通り反映済み。Chrome Web Store 向けの**手順・チェックリスト・メタ草案**は [docs/chrome-web-store-release.md](docs/chrome-web-store-release.md) に集約し、**ここで一区切り**。
 
-Cursor 向けプロジェクト Skill として `empirical-prompt-tuning`（[`.cursor/skills/empirical-prompt-tuning/`](.cursor/skills/empirical-prompt-tuning/)）と `playwright-test`（[`.cursor/skills/playwright-test/`](.cursor/skills/playwright-test/)）を導入済み（外部由来は英語 `SKILL.md` / `reference.md`、差分は各 `upstream-divergences.md`）。入手元・未導入候補は [repository.mdc](.cursor/rules/repository.mdc) の「外部 Skill の入手元と候補」。
+Cursor 向けプロジェクト Skill として `empirical-prompt-tuning`（[`.cursor/skills/empirical-prompt-tuning/`](.cursor/skills/empirical-prompt-tuning/)）と `playwright-test`（[`.cursor/skills/playwright-test/`](.cursor/skills/playwright-test/)）を導入済み（外部由来は英語 `SKILL.md` / `references/original.md`、差分は各 `upstream-divergences.md`）。入手元・未導入候補は [kansu-repository-context の references/context.md](.cursor/skills/kansu-repository-context/references/context.md) の「外部 Skill の入手元と候補」。
 
 **次（別PR）**: `package.json` の version を **0.1.0** に上げ、手順書どおり **手動でストア提出**（ビルド・ZIP・アップロード）を試す。そのPRで **リスティング情報を詰める**（説明・スクリーンショット・Privacy 宣言・サポート連絡先など）。
 
@@ -79,6 +79,8 @@ Cursor 向けプロジェクト Skill として `empirical-prompt-tuning`（[`.c
 - [x] `docs/chrome-web-store-release.md` 追加（CWS 提出手順・チェックリスト・メタ草案・プライバシーたたき台・公式リンク）。Scratchpad から参照
 - [x] Issue #22: サービス単位通知設定（バッジ/トースト詳細）を追加し、監視中 `ON` と保存合計件数バッジ、保存詳細トースト（`+N件`/推定サイズ）を実装。対応テストを追加し `pnpm check` / `pnpm test` を通過
 - [x] Issue #50: `Badge` の `Variants` で `asChild` + プレースホルダ `a` により `link` 装飾を他バリアントと併置（`Badge.stories.tsx`）
+- [x] Cursor Skills ドキュメント（「ルールとコマンドをスキルに移行する」）に合わせ、動的ルール（repository / coding-rules / ubiquitous-language）を Skill へ移管し、移行スタブの `.mdc` は削除済み
+- [x] Skill の追加ドキュメントを `references/` 配下へ統一し、mizchi 由来の原文参照名を `references/original.md` へ切替（ルート `reference.md` は廃止）
 
 ## 過去タスク（完了）
 

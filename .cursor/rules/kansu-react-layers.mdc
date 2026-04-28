@@ -1,0 +1,49 @@
+---
+description: React/UI の境界・命名・責務（entrypoints/components 変更時）
+globs: "src/components/**/*.ts,src/components/**/*.tsx,src/entrypoints/**/*.ts,src/entrypoints/**/*.tsx,src/**/*.stories.tsx"
+alwaysApply: false
+---
+
+# コンポーネント／モジュール構成
+
+エントリ配下や共有 UI の分割・命名・境界は、Storybook のためではなく、再利用・テスト容易性・関心事の分離のために行う。プレビュー（Storybook 等）は検証手段のひとつであり、フォルダ構成やモジュール分割の目的ではない。
+
+## ユビキタス言語（推奨呼称）
+
+- 目的: 会話・JSDoc・レビューで使う語をそろえ、レイヤー名だけで一般論を当てはめる誤解を防ぐ。
+- 用語表（一覧表・プレビュー向け）は [docs/ubiquitous-language.md](mdc:docs/ubiquitous-language.md) を参照する。用語の揃え方・索引は [kansu-ubiquitous-language の SKILL](mdc:.cursor/skills/kansu-ubiquitous-language/SKILL.md)。
+- 最小の共通理解:
+  - `src/components/ui` は「共有 UI 基盤（UI プリミティブ）」。
+  - `src/entrypoints/**/ui` は「エントリ専用 UI（props 駆動 UI）」で副作用を持たず、feature 非依存の画面内共通 UI を置く。
+  - feature 所有が明確な View（C/P 分離）は `src/entrypoints/**/feature/<ComponentName>/` に `ComponentName.tsx` / `ComponentNameView.tsx` で同居させる。
+  - `src/entrypoints/**/feature` / `App` は「機能統合（副作用・統合）」で純粋でない統合を担当する。
+  - 外部依存は境界モジュール（外部 API ラッパー）に閉じ込め、`entrypoints/**` から直 import しない。
+
+## 境界・命名の原則
+
+- レイヤー分けの目的化は禁止（「Container/Presentational で揃えること」自体をゴールにしない）。
+- `atoms/` / `hooks/` のような実装形態だけで分類を増やさず、機能・画面に近い場所へコロケートする。
+- コンポーネント実装ファイルの命名:
+  - 単一の描画コンポーネント本体は `<ComponentName>/index.tsx` を正本にする。
+  - C/P 分離などで同一 feature 配下に複数描画コンポーネントを同居させる場合は、`ComponentName.tsx`（統合）と `ComponentNameView.tsx`（表示）を正本にし、`index.ts` は再エクスポート専用にする。
+- 命名ルールの例外:
+  - エントリファイル（WXT/React の起動点）は `main.tsx` を許可する。
+  - バレル（re-export 専用）は `index.ts` / `index.tsx` を許可する。
+  - 補助モジュール（`*Context.tsx` / `*Provider.tsx` / hooks / utility 等）は責務に合わせた名前を許可する。
+  - 機能モジュール名と主要シンボル名の差（例: `toast` フォルダと `Toaster`）は許可する。
+- 複合 UI は 1 階層深く分割し、`<親>/<サブコンポーネント>/index.tsx` で実装を分離する（例: `tabs/Tabs/index.tsx`, `tabs/TabsContent/index.tsx`）。
+- 命名（View/統合）は統合側を無標、表示側を `*View` とし、利用側に実装詳細を漏らさない。
+- 一時命名（`*Copy` 等）をコミットに残さない。
+- `MainUI` 固有名詞（`toggleMainUi` など既存契約）は、移行計画なしで命名変更しない。
+
+## 責務分離
+
+- `src/entrypoints/**/ui` は外部副作用（runtime / storage / query params / toast 発火）を持たない props 駆動 UI として設計する。
+- C/P 分離で feature 所有が明確な View は `src/entrypoints/**/feature/<ComponentName>/` に統合する。
+- `feature` またはエントリ直下 `App` はイベント購読、store、ブラウザ API、トースト発火、非同期 I/O など純粋でない統合を担当する。
+- 境界判断は「単体で確かめたい塊の直感」を補助にしつつ、モジュール規模・再利用・関心事をあわせて決める。
+- 外部依存 API は `entrypoints/**` から直接利用せず、`components` または `lib` の境界モジュール経由で使う。
+- 表示責務と操作責務は分離して命名する（例: 表示基盤 `Toaster` と発火関数 `notify*`）。
+- `sonner` 利用時は `entrypoints/**` から直接 import せず、`@/components/ui/Toaster` が公開する `notifySuccess` / `notifyInfo` / `notifyWarning` / `notifyError` を使う。
+- Hooks はロジック再利用やテスト分割に使ってよく、「UI だから hooks 禁止」は採用しない。
+- ストーリー固有の細目は [storybook.mdc](mdc:.cursor/rules/storybook.mdc)。

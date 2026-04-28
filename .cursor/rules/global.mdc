@@ -21,18 +21,14 @@ alwaysApply: true
 - 主要メモリ: `project/overview`、`suggested_commands`、`code_style_and_conventions`、`task_completion`。
 - 長期的に有効な知識のみを記録し、一時的な作業メモは `Scratchpad.md` 側で扱う。
 
-## ルールファイルの役割分担
+## Cursor ルール・スキル編集時
 
-- [repository.mdc](mdc:.cursor/rules/repository.mdc): リポジトリ構造と参照ドキュメント。
-- [coding-rules.mdc](mdc:.cursor/rules/coding-rules.mdc): 実装時のコード規約。
-- [kansu-agent-conventions.mdc](mdc:.cursor/rules/kansu-agent-conventions.mdc): 言語（日本語）・コロケーション・ドキュメント参照（常時適用）。
-- [storybook.mdc](mdc:.cursor/rules/storybook.mdc): Storybook の配置・ストーリー規約（ストーリー／`.storybook` 変更時）。
-- [biome.mdc](mdc:.cursor/rules/biome.mdc): Lint/Format の実行方針。
+- `.cursor/rules` または `.cursor/skills` を追加・変更するときは、前提（適用方式、`SKILL.md` 構造、推奨パターンなど）が公式とずれないよう **Cursor 公式ドキュメントを併読する**。[Rules](https://cursor.com/docs/context/rules) / [Agent Skills](https://cursor.com/docs/context/skills) を起点にし、必要なら [ドキュメント一覧](https://cursor.com/docs) から関連ページへ辿る。
 
 ## ドキュメント運用
 
 - **開発ドキュメント**（要件・設計・製品仕様の正本など）は `docs/` に集約し、仕様変更時は関連ドキュメントを同時に更新する。
-- **Cursor Agent Skill 専用の文書**（外部由来は `.cursor/skills/<name>/upstream-divergences.md` 等。英語の `SKILL.md` / `reference.md` とセット）は **製品開発ドキュメントとは別枠**とし、該当 Skill ディレクトリへコロケーションする（索引用の一覧だけ `docs/` に置いてよい）。`SKILL.md` / `reference.md` / `upstream-divergences.md` の役割と編集時の注意は [kansu-agent-conventions.mdc](mdc:.cursor/rules/kansu-agent-conventions.mdc) の「外部由来 Cursor Skill」節。
+- **Cursor Agent Skill 専用の文書**（外部由来は `.cursor/skills/<name>/upstream-divergences.md` 等。英語の `SKILL.md` / `references/original.md` とセット）は **製品開発ドキュメントとは別枠**とし、該当 Skill ディレクトリへコロケーションする（索引用の一覧だけ `docs/` に置いてよい）。`SKILL.md` / `references/original.md` / `upstream-divergences.md` の役割と編集時の注意は [kansu-cursor-skills.mdc](mdc:.cursor/rules/kansu-cursor-skills.mdc) に従う。
 - **日付ベースのメモは残さない**。前後関係は手順順序・因果関係で表現する。
 - 対象: `docs/`、`Scratchpad.md`、`.serena/memories/*.md`、`README.md`、`.cursor` 配下の説明文（Skill 専用文書を含む）。
 - 主要ドキュメント: [implementation_plan.md](mdc:docs/implementation_plan.md)、[implementation_guide.md](mdc:docs/implementation_guide.md)、[requirements.md](mdc:docs/requirements.md)。

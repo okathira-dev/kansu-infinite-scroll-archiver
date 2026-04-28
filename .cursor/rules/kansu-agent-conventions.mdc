@@ -1,5 +1,5 @@
 ---
-description: Kansu 向けエージェント規約（言語・コロケーション・ドキュメント）
+description: Kansu 向けエージェント規約（常時コア）
 alwaysApply: true
 ---
 
@@ -11,89 +11,17 @@ alwaysApply: true
 - **ソース内**: JSDoc、通常コメント、テストの `describe` / `it` / `test` のタイトルは **日本語**。
 - **英語のままにしてよいもの**: エラーコード、外部契約に載せる検証メッセージ本文、プロトコル固定キー。ユーザー向け文言は呼び出し側でマップする想定なら JSDoc で一言書いてよい。
 
-## 配置（コロケーション）
+## 配置（コロケーション）の最小原則
 
 - **原則**: 利用範囲に最も近い場所へ置く。
 - **複数エントリ**（content / background / popup / options 等）で共有する契約・ドメイン型・メッセージは `src/lib/` に集約する（例: `src/lib/types`, `src/lib/messages`）。
 - **単一機能専用**の型やヘルパは、その機能のディレクトリ側にコロケートする。
 - **新しい型ファイルや共有モジュールを追加する前に**、利用者がどこかを確認してから上記に従って置く。
 
-## 実装・ドキュメントの参照
+## 実装・ドキュメント参照の最小原則
 
 - 要件・フェーズ・技術仕様は [requirements.md](mdc:docs/requirements.md)、[implementation_plan.md](mdc:docs/implementation_plan.md)、[implementation_guide.md](mdc:docs/implementation_guide.md) を参照する。
-- 短期タスクと進捗は [Scratchpad.md](mdc:Scratchpad.md)。仕様変更時は関連ドキュメントと同期する（全体方針は [global.mdc](mdc:.cursor/rules/global.mdc)）。
-- 外部由来 Cursor Skill の upstream 差分ログは **`docs/` ではなく** `.cursor/skills/<name>/upstream-divergences.md` に置く（詳細は [global.mdc](mdc:.cursor/rules/global.mdc) のドキュメント運用）。
-
-### 外部由来 Cursor Skill（ファイルの役割・編集時）
-
-mizchi 等の **元スキル本文に無いメタ段落**（「`reference.md` を読め」「差分はこちら」など）を Skill 直下に増やさない。ファイル三層の意味づけは **本節と** 各 `upstream-divergences.md` に寄せる。
-
-- **`SKILL.md`**: 外部ソースに **英語版がある Skill は `SKILL.md` 全体を英語で運用**する。追記・改変も **英語のみ**。
-- **`reference.md`**: upstream 原文のコピー、または原文に近い比較用ブロック（**導線・説明のオリジナルは足さない**）。
-- **`upstream-divergences.md`**: 本リポジトリ側の意図的な差分と**理由**の正本（**日本語でよい**）。経緯の羅列ではなく、いまの差分と理由が分かるように書く。
-
-ワークフロー内で `reference.md` の節へ言及するのは、元スキルが同一ファイル内で後段を指していたのと同趣旨の **分割の名残**に限り、メタ説明の追加とは切り分ける。
-
-- 外部に **`SKILL-ja.md` 等の日本語版**があっても、エージェント向けの正本は **英語 `SKILL.md`** とし、日本語版を Skill 直下に複製しない。
-
-### ドキュメントの役割分担（永続方針）
-
-- **`docs/implementation_plan.md` と `docs/implementation_guide.md`** は、**実装の進みやリポジトリの現在状態に依存しない普遍的な記述**に限定する（例: 「実装済み」「現状」「Phase X が完了」などのスナップショットは書かない）。進捗・いまどこまで終わったかは **Scratchpad.md とコード**で追う。
-- **`docs/implementation_guide.md`** は **実装計画の補足としての抽象的イメージ・技術方針**に寄せる。**実装の正本は `requirements.md`・ソース・テスト・共有契約**とし、ガイドを過信してコードより優先しない。
-- **`docs/wxt-dev-debug.md`** など手順系は、**誰が何をするか**（開発者がコンソールに打つ／拡張が自動で送るなど）を**本文の主語で明示**する。読み手向けの説明として足りることはメタ見出し（例: 「主語の整理」）で繰り返さない。
-
-### WXT エントリ（Content Script）
-
-- **`src/entrypoints/content.ts` と `src/entrypoints/content/index.ts` を併存させない**。WXT はどちらも `content` エントリとして解釈し、重複エントリエラーになる。補助モジュールを `content/` 配下に置くなら **`content/index.ts` をエントリ**とする方式に寄せる。
-
-### 共有ドメイン（検索・設定の名前）
-
-- `ServiceConfig` の抽出ルール配列は **`fieldRules`**（旧来の `fields` という名前は使わない）。
-- `SearchQuery` の検索対象フィールドは **`targetFieldNames`**（`fieldValues[name].normalized` のみ照合）。
-- 漢字の自動読み推定・辞書形態素解析による一致は **スコープ外**（`wanakana` は表記ゆれ・かな統一の範囲）。詳細は `docs/requirements.md` の `FR-21` と `docs/implementation_guide.md` の正規化節。
-
-### コンポーネント／モジュール構成
-
-エントリ配下や共有 UI の**分割・命名・境界**は、**Storybook のため**ではなく、**再利用・テスト容易性・関心事の分離**のためとする。プレビュー（Storybook 等）は**検証手段の一つ**であり、フォルダ構成やモジュール分割の目的ではない。
-
-#### ユビキタス言語（推奨呼称）
-
-- **目的**: 会話・JSDoc・レビューで使う語をそろえ、レイヤー名だけで一般論を当てはめる誤解を防ぐ。
-- **用語表（一覧表・プレビュー向け）**: [docs/ubiquitous-language.md](mdc:docs/ubiquitous-language.md) を参照する。ルール側の索引は [ubiquitous-language.mdc](mdc:.cursor/rules/ubiquitous-language.mdc)。
-- **最小の共通理解**:
-  - `src/components/ui` は「共有 UI 基盤（UI プリミティブ）」。
-  - `src/entrypoints/**/ui` は「エントリ専用 UI（props 駆動 UI）」で副作用を持たず、feature 非依存の画面内共通 UI を置く。
-  - feature 所有が明確な View（C/P 分離）は `src/entrypoints/**/feature/<ComponentName>/` に `ComponentName.tsx` / `ComponentNameView.tsx` で同居させる。
-  - `src/entrypoints/**/feature` / `App` は「機能統合（副作用・統合）」で純粋でない統合を担当する。
-  - 外部依存は「境界モジュール（外部 API ラッパー）」に閉じ込め、`entrypoints/**` から直 import しない。
-
-- **レイヤー分けの目的化は禁止**: 「Container/Presentational で揃える」ことがゴールにならない。**関心事ごとにモジュール然とした境界**（表示・イベント・副作用・データ取得）で切る。参考: [React.js UI/Container分離 × Hooks × Composition（コメント含む）](https://zenn.dev/link/comments/3658654ccd70d0)、[コロケーションと見かけ駆動パッケージング](https://qiita.com/honey32/items/dbf3c5a5a71636374567)。
-- **配置**: `atoms/` / `hooks/` など**実装形態だけ**での分類を増やさない。機能・画面に近い場所へコロケートし、必要なら `entrypoints/<name>/feature/` と `entrypoints/<name>/ui/` で**意味のある単位**にまとめる。`entrypoints/**/ui` の全要素を機械的に `feature` へ移さず、feature 所有が明確な View のみを移設対象にする。
-- **コンポーネント実装ファイルの命名**（永続）:
-  - **単一の描画コンポーネント本体**は **`<ComponentName>/index.tsx`** を正本とし、**フォルダ名をコンポーネント名に一致**させる。
-  - **C/P 分離などで同一 feature 配下に複数描画コンポーネントを同居**させる場合は、**`ComponentName.tsx`**（統合）と **`ComponentNameView.tsx`**（表示）を正本とし、`index.ts` は再エクスポート専用にする。
-- **命名ルールの例外（永続）**:
-  - **エントリファイル**（WXT/React の起動点）は `main.tsx` を許可する（`index.tsx` へ統一しない）。
-  - **バレル**（re-export 専用）は `index.ts` または `index.tsx` を許可する。
-  - **補助モジュール**（`*Context.tsx` / `*Provider.tsx` / hooks / utility など、描画コンポーネント本体ではないもの）は、責務に合わせたファイル名を許可する。
-  - **機能モジュール名と主要シンボル名の差**（例: `toast` フォルダと `Toaster`）は許可する。ここでは「機能のまとまり」を優先し、シンボル名の完全一致を必須にしない。
-- **複合 UI の階層**: Tabs のような複合 UI は **さらに 1 階層深く**分割し、`<親>/<サブコンポーネント>/index.tsx` で実装を分離する（例: `tabs/Tabs/index.tsx`, `tabs/TabsContent/index.tsx`）。
-- **`src/entrypoints/**/ui`（entrypoint 専用 UI）**: 外部副作用（runtime / storage / query params / toast 発火）を持たない **props 駆動の UI モジュール**として設計する（表示は props と子要素で決まる）。feature 非依存の画面内共通 UI をここに置く。
-- **feature 所有 View の配置**: C/P 分離で feature 所有が明確な View は `src/entrypoints/**/feature/<ComponentName>/` に統合し、`ComponentName.tsx` と `ComponentNameView.tsx` を同居させる。
-- **分割の目的**: C/P（Container/Presentational）は目的ではなく手段。**分割のための分割は禁止**し、**モジュールの規模・境界を適切に判断したうえで** UI を抽出する。見た目・テスト容易性・再利用・関心事の分離などを**総合**して決める（次項のヒューリスティックはその**補助**）。
-- **単体で確かめたい塊の直感（境界のヒューリスティック）**: 「この単位で見た目やバリエーションを確かめたい」「副作用を薄くした塊として切り出したい」と感じるときは、**その塊がコンポーネント／モジュールとして一単位になりやすい**ことの**強いシグナル**として使ってよい（見ためのまとまり、親からの関心事の分離、レビューやデザイン確認の単位などと重なる。プレビューに Storybook を使う場合も、その直感は同じ）。**断定ではない**。見た目が地味でも **props 契約やロジックのまとまり**で切るべき境界はあり、逆に **単体プレビューを用意しない**内部パーツで十分な細分化もある。
-- **命名（View/統合）**: 統合側（Container/feature）は無標（例: `ArchiveSaveToast`）、表示側（View）は `*View`（例: `ArchiveSaveToastView`）で区別し、利用側に実装詳細を漏らさない。
-- **一時命名の禁止**: 編集途中の接尾辞（`*Copy` など）をコミットに残さない。責務が分かる恒久名へ必ず置き換える。
-- **`MainUI` 固有名詞の扱い**: `toggleMainUi` / `kansu/toggleMainUi` / `onToggleMainUi` など、既存契約として固定した `MainUI` 名は**命名リファクタの対象外**とし、移行計画なしで変更しない。
-- **外部依存APIの境界（汎用）**: `entrypoints/**` から外部 hooks / コンポーネント / 関数 API を直接利用しない。`components` または `lib` に境界モジュール（ラッパー）を置き、利用側はその公開 API のみを使う。
-- **表示責務と操作責務の分離**: 外部 UI ライブラリ利用時は、表示基盤（例: `Toaster`）と発火・操作関数（例: `notify*`）を分けて命名する。表示名と操作責務を1つの語に混ぜない。
-- **`sonner` は上記原則の具体例**: `entrypoints/**` から `sonner` を直接 import せず、通知表示は `@/components/ui/Toaster` が公開する `notifySuccess` / `notifyInfo` / `notifyWarning` / `notifyError` を使用する。
-- **境界の判断**: `feature` と `ui` の切り口は、**単体で確かめたい塊の直感**（単体で触りたくなる塊 ≒ 境界候補のシグナル）と、**モジュール規模・再利用・関心事**を併せて決める。前者は**補助**であり、唯一の基準ではない。
-- **責務の目安**:
-  - **`ui`**: 見た目と props で決まる表示。副作用は持たない（`toast.*` の呼び出し、runtime メッセージ、IndexedDB、ファイル I/O はここに置かない）。トーストなら「本文の JSX」「`Toaster` の viewport」など**表示単位**で別モジュールにしてよい。
-  - **`feature` または `App`（エントリ直下）**: イベント購読、store、ブラウザ API、トースト発火、非同期 I/O など**純粋でない統合**を担当する。
-- **Hooks**: ロジックの再利用やテスト分割に使ってよい。UI に `useState` を持たせるかどうかは**関心事**で決める（フォーム内部状態など）。「UI だから hooks 禁止」は採用しない。
-
-### Storybook
-
-配置・ストーリー規約の詳細は [storybook.mdc](mdc:.cursor/rules/storybook.mdc)（`*.stories.tsx` / `.storybook/**` 変更時に参照）。
+- 短期タスクと進捗は [Scratchpad.md](mdc:Scratchpad.md)。仕様変更時は関連ドキュメントと同期する（全体運用は [global.mdc](mdc:.cursor/rules/global.mdc) に従う）。
+- **`docs/implementation_plan.md` と `docs/implementation_guide.md`** は、**実装の進みやリポジトリの現在状態に依存しない普遍的な記述**に限定する（進捗は `Scratchpad.md` とコードで追う）。
+- **`docs/implementation_guide.md`** は抽象的な技術方針の補助に寄せ、実装の正本は `requirements.md`・ソース・テスト・共有契約を優先する。
+- **`docs/wxt-dev-debug.md`** のような手順書では、誰が何をするかを本文の主語で明示する。

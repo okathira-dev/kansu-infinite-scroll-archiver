@@ -2,8 +2,8 @@
 name: playwright-test
 description: >-
   Best practices and reference for Playwright Test (E2E). Covers how to write tests, avoiding fixed waits,
-  network triggers, DnD, shard/retry setup on GitHub Actions, and more. Use when writing, reviewing, or
-  configuring CI for Playwright tests.
+  network triggers, DnD, shard/retry setup on GitHub Actions, and more. Use when authoring/modifying
+  Playwright tests or changing Playwright-related CI configuration.
 ---
 
 # Playwright Test
@@ -27,6 +27,15 @@ Use these project facts before copy-pasting generic Playwright templates (upstre
 | CI | `.github/workflows/` — toolchain via `.github/actions/setup-node-pnpm` (do not hard-code `node-version` in new YAML) |
 
 Do not replace this repo’s `playwright.config.ts` wholesale with upstream templates unless the task explicitly asks for it—merge patterns (retries, reporters, trace) conservatively.
+
+## Minimal reading path (open only what you need)
+
+- Test authoring / flakiness: `references/original.md` → `Rule: Do Not Use Fixed Waits`, `Locators`, `Assertions`, `Network Triggers`, `Debugging`
+- CI / config tuning: `references/original.md` → `Configuration Template`, `GitHub Actions`, `Retry Strategy`, `Choosing Trace / Screenshot / Video`
+- DnD-specific work: `references/original.md` → `Drag and Drop`
+- Auth/session reuse: `references/original.md` → `Reusing Authentication`
+
+Do not read the full `references/original.md` by default. Jump to the target heading only.
 
 ## Non-negotiables (summary)
 
