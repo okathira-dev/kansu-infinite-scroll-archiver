@@ -1,6 +1,6 @@
 ---
 description: React/UI の境界・命名・責務（entrypoints/components 変更時）
-globs: "src/components/**/*.ts,src/components/**/*.tsx,src/entrypoints/**/*.ts,src/entrypoints/**/*.tsx,src/**/*.stories.tsx"
+globs: "src/components/**/*.ts,src/components/**/*.tsx,src/entrypoints/**/*.ts,src/entrypoints/**/*.tsx"
 alwaysApply: false
 ---
 
@@ -46,4 +46,4 @@ alwaysApply: false
 - 表示責務と操作責務は分離して命名する（例: 表示基盤 `Toaster` と発火関数 `notify*`）。
 - `sonner` 利用時は `entrypoints/**` から直接 import せず、`@/components/ui/Toaster` が公開する `notifySuccess` / `notifyInfo` / `notifyWarning` / `notifyError` を使う。
 - Hooks はロジック再利用やテスト分割に使ってよく、「UI だから hooks 禁止」は採用しない。
-- ストーリー固有の細目は [storybook.mdc](mdc:.cursor/rules/storybook.mdc)。
+- **`*.stories.tsx` の編集・Storybook 設定**は [storybook.mdc](mdc:.cursor/rules/storybook.mdc) が正本（本ルールと二重適用しないよう、globs からストーリーファイルを除外している）。

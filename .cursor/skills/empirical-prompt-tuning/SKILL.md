@@ -30,15 +30,6 @@ When not to use:
 
 Do not read all `references/original.md` sections unless the task explicitly needs advanced patterns (variant exploration, red flags, full ledger operations).
 
-## Repository context (Kansu)
-
-Do not duplicate long-form coding conventions in this skill. When editing target prompts, keep them consistent with:
-
-- [`.cursor/rules/global.mdc`](../../rules/global.mdc)
-- [`.cursor/rules/kansu-agent-conventions.mdc`](../../rules/kansu-agent-conventions.mdc)
-
-User-facing explanations and commit/PR text for this project remain **Japanese** per `kansu-agent-conventions.mdc`.
-
 ## Workflow
 
 0. **Iteration 0 — description / body consistency check** (static, no dispatch needed)  

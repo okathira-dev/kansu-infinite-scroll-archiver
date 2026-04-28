@@ -1,4 +1,6 @@
-# Kansu Repository Context Reference
+# Kansu Repository Context — 詳細正本
+
+`kansu-repository-context` の `SKILL.md` は要約のみとし、**ディレクトリ列挙と補足は本ファイルを正本**とする。
 
 ## プロジェクト構造
 
@@ -17,7 +19,7 @@
 - `.serena/memories/*.md`: 長期知識
 - `.cursor/GITHUB-MCP.md`: GitHub MCP 利用手順
 
-## 外部 Skill の入手元と候補
+## 外部 Skill の入手元
 
-- 入手元: [mizchi/skills](https://github.com/mizchi/skills)
-- 導入済み: `empirical-prompt-tuning`, `playwright-test`
+- 典拠: [mizchi/skills](https://github.com/mizchi/skills)
+- 本リポジトリに取り込み済みの例: `empirical-prompt-tuning`, `playwright-test`（追加時は本節を更新する）

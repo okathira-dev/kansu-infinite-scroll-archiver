@@ -15,19 +15,15 @@ description: Kansu リポジトリの構造、技術スタック、参照ドキ�
 
 - プロダクト: 無限スクロール型サイトからデータを抽出・保存・検索するブラウザ拡張「Kansu」
 - 主な技術: WXT / TypeScript / React / Tailwind CSS / Zustand / Dexie / Biome / Vitest / Playwright / pnpm
-- 主要ディレクトリ:
-  - `src/entrypoints/`: WXT エントリ（background / content / popup / options）
-  - `src/components/ui/`: 共有 UI 基盤
-  - `src/lib/`: 共有ロジック
-  - `docs/`: 要件・設計・ガイド
-  - `e2e/`: Playwright E2E
+- **ディレクトリの列挙・補足パス**の正本は [`references/context.md`](references/context.md)。`SKILL.md` では重複列挙しない。
 
 ## Skill / docs operations
 
 - プロジェクトルールは `.cursor/rules/` に配置され、適用は各 frontmatter（`alwaysApply` / `globs` / `description`）で決まる。
-- Skill は `.cursor/skills/*/` に配置し、外部由来 Skill は `SKILL.md` / `references/original.md` / `upstream-divergences.md` の三層で管理する。
+- Skill は `.cursor/skills/*/` に配置する。`.cursor/rules` / `.cursor/skills` の編集原則の正本は [`.cursor/rules/kansu-agent-instructions.mdc`](../../rules/kansu-agent-instructions.mdc)。
 
-## References
+## References（この Skill の役割）
 
-- 主要ドキュメント: `README.md`, `docs/requirements.md`, `docs/implementation_plan.md`, `docs/implementation_guide.md`
-- 補足: `references/context.md`
+- **`SKILL.md`**: 用途・技術スタック・運用の要点のみ。
+- **`references/context.md`**: ディレクトリ一覧・サポートファイル・外部 Skill 導入の**詳細正本**。
+- **主要ドキュメント**（製品）: `README.md`, `docs/requirements.md`, `docs/implementation_plan.md`, `docs/implementation_guide.md`

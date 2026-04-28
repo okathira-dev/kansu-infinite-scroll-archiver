@@ -39,6 +39,17 @@ description: Kansu 実装時の基本コーディング規約（差分最小、�
 - ポインタ押下: コンポーネント種別ごとの `active:*` 方針を揃える。
 - 新規プリミティブも同一方針をデフォルトにし、例外は理由を明示する。
 
-## References
+### クラス指定の詳細（`src/components/ui`）
 
-- 詳細規約は `references/guidelines.md`
+インタラクティブなコントロールは次を揃える。
+
+- キーボードフォーカス:
+  - `outline-none`
+  - `focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50`
+  - destructive 系は既存どおり `ring-destructive` 派生
+  - `focus:` 単体の ring は原則使わない
+- ポインタ押下（`active`）:
+  - フィールド型（Input / Textarea / SelectTrigger など）は `active:border-ring/60` と必要に応じて `active:bg-accent/…`
+  - ボタン型・タブ・バッジ（リンク時）は `active:scale-[0.98]` と variant ごとの `active:bg…` / `active:opacity…`
+  - トグル・スイッチは軽い `active:scale` + `active:opacity` またはトラック色を一段暗め
+- 一貫性: 新規 UI プリミティブも上記をデフォルトにし、例外は理由が明確な場合のみ

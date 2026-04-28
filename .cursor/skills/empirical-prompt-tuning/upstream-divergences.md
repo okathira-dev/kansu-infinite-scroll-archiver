@@ -11,7 +11,7 @@
 | raw | `https://raw.githubusercontent.com/mizchi/skills/main/empirical-prompt-tuning/SKILL.md` |
 | 同期時点の `main` 先端コミット SHA | `a0ebf680f62836f64d7e9b741ee212f55b108f88` |
 
-**再同期**: raw を再取得し API で `main` の `sha` を更新する。`SKILL.md` / `references/original.md` / 本ファイルを変えたら、本節の SHA を更新し、差分は **E-xx** で追記する。
+**再同期**: raw を再取得し、`main` の `sha` を上表に反映する。[`SKILL.md`](SKILL.md) / [`references/original.md`](references/original.md) / 本ファイルを追随したら、下記「現在の意図的差分」がまだ正しいか確認し、変わった点だけ更新する。
 
 ---
 
@@ -28,62 +28,19 @@
 
 ---
 
-## 本リポジトリでの差分（理由）
+## 現在の意図的差分（一覧）
 
-### E-01: ファイル分割
-
-- **差分**: 核ワークフローを [`SKILL.md`](SKILL.md)、長文テンプレ・表を [`references/original.md`](references/original.md)（upstream に近いブロック）。
-- **理由**: Skill のオンデマンド読込と、コピー用途のテンプレを先に置くため。
-
-### E-02: Workflow と usage メタ
-
-- **差分**: Task 戻り値の `tool_uses` / `duration_ms` が **無い場合**の扱い（`—`、推定禁止）を `SKILL.md` の「Cursor measurement」と `references/original.md` の評価軸に明記。
-- **理由**: Cursor 実装でメタが常に付与されるとは限らない。
-
-### E-03: Environment constraints の製品名
-
-- **差分**: 「Claude Code session」等を **Cursor** の別チャット／別エージェント実行に言い換え。
-- **理由**: このリポジトリの前提環境に合わせる。
-
-### E-04: リポジトリ正本への参照
-
-- **差分**: [`SKILL.md`](SKILL.md) に [`.cursor/rules/global.mdc`](../../rules/global.mdc) と [`.cursor/rules/kansu-agent-conventions.mdc`](../../rules/kansu-agent-conventions.mdc) への参照を追加。規約本文は複製しない。
-- **理由**: 二重正本を避ける。
-
-### E-05: Related 節
-
-- **差分**: `retrospective-codify` の GitHub リンクに限定し、必須依存にしない。
-- **理由**: 外部パッケージを前提にしない。
-
-### E-06: frontmatter `description`
-
-- **差分**: 英語を維持し、**Cursor / subagent** に触れた短い補足を追加。
-- **理由**: Skill の発見性。
-
-### E-07: `references/original.md` の節順
-
-- **差分**: **Subagent invocation contract を先頭**にし、評価軸・提示フォーマット等を続ける。
-- **理由**: コピー用途のテンプレを先に置く。
-
-### E-08: Fix propagation patterns の所在
-
-- **差分**: [`references/original.md`](references/original.md) の **Fix propagation patterns** に収録。
-- **理由**: E-01 の分割方針に合わせる。
-
-### E-09: 補助ドキュメント
-
-- **差分**: `OVERVIEW-ja.md` は **置かない**。差分と運用上の注意の正本は **本ファイル**。
-- **理由**: `SKILL.md` / `references/original.md` / `upstream-divergences.md` の三層に統一し、説明の重複を避ける。
-
-### E-10: 最小読み取り導線
-
-- **差分**: [`SKILL.md`](SKILL.md) に **Minimal reading path** を追加し、構造レビュー時とフル反復時で読む範囲を分けた。
-- **理由**: on-demand 読み込みで `references/original.md` 全読みに寄りがちな運用を避けるため。
-
-### E-11: frontmatter `description` の適用境界
-
-- **差分**: `description` を「新規 subagent による実証評価が必要な場面」に寄せ、軽微な文言調整を対象外として明示した。
-- **理由**: Trigger の過剰発火を抑え、重い評価ループの誤適用を減らすため。
+| 観点 | 本リポジトリの方針 |
+| --- | --- |
+| ファイル役割 | [`SKILL.md`](SKILL.md) = ワークフロー・最小読みパス・Cursor 計測など。[`references/original.md`](references/original.md) = 長文テンプレ・表（upstream に近いブロック）。 |
+| Task / usage メタ | `tool_uses` / `duration_ms` が **無い場合**は `—`、推定禁止（`SKILL.md` の「Cursor measurement」と `references/original.md` の評価軸に明記）。 |
+| 環境の言い換え | 「Claude Code session」等 → **Cursor** の別チャット／別エージェント実行。 |
+| Kansu との整合 | `SKILL.md` にプロジェクトの `.mdc` を列挙しない。言語・ルール参照・`.cursor` 編集方針は [kansu-agent-instructions.mdc](mdc:.cursor/rules/kansu-agent-instructions.mdc) と [kansu-agent-conventions.mdc](mdc:.cursor/rules/kansu-agent-conventions.mdc)、運用は [global.mdc](mdc:.cursor/rules/global.mdc) に集約（旧「Repository context (Kansu)」節は撤去）。 |
+| Related 節 | `retrospective-codify` の GitHub リンクに限定し、必須依存にしない。 |
+| `references/original.md` の構成 | **Subagent invocation contract を先頭**。続けて評価軸・提示フォーマット・Fix propagation patterns 等（コピー用途を優先）。 |
+| 補助ドキュメント | `OVERVIEW-ja.md` は置かない。差分の説明は本ファイルに集約。 |
+| 最小読み取り | SKILL.md に **Minimal reading path**（構造レビュー時とフル反復で読む範囲を分離）。 |
+| frontmatter `description` | 「新規 subagent による実証評価が必要な場面」に寄せ、軽微な文言調整は対象外と明示。 |
 
 ---
 
@@ -91,5 +48,5 @@
 
 1. raw を取得し `empirical-prompt-tuning/SKILL.md` と diff を取る。
 2. 本ファイルの「固定参照」の SHA を更新する。
-3. [`SKILL.md`](SKILL.md) / [`references/original.md`](references/original.md) を **英語**で追随し、差分が増えたら本ファイルに **E-xx** を追加する。
-4. 「用語・ツールのマッピング」を必要なら更新する。
+3. [`SKILL.md`](SKILL.md) / [`references/original.md`](references/original.md) を **英語**で追随する。
+4. 「用語・ツールのマッピング」と「現在の意図的差分」を、変わった点だけ更新する。

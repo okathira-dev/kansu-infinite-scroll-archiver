@@ -1,6 +1,5 @@
 ---
 description: エージェント共通の運用ルール（常時適用）
-globs: 
 alwaysApply: true
 ---
 # グローバル運用ルール
@@ -21,14 +20,14 @@ alwaysApply: true
 - 主要メモリ: `project/overview`、`suggested_commands`、`code_style_and_conventions`、`task_completion`。
 - 長期的に有効な知識のみを記録し、一時的な作業メモは `Scratchpad.md` 側で扱う。
 
-## Cursor ルール・スキル編集時
+## エージェント指示ファイルの編集
 
-- `.cursor/rules` または `.cursor/skills` を追加・変更するときは、前提（適用方式、`SKILL.md` 構造、推奨パターンなど）が公式とずれないよう **Cursor 公式ドキュメントを併読する**。[Rules](https://cursor.com/docs/context/rules) / [Agent Skills](https://cursor.com/docs/context/skills) を起点にし、必要なら [ドキュメント一覧](https://cursor.com/docs) から関連ページへ辿る。
+- `.cursor/rules` または `.cursor/skills` を追加・変更するときの**正本**（公式併読、参照順、`.mdc` / Skill の細則、製品 `docs/` との境界）は [kansu-agent-instructions.mdc](mdc:.cursor/rules/kansu-agent-instructions.mdc)。
 
 ## ドキュメント運用
 
 - **開発ドキュメント**（要件・設計・製品仕様の正本など）は `docs/` に集約し、仕様変更時は関連ドキュメントを同時に更新する。
-- **Cursor Agent Skill 専用の文書**（外部由来は `.cursor/skills/<name>/upstream-divergences.md` 等。英語の `SKILL.md` / `references/original.md` とセット）は **製品開発ドキュメントとは別枠**とし、該当 Skill ディレクトリへコロケーションする（索引用の一覧だけ `docs/` に置いてよい）。`SKILL.md` / `references/original.md` / `upstream-divergences.md` の役割と編集時の注意は [kansu-cursor-skills.mdc](mdc:.cursor/rules/kansu-cursor-skills.mdc) に従う。
+- **Cursor Agent Skill 専用の文書**（外部由来は `.cursor/skills/<name>/upstream-divergences.md` 等。英語の `SKILL.md` / `references/original.md` とセット）は **製品開発ドキュメントとは別枠**とし、該当 Skill ディレクトリへコロケーションする（索引用の一覧だけ `docs/` に置いてよい）。配置と編集時の注意の正本は [kansu-agent-instructions.mdc](mdc:.cursor/rules/kansu-agent-instructions.mdc)。
 - **日付ベースのメモは残さない**。前後関係は手順順序・因果関係で表現する。
 - 対象: `docs/`、`Scratchpad.md`、`.serena/memories/*.md`、`README.md`、`.cursor` 配下の説明文（Skill 専用文書を含む）。
 - 主要ドキュメント: [implementation_plan.md](mdc:docs/implementation_plan.md)、[implementation_guide.md](mdc:docs/implementation_guide.md)、[requirements.md](mdc:docs/requirements.md)。
