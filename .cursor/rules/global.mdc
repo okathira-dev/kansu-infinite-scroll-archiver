@@ -1,6 +1,5 @@
 ---
 description: エージェント共通の運用ルール（常時適用）
-globs: 
 alwaysApply: true
 ---
 # グローバル運用ルール
@@ -21,16 +20,10 @@ alwaysApply: true
 - 主要メモリ: `project/overview`、`suggested_commands`、`code_style_and_conventions`、`task_completion`。
 - 長期的に有効な知識のみを記録し、一時的な作業メモは `Scratchpad.md` 側で扱う。
 
-## ルールファイルの役割分担
-
-- [repository.mdc](mdc:.cursor/rules/repository.mdc): リポジトリ構造と参照ドキュメント。
-- [coding-rules.mdc](mdc:.cursor/rules/coding-rules.mdc): 実装時のコード規約。
-- [kansu-agent-conventions.mdc](mdc:.cursor/rules/kansu-agent-conventions.mdc): 言語（日本語）・コロケーション・ドキュメント参照（常時適用）。
-- [biome.mdc](mdc:.cursor/rules/biome.mdc): Lint/Format の実行方針。
-
 ## ドキュメント運用
 
-- 開発ドキュメントは `docs/` に集約し、仕様変更時は関連ドキュメントを同時に更新する。
+- **開発ドキュメント**（要件・設計・製品仕様の正本など）は `docs/` に集約し、仕様変更時は関連ドキュメントを同時に更新する。
+- **Skill 専用文書は製品開発ドキュメントとは別枠**として扱う。`.cursor` 配下の配置・編集細則は専用の正本に集約し、本ファイルでは重複して定義しない。
 - **日付ベースのメモは残さない**。前後関係は手順順序・因果関係で表現する。
-- 対象: `docs/`、`Scratchpad.md`、`.serena/memories/*.md`、`README.md`、`.cursor` 配下の説明文。
+- 対象: `docs/`、`Scratchpad.md`、`.serena/memories/*.md`、`README.md`、`.cursor` 配下の説明文（Skill 専用文書を含む）。
 - 主要ドキュメント: [implementation_plan.md](mdc:docs/implementation_plan.md)、[implementation_guide.md](mdc:docs/implementation_guide.md)、[requirements.md](mdc:docs/requirements.md)。

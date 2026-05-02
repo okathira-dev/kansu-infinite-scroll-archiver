@@ -1,0 +1,12 @@
+---
+description: 検索・設定ドメインの命名規約（型/検索/メッセージ変更時）
+globs: "src/lib/types/**,src/lib/search/**,src/lib/messages/**,src/lib/repositories/**,src/entrypoints/**/feature/**,docs/requirements.md,docs/implementation_guide.md"
+alwaysApply: false
+---
+
+# 共有ドメイン（検索・設定の名前）
+
+- `ServiceConfig` の抽出ルール配列は **`fieldRules`**（`fields` は使わない）。
+- `SearchQuery` の検索対象フィールドは **`targetFieldNames`**（`fieldValues[name].normalized` のみ照合）。
+- 漢字の自動読み推定・辞書形態素解析による一致はスコープ外（`wanakana` は表記ゆれ・かな統一の範囲）。
+- 正規化仕様の正本は `docs/requirements.md` の `FR-21` と `docs/implementation_guide.md` の正規化節。

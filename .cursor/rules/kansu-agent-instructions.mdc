@@ -1,0 +1,79 @@
+---
+description: エージェント指示（.cursor/rules と .cursor/skills）の編集規約
+globs: ".cursor/rules/**,.cursor/skills/**"
+alwaysApply: false
+---
+
+# エージェント指示ファイルの編集
+
+Cursor が読む **ルール（`.mdc`）** と **Agent Skills（`SKILL.md` 等）** をまとめて扱う。製品コードの `docs/` とは別枠のインフラである。
+
+**適用**: frontmatter の `globs` により **`.cursor/rules/**` および `.cursor/skills/**` を編集するとき**に参照されうる。
+
+## 公式ドキュメントとの整合
+
+追加・変更の前提（適用方式、`SKILL.md` 構造、推奨パターン）が公式とずれないよう **併読する**。
+
+- [Rules](https://cursor.com/ja/docs/rules)
+- [Agent Skills](https://cursor.com/ja/docs/skills)
+- 必要なら [ドキュメント一覧](https://cursor.com/llms.txt) から関連ページへ辿る。
+
+## Rules / Skills の扱い（公式仕様ベース）
+
+- 本リポジトリでは、Rules と Skills を別思想として扱わず、**発動条件と読み込みタイミングの違い**として扱う。
+- Rule は frontmatter（`alwaysApply` / `globs` / `description`）と `@` メンションで適用条件を制御する。
+- Skill は `description` に基づく自動選択、`/skill-name` による手動呼び出し、`disable-model-invocation: true` による手動専用化を使い分ける。
+- **このリポジトリの判断基準**: 原則は Skill に寄せ、`alwaysApply: true` または特定 `globs` による発動条件最適化が必要な場合のみ Rule を使う。
+
+## 参照設計（このリポジトリ）
+
+- 参照は **一方向・最小限**に保つ。循環参照や相互参照を作らない。
+- 1トピック1正本を原則とし、他ファイルは短い要約と参照に留める。
+- Skill から Rule を複数並列で参照しない。必要時は本ファイルの参照順を起点に辿る。
+
+## 編集時の参照順
+
+1. **公式**: 上記（frontmatter・`globs` / `alwaysApply`・Skill の discoverability）。
+2. **本ファイル**: 下記のルール／スキル細則と、`docs/` との境界。
+3. **言語・二重正本の回避**: [kansu-agent-conventions.mdc](mdc:.cursor/rules/kansu-agent-conventions.mdc)。
+4. **セッション横断の運用**（Scratchpad・Serena・開発ドキュメントの一覧）: [global.mdc](mdc:.cursor/rules/global.mdc) の該当節。
+
+## `.cursor/rules`（`.mdc`）の編集
+
+- **frontmatter**: `description`（発見性）、`globs`（該当パスにだけ載せる）、`alwaysApply`（常時は最小限にし肥大化を避ける）を意識する。
+- **責務の分割**: ドメイン別・ツール別にファイルを分け、1 ファイルが巨大化しないようにする。
+
+## `.cursor/skills` の編集
+
+### 外部取得 Skill（upstream）と当リポジトリの整合
+
+- 個別の `SKILL.md` に [global.mdc](mdc:.cursor/rules/global.mdc) や [kansu-agent-conventions.mdc](mdc:.cursor/rules/kansu-agent-conventions.mdc) を**列挙して依存関係を増やさない**。言語・`.cursor` の編集方針・二重正本の回避は **本ファイル**と **kansu-agent-conventions.mdc**、セッション運用は **global.mdc** に集約する。
+- 外部取得の `SKILL.md` は **可能な限り upstream の構成・本文を維持**し、Kansu 固有の方針やルール参照は **本ファイル**、当該 `upstream-divergences.md`、または `docs/` に書く（再同期時の差分を小さく保つため）。
+- 編集対象が `.cursor/rules` / `.cursor/skills` であるときは、まず本ファイルの「編集時の参照順」に従う。
+
+### 外部由来スキル（mizchi/skills 等）の三層
+
+**外部 upstream を取り込んだスキル**では次の三層を使う。元スキル本文に無い **メタ段落**（「`references/original.md` を読め」等）を Skill 直下に増やさない。
+
+- **`SKILL.md`**: 外部に英語版がある Skill は本文も英語で運用する。
+- **`references/original.md`**: upstream 原文のコピー、または原文に近い比較用ブロック（オリジナル説明は足さない）。
+- **`upstream-divergences.md`**: 本リポジトリ側の**現在の**意図的差分と理由の正本（日本語可）。経緯の羅列ではなく、再同期手順と「いま有効な差分」が分かるように書く。
+
+ワークフロー内で `references/original.md` の節へ言及するのは、元スキルが同一ファイル内で後段を指していたのと同趣旨の分割の名残に限る。
+
+- 外部に `SKILL-ja.md` 等があっても、エージェント向け正本は英語 `SKILL.md` とし、日本語版を Skill 直下に複製しない。
+
+### 当リポジトリ独自スキル（例: `kansu-*`）
+
+- **`SKILL.md`** を手順・判断の入口にする。`references/*` は長い参照だけ切り出すなど**必要なときのみ**。正本は `SKILL.md` と `references/*` のどちらかに**一意に**決める。
+- **`references/original.md` / `upstream-divergences.md` は置かない**（外部との同期がないため）。
+
+## 製品 `docs/` との境界
+
+- **開発ドキュメント**（要件・設計・製品仕様の正本）は `docs/` に集約する（詳細は [global.mdc](mdc:.cursor/rules/global.mdc) の「ドキュメント運用」）。
+- **Skill 専用の補助文書**（`.cursor/skills/<name>/upstream-divergences.md`、`references/original.md` とセットの英語 `SKILL.md` 等）は **製品ドキュメントとは別枠**とし、該当 Skill ディレクトリへコロケーションする（索引用の一覧だけ `docs/` に置いてよい）。
+
+## `global.mdc` との役割分担
+
+- **常時の運用ハブ**: [global.mdc](mdc:.cursor/rules/global.mdc) は Scratchpad・Serena・ドキュメント運用の要点のみを扱う。
+- **`.cursor` 配下を編集するときの細則の正本**: **本ファイル**（この節までを含む）。同じ細則を `global.mdc` 側へ重複して定義しない。
