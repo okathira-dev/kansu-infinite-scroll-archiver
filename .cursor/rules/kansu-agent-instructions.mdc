@@ -14,9 +14,22 @@ Cursor が読む **ルール（`.mdc`）** と **Agent Skills（`SKILL.md` 等�
 
 追加・変更の前提（適用方式、`SKILL.md` 構造、推奨パターン）が公式とずれないよう **併読する**。
 
-- [Rules](https://cursor.com/docs/context/rules)
-- [Agent Skills](https://cursor.com/docs/context/skills)
-- 必要なら [ドキュメント一覧](https://cursor.com/docs) から関連ページへ辿る。
+- [Rules](https://cursor.com/ja/docs/rules)
+- [Agent Skills](https://cursor.com/ja/docs/skills)
+- 必要なら [ドキュメント一覧](https://cursor.com/llms.txt) から関連ページへ辿る。
+
+## Rules / Skills の扱い（公式仕様ベース）
+
+- 本リポジトリでは、Rules と Skills を別思想として扱わず、**発動条件と読み込みタイミングの違い**として扱う。
+- Rule は frontmatter（`alwaysApply` / `globs` / `description`）と `@` メンションで適用条件を制御する。
+- Skill は `description` に基づく自動選択、`/skill-name` による手動呼び出し、`disable-model-invocation: true` による手動専用化を使い分ける。
+- **このリポジトリの判断基準**: 原則は Skill に寄せ、`alwaysApply: true` または特定 `globs` による発動条件最適化が必要な場合のみ Rule を使う。
+
+## 参照設計（このリポジトリ）
+
+- 参照は **一方向・最小限**に保つ。循環参照や相互参照を作らない。
+- 1トピック1正本を原則とし、他ファイルは短い要約と参照に留める。
+- Skill から Rule を複数並列で参照しない。必要時は本ファイルの参照順を起点に辿る。
 
 ## 編集時の参照順
 
@@ -62,5 +75,5 @@ Cursor が読む **ルール（`.mdc`）** と **Agent Skills（`SKILL.md` 等�
 
 ## `global.mdc` との役割分担
 
-- **常時**: [global.mdc](mdc:.cursor/rules/global.mdc) は Scratchpad・Serena・ドキュメント運用のハブ。
-- **`.cursor` 配下を編集するときの細則の正本**: **本ファイル**（この節までを含む）。
+- **常時の運用ハブ**: [global.mdc](mdc:.cursor/rules/global.mdc) は Scratchpad・Serena・ドキュメント運用の要点のみを扱う。
+- **`.cursor` 配下を編集するときの細則の正本**: **本ファイル**（この節までを含む）。同じ細則を `global.mdc` 側へ重複して定義しない。

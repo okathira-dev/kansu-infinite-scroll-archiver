@@ -24,6 +24,6 @@ description: Kansu リポジトリの構造、技術スタック、参照ドキ�
 
 ## References（この Skill の役割）
 
-- **`SKILL.md`**: 用途・技術スタック・運用の要点のみ。
+- **`SKILL.md`**: 用途・技術スタック・運用の入口のみ。
 - **`references/context.md`**: ディレクトリ一覧・サポートファイル・外部 Skill 導入の**詳細正本**。
-- **主要ドキュメント**（製品）: `README.md`, `docs/requirements.md`, `docs/implementation_plan.md`, `docs/implementation_guide.md`
+- **規約の参照順**: `.cursor` 配下の編集規約や製品ドキュメント運用は [`.cursor/rules/kansu-agent-instructions.mdc`](../../rules/kansu-agent-instructions.mdc) を起点に辿る。

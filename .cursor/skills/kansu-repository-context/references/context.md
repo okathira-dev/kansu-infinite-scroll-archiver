@@ -1,6 +1,7 @@
 # Kansu Repository Context — 詳細正本
 
-`kansu-repository-context` の `SKILL.md` は要約のみとし、**ディレクトリ列挙と補足は本ファイルを正本**とする。
+`kansu-repository-context` の `SKILL.md` は要約のみとし、**ディレクトリ列挙と補足は本ファイルを正本**とする。  
+配置・命名・検証フローなどの規約は `.cursor/rules/*.mdc` を正本とし、本ファイルでは構造一覧に限定する。
 
 ## プロジェクト構造
 

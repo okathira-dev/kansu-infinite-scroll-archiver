@@ -25,3 +25,11 @@ alwaysApply: true
 - **`docs/implementation_plan.md` と `docs/implementation_guide.md`** は、**実装の進みやリポジトリの現在状態に依存しない普遍的な記述**に限定する（進捗は `Scratchpad.md` とコードで追う）。
 - **`docs/implementation_guide.md`** は抽象的な技術方針の補助に寄せ、実装の正本は `requirements.md`・ソース・テスト・共有契約を優先する。
 - **`docs/wxt-dev-debug.md`** のような手順書では、誰が何をするかを本文の主語で明示する。
+
+## 変更後の検証
+
+- フォーマット・Lint・markdownlint で自動修正できる指摘があるときは、手で直す前に **`pnpm check:fix`** を試す（問題がなければスキップしてよい）。
+- タスク完了前・コミット想定時には必ず **`pnpm check`** を実行する（Biome・型チェック・markdownlint の総合ゲート）。**`pnpm check:fix` には `compile`（`tsc --noEmit`）が含まれない**ため、fix の後も **`pnpm check` が必要**。
+- 動作や契約に触れた変更では **`pnpm test`** を追加する（型チェックは `check` に含まれる）。
+- Storybook 関連は [storybook.mdc](mdc:.cursor/rules/storybook.mdc) を参照する（例: `pnpm test:storybook`）。
+- ユーザーフローやビルド成果物に強く依存する変更では、必要に応じて **`pnpm e2e`** などを実行する。

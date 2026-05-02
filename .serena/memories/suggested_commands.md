@@ -18,8 +18,9 @@
 - `pnpm compile` — `tsc --noEmit`
 
 ## Lint / フォーマット（Biome）
-- `pnpm check` — format + lint まとめて確認
-- `pnpm check:fix` — 自動修正
+- **推奨順**: 自動修正が効く指摘なら先に `pnpm check:fix` → 必ず `pnpm check`（`check:fix` に型チェックは含まれない）。詳細な判断は `.cursor/rules/kansu-agent-conventions.mdc` の「変更後の検証」を参照。
+- `pnpm check` — format + lint + `compile` + markdownlint までまとめて確認
+- `pnpm check:fix` — Biome と markdownlint の自動修正（型チェックなし）
 - `pnpm format` / `pnpm format:fix`
 - `pnpm lint` / `pnpm lint:fix`
 

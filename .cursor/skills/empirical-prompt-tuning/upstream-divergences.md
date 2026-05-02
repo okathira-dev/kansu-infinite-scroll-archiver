@@ -35,7 +35,7 @@
 | ファイル役割 | [`SKILL.md`](SKILL.md) = ワークフロー・最小読みパス・Cursor 計測など。[`references/original.md`](references/original.md) = 長文テンプレ・表（upstream に近いブロック）。 |
 | Task / usage メタ | `tool_uses` / `duration_ms` が **無い場合**は `—`、推定禁止（`SKILL.md` の「Cursor measurement」と `references/original.md` の評価軸に明記）。 |
 | 環境の言い換え | 「Claude Code session」等 → **Cursor** の別チャット／別エージェント実行。 |
-| Kansu との整合 | `SKILL.md` にプロジェクトの `.mdc` を列挙しない。言語・ルール参照・`.cursor` 編集方針は [kansu-agent-instructions.mdc](mdc:.cursor/rules/kansu-agent-instructions.mdc) と [kansu-agent-conventions.mdc](mdc:.cursor/rules/kansu-agent-conventions.mdc)、運用は [global.mdc](mdc:.cursor/rules/global.mdc) に集約（旧「Repository context (Kansu)」節は撤去）。 |
+| Kansu との整合 | `SKILL.md` にプロジェクトの `.mdc` を列挙しない。言語・ルール参照・`.cursor` 編集方針は [kansu-agent-instructions.mdc](mdc:.cursor/rules/kansu-agent-instructions.mdc) を起点に辿る（旧「Repository context (Kansu)」節は撤去）。 |
 | Related 節 | `retrospective-codify` の GitHub リンクに限定し、必須依存にしない。 |
 | `references/original.md` の構成 | **Subagent invocation contract を先頭**。続けて評価軸・提示フォーマット・Fix propagation patterns 等（コピー用途を優先）。 |
 | 補助ドキュメント | `OVERVIEW-ja.md` は置かない。差分の説明は本ファイルに集約。 |

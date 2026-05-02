@@ -16,7 +16,7 @@ alwaysApply: false
 ## 実行コマンド
 
 - `pnpm check`: Biome（format + lint）、`pnpm compile`（`tsc --noEmit`）、markdownlint をまとめて確認
-- `pnpm check:fix`: 自動修正
+- `pnpm check:fix`: Biome と markdownlint の自動修正（**型チェックは含まない**。総合確認は `pnpm check`）
 - `pnpm format` / `pnpm format:fix`
 - `pnpm lint` / `pnpm lint:fix`
 
@@ -26,8 +26,3 @@ Markdown（`.md`, `.mdx`, `.mdc`）は Biome ではなく markdownlint-cli2 で�
 
 - `pnpm lint-md`
 - `pnpm lint-md:fix`
-
-## 変更時の確認
-
-- コード変更時は `pnpm check` を優先して実行する
-- 動作に影響する場合は `pnpm test` を必要に応じて追加実行する（型は `check` に含まれる）

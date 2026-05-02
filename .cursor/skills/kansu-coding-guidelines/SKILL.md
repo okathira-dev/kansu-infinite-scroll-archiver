@@ -16,22 +16,15 @@ description: Kansu 実装時の基本コーディング規約（差分最小、�
 - 複雑な箇所のみコメントで補足し、冗長な説明コメントは避ける。
 - 型安全を優先し、`any` は必要最小限に限定する。
 
-## Directory responsibility
+## Scope and references
 
-- `src/entrypoints/`: エントリポイント
-- `src/lib/`: 共有ロジック、ユーティリティ、純粋関数優先
-- `src/components/ui/`: 再利用前提の UI プリミティブ
+- `.cursor` 配下の規約参照順は `.cursor/rules/kansu-agent-instructions.mdc` を起点に辿る。
+- 実装規約の正本は `.cursor/rules/kansu-agent-conventions.mdc` とし、本 Skill では固有のコーディング指針に限定する。
 
 ## Import / export
 
 - 原則 `named export` / `named import`
 - フレームワーク都合などで必要な場合のみ `default export`
-
-## Quality gates
-
-- フォーマット・lint は `biome.json` と `.cursor/rules/biome.mdc` に従う。
-- ロジック変更時は `src/**/*.test.ts` 更新を検討。
-- ユーザーフロー影響時は `e2e/` 更新を検討。
 
 ## UI primitive focus / active
 

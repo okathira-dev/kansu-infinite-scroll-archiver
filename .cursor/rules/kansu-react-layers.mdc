@@ -11,7 +11,7 @@ alwaysApply: false
 ## ユビキタス言語（推奨呼称）
 
 - 目的: 会話・JSDoc・レビューで使う語をそろえ、レイヤー名だけで一般論を当てはめる誤解を防ぐ。
-- 用語表（一覧表・プレビュー向け）は [docs/ubiquitous-language.md](mdc:docs/ubiquitous-language.md) を参照する。用語の揃え方・索引は [kansu-ubiquitous-language の SKILL](mdc:.cursor/skills/kansu-ubiquitous-language/SKILL.md)。
+- 用語表（一覧表・プレビュー向け）は [docs/ubiquitous-language.md](mdc:docs/ubiquitous-language.md) を参照する。
 - 最小の共通理解:
   - `src/components/ui` は「共有 UI 基盤（UI プリミティブ）」。
   - `src/entrypoints/**/ui` は「エントリ専用 UI（props 駆動 UI）」で副作用を持たず、feature 非依存の画面内共通 UI を置く。
@@ -46,4 +46,4 @@ alwaysApply: false
 - 表示責務と操作責務は分離して命名する（例: 表示基盤 `Toaster` と発火関数 `notify*`）。
 - `sonner` 利用時は `entrypoints/**` から直接 import せず、`@/components/ui/Toaster` が公開する `notifySuccess` / `notifyInfo` / `notifyWarning` / `notifyError` を使う。
 - Hooks はロジック再利用やテスト分割に使ってよく、「UI だから hooks 禁止」は採用しない。
-- **`*.stories.tsx` の編集・Storybook 設定**は [storybook.mdc](mdc:.cursor/rules/storybook.mdc) が正本（本ルールと二重適用しないよう、globs からストーリーファイルを除外している）。
+- **`*.stories.tsx` の編集・Storybook 設定**は Storybook 向け Rule 側で扱う（本ルールと二重適用しないよう、globs からストーリーファイルを除外している）。
