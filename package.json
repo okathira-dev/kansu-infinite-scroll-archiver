@@ -80,7 +80,7 @@
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
-    "@vitest/browser-playwright": "4.1.6",
+    "@vitest/browser-playwright": "4.1.7",
     "@wxt-dev/module-react": "^1.2.2",
     "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
