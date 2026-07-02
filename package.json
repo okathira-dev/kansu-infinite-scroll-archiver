@@ -82,7 +82,7 @@
     "@vitejs/plugin-react": "^6.0.3",
     "@vitest/browser-playwright": "4.1.7",
     "@wxt-dev/module-react": "^1.2.2",
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.3",
     "cross-env": "^10.1.0",
     "fake-indexeddb": "^6.2.5",
     "husky": "^9.1.7",
