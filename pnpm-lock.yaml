@@ -61,8 +61,8 @@ importers:
         specifier: ^1.59.1
         version: 1.59.1
       '@storybook/addon-a11y':
-        specifier: ^10.5.4
-        version: 10.5.4(storybook@10.5.5(@types/react@19.2.17)(react@19.2.8))
+        specifier: ^10.5.5
+        version: 10.5.5(storybook@10.5.5(@types/react@19.2.17)(react@19.2.8))
       '@storybook/addon-docs':
         specifier: ^10.5.5
         version: 10.5.5(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.27.7)(rollup@4.60.0)(storybook@10.5.5(@types/react@19.2.17)(react@19.2.8))(vite@8.1.5(@types/node@25.9.1)(esbuild@0.27.7)(jiti@2.7.0)(yaml@2.8.3))
@@ -2018,10 +2018,10 @@ packages:
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
-  '@storybook/addon-a11y@10.5.4':
-    resolution: {integrity: sha512-UWdZtB7Dh1GjqxTPOrisUNDhDGF5pKGzZdzW9DSSHMBcAOx2dsTmXGzLSFprAz4LTT0OHCtKhxNqKK0JZJ0Y8g==}
+  '@storybook/addon-a11y@10.5.5':
+    resolution: {integrity: sha512-nsMnSRe7pzepXIkUUqI/rL7sp8juXOluyypU4Dz0UuYHhw/cKaxfzuO+3WJN5EtEr/gcnKYb4awxH/duPGavUw==}
     peerDependencies:
-      storybook: ^10.5.4
+      storybook: ^10.5.5
 
   '@storybook/addon-docs@10.5.5':
     resolution: {integrity: sha512-0YpKlimS4XE0kQ8Maa5coeefQxdyDrBHg1wOP3WTPuBe4FolFSCDveR0ge2+vuUBk+fZfn2+l+3Q2jmAWaRGDg==}
@@ -6344,7 +6344,7 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@storybook/addon-a11y@10.5.4(storybook@10.5.5(@types/react@19.2.17)(react@19.2.8))':
+  '@storybook/addon-a11y@10.5.5(storybook@10.5.5(@types/react@19.2.17)(react@19.2.8))':
     dependencies:
       '@storybook/global': 5.0.0
       axe-core: 4.12.1
