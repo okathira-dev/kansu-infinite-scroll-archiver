@@ -64,7 +64,7 @@
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3",
     "wanakana": "^5.3.1",
-    "zustand": "^5.0.14"
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.15",
