@@ -71,7 +71,7 @@
     "@playwright/test": "^1.59.1",
     "@storybook/addon-a11y": "^10.5.8",
     "@storybook/addon-docs": "^10.5.8",
-    "@storybook/addon-vitest": "^10.5.7",
+    "@storybook/addon-vitest": "^10.5.8",
     "@storybook/react-vite": "^10.5.7",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
